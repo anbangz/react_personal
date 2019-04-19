@@ -1,21 +1,46 @@
-var path = require('path');
-var webpack = require('webpack');
+const path = require('path');
 
+const HtmlWebpackPlugin = require('html-webpack-plugin');
+
+const outputPath = path.join(__dirname, 'dist');
 module.exports = {
-  entry: './src/main.js',
-  output: { path: __dirname, filename: 'bundle.js' },
-  resolve: {
-    extensions: ['.js', '.jsx']
+  entry: {
+    app: ['./src/index.tsx']
   },
+  output: {
+    path: outputPath,
+    filename: 'bundle.js'
+  },
+
+  // Enable sourcemaps for debugging webpack's output.
+  devtool: 'source-map',
+
+  devServer: {
+    contentBase: outputPath,
+    compress: true,
+    port: 8080
+  },
+
+  resolve: {
+    // Add '.ts' and '.tsx' as resolvable extensions.
+    extensions: ['.ts', '.tsx', '.js', '.json']
+  },
+
   module: {
     rules: [
-        {
-            test: /\.(js|jsx)$/,
-            exclude: /(node_modules|bower_components)/,
-            use: {
-                loader: 'babel-loader',
-            },
-        }
-      ]
+      // All files with a '.ts' or '.tsx' extension will be handled by 'awesome-typescript-loader'.
+      { test: /\.tsx?$/, loader: 'ts-loader' }
+
+      // // All output '.js' files will have any sourcemaps re-processed by 'source-map-loader'.
+      // { enforce: "pre", test: /\.js$/, loader: "source-map-loader" }
+    ]
   },
+
+  plugins: [
+    new HtmlWebpackPlugin({
+      title: 'My Website',
+      template: __dirname + '/index.html',
+      inject: 'body'
+    })
+  ]
 };
