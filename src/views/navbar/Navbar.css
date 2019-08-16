@@ -1,0 +1,12 @@
+.navbar {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+}
+
+.navbar_logo {
+}
+
+.navbar__item {
+  padding: 8px 16px 8px 16px;
+}

@@ -9,7 +9,8 @@ module.exports = {
   },
   output: {
     path: outputPath,
-    filename: 'bundle.js'
+    filename: 'bundle.js',
+    publicPath: '/'
   },
 
   // Enable sourcemaps for debugging webpack's output.
@@ -18,7 +19,8 @@ module.exports = {
   devServer: {
     contentBase: outputPath,
     compress: true,
-    port: 8080
+    port: 8080,
+    historyApiFallback: true
   },
 
   resolve: {
@@ -29,7 +31,11 @@ module.exports = {
   module: {
     rules: [
       // All files with a '.ts' or '.tsx' extension will be handled by 'awesome-typescript-loader'.
-      { test: /\.tsx?$/, loader: 'ts-loader' }
+      { test: /\.tsx?$/, loader: 'ts-loader' },
+      {
+        test: /\.css$/,
+        use: ['style-loader', 'css-loader']
+      }
 
       // // All output '.js' files will have any sourcemaps re-processed by 'source-map-loader'.
       // { enforce: "pre", test: /\.js$/, loader: "source-map-loader" }

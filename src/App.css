@@ -1,0 +1,17 @@
+.app-layout {
+  display: grid;
+  align-items: center;
+  grid-template-rows: 60px, auto;
+  grid-template-columns: 1fr;
+  grid-template-areas:
+    'navbar'
+    'body';
+}
+
+.app-layout__navbar {
+  grid-area: navbar;
+}
+
+.app-layout__body {
+  grid-area: body;
+}
