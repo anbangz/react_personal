@@ -1,13 +1,14 @@
-import * as React from 'react';
+import * as React from "react";
 
-import { BrowserRouter, Route } from 'react-router-dom';
+import { BrowserRouter, Route } from "react-router-dom";
 
-import { AboutMe } from './views/about-me/AboutMe';
-import { Homepage } from './views/home/Homepage';
+import { AboutMe } from "./views/about-me/AboutMe";
+import { Homepage } from "./views/home/Homepage";
 
-import './App.css';
-import { Navbar } from './views/navbar/Navbar';
-import { Roadmap } from './views/roadmap/Roadmap';
+import "./App.css";
+import { Navbar } from "./views/navbar/Navbar";
+import { Roadmap } from "./views/roadmap/Roadmap";
+import { ContactMe } from "./views/contact-me/ContactMe";
 
 export const App = () => (
   <BrowserRouter>
@@ -17,8 +18,9 @@ export const App = () => (
       </div>
       <div className="app-layout__body">
         <Route exact path="/" component={Homepage} />
-        <Route path="/aboutme" component={AboutMe} />
+        <Route path="/about-me" component={AboutMe} />
         <Route path="/roadmap" component={Roadmap} />
+        <Route path="/contact-me" component={ContactMe} />
       </div>
     </div>
   </BrowserRouter>
