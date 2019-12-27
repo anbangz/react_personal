@@ -6,8 +6,9 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "webpack-dev-server --config webpack.config.js",
+    "clean": "rm -rf node_modules && rm -rf dist",
     "build": "webpack",
-    "clean-build": "npm i && webpack"
+    "clean-build": "npm run clean && npm i && webpack"
   },
   "repository": {
     "type": "git",
