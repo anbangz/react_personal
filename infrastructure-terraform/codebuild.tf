@@ -1,5 +1,5 @@
-resource "aws_iam_role" "example" {
-  name = "example"
+resource "aws_iam_role" "PersonalWebsiteCodebuildRole" {
+  name = "PersonalWebsiteCodebuildRole"
 
   assume_role_policy = <<EOF
 {
@@ -16,13 +16,26 @@ resource "aws_iam_role" "example" {
 }
 EOF
 }
-resource "aws_iam_role_policy" "example" {
-  role = "${aws_iam_role.example.name}"
+resource "aws_iam_role_policy" "PersonalWebsiteCodebuildPolicy" {
+  name = "PersonalWebsiteCodebuildPolicy"
+  role = "${aws_iam_role.PersonalWebsiteCodebuildRole.id}"
 
-  policy = <<POLICY
+  policy = <<EOF
 {
   "Version": "2012-10-17",
   "Statement": [
+    {
+      "Effect":"Allow",
+      "Action": [
+        "s3:GetObject",
+        "s3:GetObjectVersion",
+        "s3:GetBucketVersioning"
+      ],
+      "Resource": [
+        "${aws_s3_bucket.PersonalWebsitePipelineBucket.arn}",
+        "${aws_s3_bucket.PersonalWebsitePipelineBucket.arn}/*"
+      ]
+    },
     {
       "Effect": "Allow",
       "Resource": [
@@ -36,14 +49,11 @@ resource "aws_iam_role_policy" "example" {
     }
   ]
 }
-POLICY
+EOF
 }
 
 resource "aws_codebuild_project" "PersonalWebsiteBuild" {
   name = "PersonalWebsiteBuild"
-  artifacts {
-    type = "CODEPIPELINE"
-  }
   environment {
     compute_type = "BUILD_GENERAL1_SMALL"
     type         = "LINUX_CONTAINER"
@@ -54,5 +64,8 @@ resource "aws_codebuild_project" "PersonalWebsiteBuild" {
     type      = "CODEPIPELINE"
     buildspec = file("buildspec.yml")
   }
-  service_role = "${aws_iam_role.example.arn}"
+  artifacts {
+    type = "CODEPIPELINE"
+  }
+  service_role = "${aws_iam_role.PersonalWebsiteCodebuildRole.arn}"
 }

@@ -77,7 +77,8 @@ resource "aws_codepipeline" "PersonalWebsitePipeline" {
         "Repo"                 = "react_personal",
         "PollForSourceChanges" = "true",
         "Branch"               = "master",
-        "OAuthToken"           = "${data.aws_secretsmanager_secret_version.GithubTokenSecret.secret_string}"
+        # For some reason this doesn't ACTUALLY work - see
+        "OAuthToken" = jsondecode(data.aws_secretsmanager_secret_version.GithubTokenSecret.secret_string)["github-react-personal"]
       }
     }
   }
@@ -100,16 +101,22 @@ resource "aws_codepipeline" "PersonalWebsitePipeline" {
 
   }
 
-  # stage {
-  #   name = "Deploy"
-  #   action {
-  #     name     = "Deploy"
-  #     category = "Deploy"
-  #     owner    = "AWS"
-  #     provider = "Amazon S3"
-  #     version  = "1"
-  #   }
-  # }
+  stage {
+    name = "Deploy"
+    action {
+      name            = "Deploy"
+      category        = "Deploy"
+      owner           = "AWS"
+      provider        = "S3"
+      version         = "1"
+      input_artifacts = ["build_output"]
+
+      configuration = {
+        "BucketName" = "${aws_s3_bucket.PersonalWebsiteRoot.bucket}"
+        "Extract"    = "true"
+      }
+    }
+  }
 }
 
 data "aws_secretsmanager_secret_version" "GithubTokenSecret" {
