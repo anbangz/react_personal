@@ -85,7 +85,7 @@ resource "aws_codepipeline" "PersonalWebsitePipeline" {
         "Owner"                = "anbangz",
         "Repo"                 = "react_personal",
         "PollForSourceChanges" = "true",
-        "Branch"               = "master",
+        "Branch"               = "deployment",
         # For some reason this doesn't ACTUALLY work - see
         "OAuthToken" = jsondecode(data.aws_secretsmanager_secret_version.GithubTokenSecret.secret_string)["github-react-personal"]
       }

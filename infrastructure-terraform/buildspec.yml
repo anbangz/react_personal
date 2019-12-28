@@ -43,8 +43,9 @@ phases:
 #discard-paths: yes
 #file-format: JunitXml | CucumberJson
 artifacts:
+  base-directory: ./dist
   files:
-    - dist/**
+    - "**/*"
 #name: $(date +%Y-%m-%d)
 #discard-paths: yes
 #base-directory: location
