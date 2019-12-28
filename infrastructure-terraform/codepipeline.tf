@@ -21,6 +21,7 @@ resource "aws_iam_role" "PersonalWebsitePipelineRole" {
 }
 EOF
 }
+
 resource "aws_iam_role_policy" "PersonalWebsitePipelineRolePolicy" {
   name = "PersonalWebsitePipelineRolePolicy"
   role = "${aws_iam_role.PersonalWebsitePipelineRole.id}"
@@ -49,6 +50,14 @@ resource "aws_iam_role_policy" "PersonalWebsitePipelineRolePolicy" {
         "codebuild:StartBuild"
       ],
       "Resource": "*"
+    }, 
+    {
+      "Effect": "Allow",
+      "Action": ["s3:PutObject"],
+      "Resource": [
+        "${aws_s3_bucket.PersonalWebsiteRoot.arn}",
+        "${aws_s3_bucket.PersonalWebsiteRoot.arn}/*"
+      ]
     }
   ]
 }
@@ -122,3 +131,5 @@ resource "aws_codepipeline" "PersonalWebsitePipeline" {
 data "aws_secretsmanager_secret_version" "GithubTokenSecret" {
   secret_id = "arn:aws:secretsmanager:us-west-2:261882595951:secret:github-react_personal-MfNPNZ"
 }
+
+# TODO: setup Github / Codepipeline webhooks for immediate sourcing

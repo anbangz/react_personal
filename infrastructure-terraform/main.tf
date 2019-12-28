@@ -5,12 +5,12 @@ provider "aws" {
 
 provider "aws" {
   region  = "us-east-1"
-  alias = "us-east-1"
+  alias   = "us-east-1"
   version = "~> 2.43"
 }
 
 variable "website_domain" {
-  type = "string"
+  type    = "string"
   default = "anbangz.me"
 }
 
@@ -35,13 +35,27 @@ resource "aws_s3_bucket_policy" "PersonalWebsiteBucketPublicAccess" {
   policy = <<POLICY
 {
   "Version":"2012-10-17",
-  "Statement":[{
-    "Sid":"PersonalWebsiteBucketPublicAccess",
-    "Effect":"Allow",
-    "Principal":"*",
-    "Action": "s3:GetObject",
-    "Resource": "${aws_s3_bucket.PersonalWebsiteRoot.arn}/*"
-  }]
+  "Statement": [
+    {
+      "Sid":"PersonalWebsiteBucketPublicAccess",
+      "Effect":"Allow",
+      "Principal":"*",
+      "Action": "s3:GetObject",
+      "Resource": "${aws_s3_bucket.PersonalWebsiteRoot.arn}/*"
+    },
+    {
+      "Sid":"PersonalWebsiteBucketCodePipelineAccess",
+      "Effect":"Allow",
+      "Principal": {
+        "Service": "codepipeline.amazonaws.com"
+      },
+      "Action": [
+        "s3:GetObject",
+        "s3:PutObject"
+      ],
+      "Resource": "${aws_s3_bucket.PersonalWebsiteRoot.arn}/*"
+    }
+  ]
 }
 POLICY
 }
@@ -59,7 +73,7 @@ data "aws_s3_bucket" "PersonalWebsiteRedirect" {
 }
 
 resource "aws_route53_zone" "PersonalWebsiteHostedZone" {
-  name = "${var.website_domain}"
+  name    = "${var.website_domain}"
   comment = "Route53 hosted zone for the anbangz.me website. Managed by Terraform"
 }
 
@@ -69,7 +83,7 @@ resource "aws_route53_record" "PersonalWebsiteRecordSet" {
   type    = "A"
 
   alias {
-    name = "${aws_cloudfront_distribution.PersonalWebsiteDistribution.domain_name}"
+    name    = "${aws_cloudfront_distribution.PersonalWebsiteDistribution.domain_name}"
     zone_id = "${aws_cloudfront_distribution.PersonalWebsiteDistribution.hosted_zone_id}"
     # name = "${data.aws_s3_bucket.PersonalWebsiteRoot.website_domain}"
     # zone_id = "${data.aws_s3_bucket.PersonalWebsiteRoot.hosted_zone_id}"
@@ -84,7 +98,7 @@ resource "aws_route53_record" "PersonalWebsiteRedirectRecordSet" {
   type    = "A"
 
   alias {
-    name = "${aws_cloudfront_distribution.PersonalWebsiteDistribution.domain_name}"
+    name    = "${aws_cloudfront_distribution.PersonalWebsiteDistribution.domain_name}"
     zone_id = "${aws_cloudfront_distribution.PersonalWebsiteDistribution.hosted_zone_id}"
     # name = "${data.aws_s3_bucket.PersonalWebsiteRedirect.website_domain}"
     # zone_id = "${data.aws_s3_bucket.PersonalWebsiteRedirect.hosted_zone_id}"
@@ -93,25 +107,25 @@ resource "aws_route53_record" "PersonalWebsiteRedirectRecordSet" {
 }
 
 resource "aws_acm_certificate" "PersonalWebsiteSSLCertificate" {
-  provider = "aws.us-east-1"
-  domain_name = "anbangz.me"
+  provider                  = "aws.us-east-1"
+  domain_name               = "anbangz.me"
   subject_alternative_names = ["*.anbangz.me"]
-  validation_method = "DNS"
+  validation_method         = "DNS"
 }
 
 resource "aws_route53_record" "PersonalWebsiteSSLCertificateRecordSet" {
   zone_id = "${aws_route53_zone.PersonalWebsiteHostedZone.zone_id}"
 
-  name = "${aws_acm_certificate.PersonalWebsiteSSLCertificate.domain_validation_options.0.resource_record_name}"
-  type = "${aws_acm_certificate.PersonalWebsiteSSLCertificate.domain_validation_options.0.resource_record_type}"
+  name    = "${aws_acm_certificate.PersonalWebsiteSSLCertificate.domain_validation_options.0.resource_record_name}"
+  type    = "${aws_acm_certificate.PersonalWebsiteSSLCertificate.domain_validation_options.0.resource_record_type}"
   records = ["${aws_acm_certificate.PersonalWebsiteSSLCertificate.domain_validation_options.0.resource_record_value}"]
 
-  ttl     = "60"
+  ttl = "60"
 }
 
 resource "aws_acm_certificate_validation" "PersonalWebsiteSSLCertificateValidation" {
-  provider = "aws.us-east-1"
-  certificate_arn = "${aws_acm_certificate.PersonalWebsiteSSLCertificate.arn}"
+  provider                = "aws.us-east-1"
+  certificate_arn         = "${aws_acm_certificate.PersonalWebsiteSSLCertificate.arn}"
   validation_record_fqdns = ["${aws_route53_record.PersonalWebsiteSSLCertificateRecordSet.fqdn}"]
 }
 
@@ -119,18 +133,18 @@ resource "aws_cloudfront_distribution" "PersonalWebsiteDistribution" {
   enabled = true
   origin {
     domain_name = "${data.aws_s3_bucket.PersonalWebsiteRoot.website_endpoint}"
-    origin_id = "S3-${var.website_domain}"
+    origin_id   = "S3-${var.website_domain}"
 
     custom_origin_config {
-        http_port              = "80"
-        https_port             = "443"
-        origin_protocol_policy = "http-only"
-        origin_ssl_protocols   = ["TLSv1", "TLSv1.1", "TLSv1.2"]
+      http_port              = "80"
+      https_port             = "443"
+      origin_protocol_policy = "http-only"
+      origin_ssl_protocols   = ["TLSv1", "TLSv1.1", "TLSv1.2"]
     }
   }
 
-  price_class = "PriceClass_All"
-  aliases = ["${var.website_domain}", "www.${var.website_domain}"]
+  price_class         = "PriceClass_All"
+  aliases             = ["${var.website_domain}", "www.${var.website_domain}"]
   default_root_object = "index.html"
 
 
@@ -138,8 +152,8 @@ resource "aws_cloudfront_distribution" "PersonalWebsiteDistribution" {
     target_origin_id = "S3-${var.website_domain}"
 
     viewer_protocol_policy = "allow-all"
-    allowed_methods = ["GET", "HEAD"]
-    cached_methods = ["GET", "HEAD"]
+    allowed_methods        = ["GET", "HEAD"]
+    cached_methods         = ["GET", "HEAD"]
     forwarded_values {
       query_string = false
       cookies {
@@ -150,7 +164,7 @@ resource "aws_cloudfront_distribution" "PersonalWebsiteDistribution" {
 
   viewer_certificate {
     acm_certificate_arn = "${aws_acm_certificate.PersonalWebsiteSSLCertificate.arn}"
-    ssl_support_method = "sni-only"
+    ssl_support_method  = "sni-only"
   }
 
   restrictions {
