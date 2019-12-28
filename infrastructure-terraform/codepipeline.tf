@@ -133,3 +133,43 @@ data "aws_secretsmanager_secret_version" "GithubTokenSecret" {
 }
 
 # TODO: setup Github / Codepipeline webhooks for immediate sourcing
+# resource "aws_secretsmanager_secret" "AWSGithubSecret" {
+#   name = "AWSGithubSecret"
+# }
+
+# data "aws_secretsmanager_secret_version" "AWSGithubSecret" {
+#   secret_id = "${aws_secretsmanager_secret.AWSGithubSecret.arn}"
+# }
+
+
+# resource "aws_codepipeline_webhook" "PersonalWebsitePiplineSourceWebhook" {
+#   name            = "PersonalWebsitePiplineSourceWebhook"
+#   authentication  = "GITHUB_HMAC"
+#   target_action   = "Source"
+#   target_pipeline = "${aws_codepipeline.PersonalWebsitePipeline.name}"
+
+#   authentication_configuration {
+#     secret_token = jsondecode(data.aws_secretsmanager_secret_version.GithubTokenSecret.secret_string)["github-react-personal"]
+#   }
+
+#   filter {
+#     json_path    = "$.ref"
+#     match_equals = "refs/heads/{Branch}"
+#   }
+# }
+
+# # Wire the CodePipeline webhook into a GitHub repository.
+# resource "github_repository_webhook" "bar" {
+#   repository = "${github_repository.repo.name}"
+
+#   name = "web"
+
+#   configuration {
+#     url          = "${aws_codepipeline_webhook.bar.url}"
+#     content_type = "json"
+#     insecure_ssl = true
+#     secret       = "${local.webhook_secret}"
+#   }
+
+#   events = ["push"]
+# }

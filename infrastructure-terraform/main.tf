@@ -30,7 +30,7 @@ data "aws_s3_bucket" "PersonalWebsiteRoot" {
   bucket = "${aws_s3_bucket.PersonalWebsiteRoot.bucket}"
 }
 
-resource "aws_s3_bucket_policy" "PersonalWebsiteBucketPublicAccess" {
+resource "aws_s3_bucket_policy" "PersonalWebsiteBucketPolicy" {
   bucket = "${aws_s3_bucket.PersonalWebsiteRoot.bucket}"
   policy = <<POLICY
 {
@@ -83,10 +83,8 @@ resource "aws_route53_record" "PersonalWebsiteRecordSet" {
   type    = "A"
 
   alias {
-    name    = "${aws_cloudfront_distribution.PersonalWebsiteDistribution.domain_name}"
-    zone_id = "${aws_cloudfront_distribution.PersonalWebsiteDistribution.hosted_zone_id}"
-    # name = "${data.aws_s3_bucket.PersonalWebsiteRoot.website_domain}"
-    # zone_id = "${data.aws_s3_bucket.PersonalWebsiteRoot.hosted_zone_id}"
+    name                   = "${aws_cloudfront_distribution.PersonalWebsiteDistribution.domain_name}"
+    zone_id                = "${aws_cloudfront_distribution.PersonalWebsiteDistribution.hosted_zone_id}"
     evaluate_target_health = false
   }
 }
@@ -98,10 +96,8 @@ resource "aws_route53_record" "PersonalWebsiteRedirectRecordSet" {
   type    = "A"
 
   alias {
-    name    = "${aws_cloudfront_distribution.PersonalWebsiteDistribution.domain_name}"
-    zone_id = "${aws_cloudfront_distribution.PersonalWebsiteDistribution.hosted_zone_id}"
-    # name = "${data.aws_s3_bucket.PersonalWebsiteRedirect.website_domain}"
-    # zone_id = "${data.aws_s3_bucket.PersonalWebsiteRedirect.hosted_zone_id}"
+    name                   = "${aws_cloudfront_distribution.PersonalWebsiteDistribution.domain_name}"
+    zone_id                = "${aws_cloudfront_distribution.PersonalWebsiteDistribution.hosted_zone_id}"
     evaluate_target_health = false
   }
 }
@@ -151,7 +147,7 @@ resource "aws_cloudfront_distribution" "PersonalWebsiteDistribution" {
   default_cache_behavior {
     target_origin_id = "S3-${var.website_domain}"
 
-    viewer_protocol_policy = "allow-all"
+    viewer_protocol_policy = "redirect-to-https"
     allowed_methods        = ["GET", "HEAD"]
     cached_methods         = ["GET", "HEAD"]
     forwarded_values {
