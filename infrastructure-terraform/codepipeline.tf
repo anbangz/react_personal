@@ -85,8 +85,9 @@ resource "aws_codepipeline" "PersonalWebsitePipeline" {
         "Owner"                = "anbangz",
         "Repo"                 = "react_personal",
         "PollForSourceChanges" = "true",
-        "Branch"               = "deployment",
-        # For some reason this doesn't ACTUALLY work - see
+        "Branch"               = "release",
+        # For some reason this doesn't ACTUALLY work - see https://github.com/terraform-providers/terraform-provider-aws/issues/2796
+        # Because this is essentially cleared every time, Terraform infers that OAuthToken is set with every apply action
         "OAuthToken" = jsondecode(data.aws_secretsmanager_secret_version.GithubTokenSecret.secret_string)["github-react-personal"]
       }
     }
