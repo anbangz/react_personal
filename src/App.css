@@ -1,11 +1,14 @@
 .app-layout {
+  height: 100vh;
+  background-color: lightgrey;
+
   display: grid;
-  align-items: center;
-  grid-template-rows: 60px, auto;
-  grid-template-columns: 1fr;
+  grid-template-columns: auto minmax(min-content, 1024px) auto;
+  grid-template-rows: 60px 1fr;
   grid-template-areas:
-    'navbar'
-    'body';
+    "navbar navbar navbar"
+    ". body .";
+  grid-gap: 10px;
 }
 
 .app-layout__navbar {
