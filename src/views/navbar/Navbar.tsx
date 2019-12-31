@@ -29,34 +29,31 @@ export const Navbar = () => {
       </a>
       <div className={`navbar-menu ${isMenuActive ? "is-active" : null}`}>
         <div className="navbar-start">
-          <Link className="navbar-item navbar_item--centered" to="/">
+          <Link className="navbar-item centered" to="/">
             Home
           </Link>
-          <Link className="navbar-item navbar_item--centered " to="/aboutme">
+          <Link className="navbar-item centered " to="/aboutme">
             About Me
           </Link>
-          <Link className="navbar-item navbar_item--centered " to="/roadmap">
+          <Link className="navbar-item centered " to="/roadmap">
             Roadmap
           </Link>
-          <Link className="navbar-item navbar_item--centered " to="/contact-me">
+          <Link className="navbar-item centered " to="/contact-me">
             Contact Me
           </Link>
         </div>
         <div className="navbar-end">
           <a
-            className="navbar-item navbar_item--centered"
-            href="https://github.com/anbangz"
+            className="navbar-item centered"
+            href="https://www.instagram.com/anbangz/"
           >
             <FontAwesomeIcon icon={faInstagram} size="2x" />
           </a>
-          <a
-            className="navbar-item navbar_item--centered"
-            href="https://github.com/anbangz"
-          >
+          <a className="navbar-item centered" href="https://github.com/anbangz">
             <FontAwesomeIcon icon={faGithub} size="2x" />
           </a>
           <a
-            className="navbar-item navbar_item--centered"
+            className="navbar-item centered"
             href="https://www.linkedin.com/in/anbang-zhang-1141b18b/"
           >
             <FontAwesomeIcon icon={faLinkedin} size="2x" />

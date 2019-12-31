@@ -1,18 +1,4 @@
-/* .navbar {
-  display: flex;
-  flex-direction: row;
-  flex-wrap: wrap;
-}
-
-.navbar_logo {
-}
-
-.navbar__item {
-  align-items: center;
-  padding: 8px 16px 8px 16px;
-} */
-
-.navbar_item--centered {
+.centered {
   display: flex;
   justify-content: center;
 }

@@ -2,22 +2,27 @@ import * as React from "react";
 
 import { TrelloBoard } from "../../components/widgets/trello/TrelloBoard";
 
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faTrello } from "@fortawesome/free-brands-svg-icons";
+
 export const Roadmap = () => {
   return (
-    <div>
-      I use Trello to manage the work on this website! However, Trello does not
-      allow nice full-sized board embedding on external websites, so please
-      click on the mini-board below to see the full Trello project for this
-      site.
+    <div id="roadmap">
+      I love Trello, and use it to manage a lot of things in my life - like this
+      website! While I would love to embed some nice full Trello boards in this
+      section of the site, unfortunately Trello does not allow meaningful embeds
+      on external sites. Please check out the boards below to see what I'm
+      working on:
       <div
         style={{
           display: "flex",
           flexDirection: "row",
-          justifyContent: "center",
+          justifyContent: "space-evenly",
           margin: "10px 0"
         }}
       >
-        <TrelloBoard />
+        <TrelloBoard boardUrl="https://trello.com/b/R4QbTXUb/personal" />
+        <TrelloBoard boardUrl="https://trello.com/b/YdDVuKer/personal-website" />
       </div>
     </div>
   );
