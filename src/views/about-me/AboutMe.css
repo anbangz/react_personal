@@ -11,12 +11,12 @@
 }
 
 .about-me__portrait {
-  margin: 20px;
+  margin: auto 10px;
   border-radius: 50%;
   width: 300px;
 }
 .about-me__description {
-  margin: 10px;
+  margin: auto 10px;
 }
 
 h1 {

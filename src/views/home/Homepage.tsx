@@ -3,6 +3,7 @@ import { AboutMe } from "../about-me/AboutMe";
 import { ContactMe } from "../contact-me/ContactMe";
 import { Roadmap } from "../roadmap/Roadmap";
 import { ThisSite } from "../this-site/ThisSite";
+import { Footer } from "../footer/Footer";
 
 export const Homepage = () => {
   return (
@@ -11,6 +12,7 @@ export const Homepage = () => {
       <ThisSite />
       <Roadmap />
       <ContactMe />
+      <Footer />
     </div>
   );
 };

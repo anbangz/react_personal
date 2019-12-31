@@ -5,7 +5,7 @@ import Portrait from "../../static/images/portrait.jpg";
 
 export const AboutMe = () => {
   return (
-    <div className="about-me__banner">
+    <div id="about-me" className="about-me__banner section">
       <div className="about-me__container">
         <img className="about-me__portrait" src={Portrait} />
         <div className="about-me__description">
