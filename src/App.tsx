@@ -5,7 +5,6 @@ import { BrowserRouter, Route } from "react-router-dom";
 import { AboutMe } from "./views/about-me/AboutMe";
 import { Homepage } from "./views/home/Homepage";
 
-import "./App.css";
 import { Navbar } from "./views/navbar/Navbar";
 import { Roadmap } from "./views/roadmap/Roadmap";
 import { ContactMe } from "./views/contact-me/ContactMe";

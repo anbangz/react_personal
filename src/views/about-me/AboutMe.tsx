@@ -1,18 +1,18 @@
 import * as React from "react";
 
-import { Link } from "react-router-dom";
+import "./AboutMe.css";
+import Portrait from "../../static/images/portrait.jpg";
 
 export const AboutMe = () => {
   return (
-    <div id="about-me">
-      Hello! This is a website built using React, Typescript, and Webpack. It is
-      meant to be a personal website, and will eventually contain things such as
-      my resume and details about me that are relevant. However, it is also a
-      personal learning project, built using only the barebones dependencies
-      (currently only react, react-dom, and react-router) in an effort to
-      deep-dive some web dev fundamentals that can be abstracted away. For an
-      idea of what is prioritized, check out the roadmap{" "}
-      <Link to="/roadmap">here</Link>
+    <div className="about-me__banner">
+      <div className="about-me__container">
+        <img className="about-me__portrait" src={Portrait} />
+        <div className="about-me__description">
+          <h1>Hi! I'm Anbang.</h1>
+          <h2>I'm a software engineer currently living in Seattle.</h2>
+        </div>
+      </div>
     </div>
   );
 };

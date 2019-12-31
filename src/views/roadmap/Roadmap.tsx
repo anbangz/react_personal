@@ -7,7 +7,7 @@ import { faTrello } from "@fortawesome/free-brands-svg-icons";
 
 export const Roadmap = () => {
   return (
-    <div id="roadmap">
+    <div className="section" id="roadmap">
       I love Trello, and use it to manage a lot of things in my life - like this
       website! While I would love to embed some nice full Trello boards in this
       section of the site, unfortunately Trello does not allow meaningful embeds
@@ -18,6 +18,7 @@ export const Roadmap = () => {
           display: "flex",
           flexDirection: "row",
           justifyContent: "space-evenly",
+          flexWrap: "wrap",
           margin: "10px 0"
         }}
       >

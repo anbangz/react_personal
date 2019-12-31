@@ -29,32 +29,35 @@ export const Navbar = () => {
       </a>
       <div className={`navbar-menu ${isMenuActive ? "is-active" : null}`}>
         <div className="navbar-start">
-          <Link className="navbar-item centered" to="/">
-            Home
-          </Link>
-          <Link className="navbar-item centered " to="/aboutme">
+          <a className="navbar-item centered " href="#about-me">
             About Me
-          </Link>
-          <Link className="navbar-item centered " to="/roadmap">
+          </a>
+          <a className="navbar-item centered " href="#roadmap">
             Roadmap
-          </Link>
-          <Link className="navbar-item centered " to="/contact-me">
+          </a>
+          <a className="navbar-item centered " href="#contact-me">
             Contact Me
-          </Link>
+          </a>
         </div>
         <div className="navbar-end">
           <a
             className="navbar-item centered"
             href="https://www.instagram.com/anbangz/"
+            target="_blank"
           >
             <FontAwesomeIcon icon={faInstagram} size="2x" />
           </a>
-          <a className="navbar-item centered" href="https://github.com/anbangz">
+          <a
+            className="navbar-item centered"
+            href="https://github.com/anbangz"
+            target="_blank"
+          >
             <FontAwesomeIcon icon={faGithub} size="2x" />
           </a>
           <a
             className="navbar-item centered"
             href="https://www.linkedin.com/in/anbang-zhang-1141b18b/"
+            target="_blank"
           >
             <FontAwesomeIcon icon={faLinkedin} size="2x" />
           </a>

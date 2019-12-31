@@ -5,5 +5,5 @@
     "target": "es2015",
     "jsx": "react"
   },
-  "include": ["./src/**/*"]
+  "include": ["src/declarations.d.ts", "./src/**/*"]
 }

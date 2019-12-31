@@ -31,16 +31,20 @@
     "react-router-dom": "^5.0.0"
   },
   "devDependencies": {
+    "@types/node": "^13.1.2",
     "@types/react": "^16.8.14",
     "@types/react-dom": "^16.8.4",
     "@types/react-router-dom": "^4.3.3",
     "@types/semantic-ui": "^2.2.7",
     "css-loader": "^2.1.1",
+    "file-loader": "^5.0.2",
     "html-webpack-plugin": "^3.2.0",
+    "image-webpack-loader": "^6.0.0",
     "source-map-loader": "^0.2.4",
     "style-loader": "^0.23.1",
     "ts-loader": "^5.3.3",
     "typescript": "^3.4.3",
+    "url-loader": "^3.0.0",
     "webpack": "^4.24.0",
     "webpack-cli": "^3.3.10",
     "webpack-dev-server": "^3.3.1"
