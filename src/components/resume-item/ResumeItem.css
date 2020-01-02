@@ -1,0 +1,30 @@
+.experience-item {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  margin: 10px;
+}
+
+.experience-item--reverse {
+  flex-direction: row-reverse;
+}
+
+.experience-item__image {
+  margin: 20px;
+  border-radius: 50%;
+  height: 300px;
+  width: 300px;
+}
+
+.experience-item__text {
+  display: flex;
+  justify-content: center;
+  flex-direction: column;
+  margin: 20px;
+  width: 500px;
+}
+
+.experience-item__description {
+}

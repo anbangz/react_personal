@@ -7,12 +7,14 @@ import { faTrello } from "@fortawesome/free-brands-svg-icons";
 
 export const Roadmap = () => {
   return (
-    <div className="section" id="roadmap">
-      I love Trello, and use it to manage a lot of things in my life - like this
-      website! While I would love to embed some nice full Trello boards in this
-      section of the site, unfortunately Trello does not allow meaningful embeds
-      on external sites. Please check out the boards below to see what I'm
-      working on:
+    <div className="section container" id="roadmap">
+      <h1>Roadmaps</h1>
+      <hr />
+      Interested in seeing what I'm up to? I use Trello to manage a lot of
+      things in my life - including this website! Unfortunately, due to security
+      concerns, Trello (and other project management solutions in general) do
+      not allow embeds of full boards on external sites. Please check out the
+      boards below to check out what I'm working on:
       <div
         style={{
           display: "flex",
