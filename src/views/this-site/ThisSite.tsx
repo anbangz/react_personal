@@ -16,7 +16,7 @@ export const ThisSite = () => {
         autonomous fashion using AWS CodePipeline to a CloudFront distribution
         for maximum performance. You can find both the source code as well as an
         infrastructure diagram in{" "}
-        <a href="https://github.com/anbangz/react_personal" target="_blank">
+        <a href="https://github.com/anbangz/react_personal" target="_blank" rel="noopener noreferrer">
           this project's GitHub repo.
         </a>{" "}
         If you don't care about any of that, welcome, and feel free to take a

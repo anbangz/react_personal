@@ -27,6 +27,7 @@ export const Resume = () => {
           <a
             href="https://blog.aboutamazon.com/transportation/meet-scout"
             target="_blank"
+            rel="noopener noreferrer"
           >
             here
           </a>{" "}
@@ -34,6 +35,7 @@ export const Resume = () => {
           <a
             href="https://blog.aboutamazon.com/transportation/whats-next-for-amazon-scout"
             target="_blank"
+            rel="noopener noreferrer"
           >
             here
           </a>{" "}
@@ -49,7 +51,7 @@ export const Resume = () => {
           that helps businesses better connect to their suppliers and customers.
           During my time at Riptide, I contributed primarily to building the
           native iOS application from the ground up as well as some auxiliary
-          backend and Javascript frontened work.
+          backend and Javascript frontend work.
         </ResumeItem>
         <ResumeItem title="Amazon.com" subtitle="SDE Intern" image={AmazonLogo}>
           I worked as a SDE intern in the summer of 2017 on the Amazon Pricing
@@ -59,7 +61,7 @@ export const Resume = () => {
         <h1>Education</h1>
         <hr />
         <ResumeItem
-          title="Universty of California, Berkeley"
+          title="University of California, Berkeley"
           subtitle="Bachelor of Arts - 2018"
           image={BerkeleySeal}
           reverse={true}

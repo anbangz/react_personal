@@ -20,7 +20,7 @@ export const Navbar = () => {
         </a>
         <a
           role="button"
-          className={`navbar-burger ${isMenuActive ? "is-active" : null}`}
+          className={`navbar-burger ${isMenuActive ? "is-active" : ""}`}
           aria-label="menu"
           aria-expanded="false"
           onClick={() => setIsMenuActive(!isMenuActive)}
@@ -31,7 +31,7 @@ export const Navbar = () => {
           <span aria-hidden="true"></span>
         </a>
       </div>
-      <div className={`navbar-menu ${isMenuActive ? "is-active" : null}`}>
+      <div className={`navbar-menu ${isMenuActive ? "is-active" : ""}`}>
         <div className="navbar-start">
           <a className="navbar-item centered " href="#this-site">
             This Site

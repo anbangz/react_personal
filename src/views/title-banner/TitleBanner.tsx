@@ -7,7 +7,7 @@ import "./TitleBanner.css";
 export const TitleBanner = () => {
   return (
     <div id="title-banner" className="section title-banner">
-      <img className="title-banner__portrait" src={PortraitImg} />
+      <img className="title-banner__portrait" src={PortraitImg} alt="Portrait of Anbang" />
       <div className="title-banner__description">
         <h1>Hi! I'm Anbang.</h1>
         <h3>I'm a software engineer currently living in Seattle.</h3>

@@ -1,22 +1,3 @@
-.about-me__banner {
-  background-color: var(--color-berkeley-navy);
-  color: white;
-  display: flex;
-  flex-direction: row;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: center;
-}
-
-.about-me__portrait {
-  margin: 20px;
-  border-radius: 50%;
-  width: 300px;
-}
-
-.about-me__description {
-}
-
 .resume-container {
   display: flex;
   flex-direction: column;

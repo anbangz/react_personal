@@ -1,6 +1,6 @@
 import * as React from "react";
 
-const contactMe = () => {
+export const ContactMe = () => {
   return (
     <div className="section container" id="contact-me">
       <h1>Contact Me</h1>
@@ -11,5 +11,3 @@ const contactMe = () => {
     </div>
   );
 };
-
-export { contactMe as ContactMe };
