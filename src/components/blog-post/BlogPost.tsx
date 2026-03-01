@@ -5,7 +5,7 @@ import "./BlogPost.css";
 
 interface BlogPostCardProps {
   post: BlogPost;
-  onPhotoClick: () => void;
+  onPhotoClick?: () => void;
 }
 
 const formatDate = (dateStr: string): string => {

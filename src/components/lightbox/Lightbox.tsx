@@ -32,8 +32,8 @@ export const Lightbox: React.FunctionComponent<LightboxProps> = ({
   if (!photo) return null;
 
   return (
-    <div className="lightbox" onClick={onClose}>
-      <button className="lightbox__close" onClick={onClose} aria-label="Close">
+    <div className="lightbox" role="dialog" aria-modal="true" aria-label="Photo lightbox" onClick={onClose}>
+      <button className="lightbox__close" onClick={(e) => { e.stopPropagation(); onClose(); }} aria-label="Close">
         ✕
       </button>
 

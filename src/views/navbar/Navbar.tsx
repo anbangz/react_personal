@@ -1,5 +1,5 @@
 import * as React from "react";
-import { NavLink } from "react-router-dom";
+import { Link, NavLink } from "react-router-dom";
 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
@@ -16,9 +16,9 @@ export const Navbar = () => {
   return (
     <nav className="navbar">
       <div className="navbar-brand">
-        <a className="navbar-item centered " href="/">
+        <Link className="navbar-item centered " to="/">
           <b>Anbang Zhang</b>
-        </a>
+        </Link>
         <a
           role="button"
           className={`navbar-burger ${isMenuActive ? "is-active" : ""}`}
@@ -34,18 +34,18 @@ export const Navbar = () => {
       </div>
       <div className={`navbar-menu ${isMenuActive ? "is-active" : ""}`}>
         <div className="navbar-start">
-          <a className="navbar-item centered " href="/#this-site">
+          <Link className="navbar-item centered " to="/#this-site">
             This Site
-          </a>
-          <a className="navbar-item centered " href="/#resume">
+          </Link>
+          <Link className="navbar-item centered " to="/#resume">
             R&#233;sum&#233;
-          </a>
-          <a className="navbar-item centered " href="/#roadmap">
+          </Link>
+          <Link className="navbar-item centered " to="/#roadmap">
             Roadmap
-          </a>
-          <a className="navbar-item centered " href="/#contact-me">
+          </Link>
+          <Link className="navbar-item centered " to="/#contact-me">
             Contact Me
-          </a>
+          </Link>
           {process.env.NODE_ENV === "development" && (
             <NavLink className="navbar-item centered" to="/blog">
               Blog

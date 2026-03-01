@@ -11,8 +11,8 @@ import scoutImg from "../../static/images/amazon-scout.jpg";
 //   3. Add an entry below with type: 'text' and content: myPostContent
 
 // To add a new photo post:
-//   1. Add the image to src/static/images/blog/
-//   2. Import it here: import myPhoto from '../../static/images/blog/my-photo.jpg';
+//   1. Add the image to src/static/images/
+//   2. Import it here: import myPhoto from '../../static/images/my-photo.jpg';
 //   3. Add an entry below with type: 'photo', imageSrc: myPhoto, and optionally a .md file for caption text
 
 export const blogPosts: BlogPost[] = [
