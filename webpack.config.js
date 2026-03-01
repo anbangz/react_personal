@@ -18,7 +18,7 @@ module.exports = {
   devtool: "source-map",
 
   devServer: {
-    contentBase: outputPath,
+    static: { directory: outputPath },
     compress: true,
     port: 8080,
     historyApiFallback: true
@@ -40,7 +40,7 @@ module.exports = {
       // Load images
       {
         test: /\.(png|svg|jpg|gif)$/,
-        use: ["file-loader"]
+        type: "asset/resource"
       }
 
       // // All output '.js' files will have any sourcemaps re-processed by 'source-map-loader'.
