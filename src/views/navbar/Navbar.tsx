@@ -1,4 +1,5 @@
 import * as React from "react";
+import { NavLink } from "react-router-dom";
 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
@@ -15,7 +16,7 @@ export const Navbar = () => {
   return (
     <nav className="navbar">
       <div className="navbar-brand">
-        <a className="navbar-item centered " href="#">
+        <a className="navbar-item centered " href="/">
           <b>Anbang Zhang</b>
         </a>
         <a
@@ -33,18 +34,23 @@ export const Navbar = () => {
       </div>
       <div className={`navbar-menu ${isMenuActive ? "is-active" : ""}`}>
         <div className="navbar-start">
-          <a className="navbar-item centered " href="#this-site">
+          <a className="navbar-item centered " href="/#this-site">
             This Site
           </a>
-          <a className="navbar-item centered " href="#resume">
+          <a className="navbar-item centered " href="/#resume">
             R&#233;sum&#233;
           </a>
-          <a className="navbar-item centered " href="#roadmap">
+          <a className="navbar-item centered " href="/#roadmap">
             Roadmap
           </a>
-          <a className="navbar-item centered " href="#contact-me">
+          <a className="navbar-item centered " href="/#contact-me">
             Contact Me
           </a>
+          {process.env.NODE_ENV === "development" && (
+            <NavLink className="navbar-item centered" to="/blog">
+              Blog
+            </NavLink>
+          )}
         </div>
         <div className="navbar-end">
           <a
