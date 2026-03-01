@@ -1,7 +1,5 @@
 import * as React from "react";
 
-import { Link } from "react-router-dom";
-
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faGithub,
@@ -16,21 +14,30 @@ export const Navbar = () => {
 
   return (
     <nav className="navbar">
-      <a
-        role="button"
-        className={`navbar-burger ${isMenuActive ? "is-active" : null}`}
-        aria-label="menu"
-        aria-expanded="false"
-        onClick={() => setIsMenuActive(!isMenuActive)}
-      >
-        <span aria-hidden="true"></span>
-        <span aria-hidden="true"></span>
-        <span aria-hidden="true"></span>
-      </a>
+      <div className="navbar-brand">
+        <a className="navbar-item centered " href="#">
+          <b>Anbang Zhang</b>
+        </a>
+        <a
+          role="button"
+          className={`navbar-burger ${isMenuActive ? "is-active" : null}`}
+          aria-label="menu"
+          aria-expanded="false"
+          onClick={() => setIsMenuActive(!isMenuActive)}
+        >
+          {/* Required for Bulma's Hamburger menu */}
+          <span aria-hidden="true"></span>
+          <span aria-hidden="true"></span>
+          <span aria-hidden="true"></span>
+        </a>
+      </div>
       <div className={`navbar-menu ${isMenuActive ? "is-active" : null}`}>
         <div className="navbar-start">
-          <a className="navbar-item centered " href="#about-me">
-            About Me
+          <a className="navbar-item centered " href="#this-site">
+            This Site
+          </a>
+          <a className="navbar-item centered " href="#resume">
+            R&#233;sum&#233;
           </a>
           <a className="navbar-item centered " href="#roadmap">
             Roadmap
