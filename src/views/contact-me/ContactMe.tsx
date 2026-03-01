@@ -1,13 +1,13 @@
 import * as React from "react";
 
-const contactMe = () => {
+export const ContactMe = () => {
   return (
-    <div className="container" id="contact-me">
-      This section of the site will eventually hold a easy-to-use form to submit
-      inquiries. In the meantime, feel free to send me an email at{" "}
-      <a href="mailto:anbangzhang21@gmail.com">anbangzhang21@gmail.com</a>
+    <div className="section container" id="contact-me">
+      <h1>Contact Me</h1>
+      <hr />
+      Working on improving this experience! In the meantime, feel free to send
+      me an email at
+      <a href="mailto:anbangzhang21@gmail.com"> anbangzhang21@gmail.com</a>
     </div>
   );
 };
-
-export { contactMe as ContactMe };

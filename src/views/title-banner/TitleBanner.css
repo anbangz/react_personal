@@ -1,0 +1,18 @@
+.title-banner {
+  background-color: var(--color-berkeley-navy);
+  color: white;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+}
+
+.title-banner__portrait {
+  margin: 20px;
+  border-radius: 50%;
+  width: 300px;
+}
+
+.title-banner__description {
+}

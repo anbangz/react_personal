@@ -1,0 +1,22 @@
+h1 {
+  font-size: 2rem;
+}
+
+h2 {
+  font-size: 1.5rem;
+}
+
+h3 {
+  font-size: 1.25rem;
+}
+
+hr {
+  background-color: var(--color-berkeley-metallic-gold);
+}
+
+:root {
+  --color-berkeley-navy: #003262;
+  --color-berkeley-metallic-gold: #c4820e;
+  --color-berkeley-california-gold: #fdb515;
+  --color-berkeley-founders-blue: #3b7ea1;
+}
