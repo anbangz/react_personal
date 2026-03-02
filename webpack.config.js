@@ -20,7 +20,7 @@ module.exports = {
   devServer: {
     static: { directory: outputPath },
     compress: true,
-    port: 8080,
+    port: process.env.PORT ? parseInt(process.env.PORT, 10) : 8080,
     historyApiFallback: true
   },
 
@@ -41,6 +41,11 @@ module.exports = {
       {
         test: /\.(png|svg|jpg|gif)$/,
         type: "asset/resource"
+      },
+      // Load markdown files as raw strings
+      {
+        test: /\.md$/,
+        type: "asset/source"
       }
 
       // // All output '.js' files will have any sourcemaps re-processed by 'source-map-loader'.

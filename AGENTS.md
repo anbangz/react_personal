@@ -132,3 +132,20 @@ npm test           # Not implemented — no test suite exists
 - Do not add dependencies that require a backend server (e.g., Express, databases).
 - Do not introduce breaking changes to the Bulma CDN version without updating `index.html`.
 - Do not attempt to run `terraform` commands unless the user explicitly asks.
+
+---
+
+## Code Review Workflow
+
+After generating or modifying code, agents must verify correctness before committing:
+
+1. **Build** — run `npm run build` (or start the dev server) and confirm zero errors.
+2. **Visual check** — use the `preview_start` tool to load the app; use `preview_snapshot` or `preview_screenshot` to verify the affected UI renders as expected.
+3. **Self-review** — read every file that was created or changed and audit for:
+   - Correctness (logic errors, off-by-one, missing guards)
+   - React patterns (stable references for `useEffect` deps via `useCallback`/`useMemo`, correct hook dependency arrays)
+   - Accessibility (`aria-*` attributes, `role`, `dateTime` on `<time>`, `alt` on images, `rel="noopener noreferrer"` on `target="_blank"` links)
+   - TypeScript hygiene (no `any`, explicit types, `as const` for literal unions)
+   - Dead/redundant code (unused imports, unnecessary `/index` suffixes, stale comments)
+4. **Report findings** to the user, grouped by severity (breaking → medium → minor → cosmetic).
+5. **Fix** any issues found before asking the user to merge or deploy.

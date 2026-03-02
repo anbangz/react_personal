@@ -1,4 +1,5 @@
 import * as React from "react";
+import { Link, NavLink } from "react-router-dom";
 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
@@ -15,14 +16,14 @@ export const Navbar = () => {
   return (
     <nav className="navbar">
       <div className="navbar-brand">
-        <a className="navbar-item centered " href="#">
+        <Link className="navbar-item centered " to="/">
           <b>Anbang Zhang</b>
-        </a>
+        </Link>
         <a
           role="button"
           className={`navbar-burger ${isMenuActive ? "is-active" : ""}`}
           aria-label="menu"
-          aria-expanded="false"
+          aria-expanded={isMenuActive ? "true" : "false"}
           onClick={() => setIsMenuActive(!isMenuActive)}
         >
           {/* Required for Bulma's Hamburger menu */}
@@ -33,24 +34,30 @@ export const Navbar = () => {
       </div>
       <div className={`navbar-menu ${isMenuActive ? "is-active" : ""}`}>
         <div className="navbar-start">
-          <a className="navbar-item centered " href="#this-site">
+          <Link className="navbar-item centered " to="/#this-site">
             This Site
-          </a>
-          <a className="navbar-item centered " href="#resume">
+          </Link>
+          <Link className="navbar-item centered " to="/#resume">
             R&#233;sum&#233;
-          </a>
-          <a className="navbar-item centered " href="#roadmap">
+          </Link>
+          <Link className="navbar-item centered " to="/#roadmap">
             Roadmap
-          </a>
-          <a className="navbar-item centered " href="#contact-me">
+          </Link>
+          <Link className="navbar-item centered " to="/#contact-me">
             Contact Me
-          </a>
+          </Link>
+          {process.env.NODE_ENV === "development" && (
+            <NavLink className="navbar-item centered" to="/blog">
+              Blog
+            </NavLink>
+          )}
         </div>
         <div className="navbar-end">
           <a
             className="navbar-item centered"
             href="https://www.instagram.com/anbangz/"
             target="_blank"
+            rel="noopener noreferrer"
           >
             <FontAwesomeIcon icon={faInstagram} size="2x" />
           </a>
@@ -58,6 +65,7 @@ export const Navbar = () => {
             className="navbar-item centered"
             href="https://github.com/anbangz"
             target="_blank"
+            rel="noopener noreferrer"
           >
             <FontAwesomeIcon icon={faGithub} size="2x" />
           </a>
@@ -65,6 +73,7 @@ export const Navbar = () => {
             className="navbar-item centered"
             href="https://www.linkedin.com/in/anbang-zhang-1141b18b/"
             target="_blank"
+            rel="noopener noreferrer"
           >
             <FontAwesomeIcon icon={faLinkedin} size="2x" />
           </a>
