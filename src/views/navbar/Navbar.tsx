@@ -46,11 +46,9 @@ export const Navbar = () => {
           <Link className="navbar-item centered " to="/#contact-me">
             Contact Me
           </Link>
-          {process.env.NODE_ENV === "development" && (
-            <NavLink className="navbar-item centered" to="/blog">
-              Blog
-            </NavLink>
-          )}
+          <NavLink className="navbar-item centered" to="/blog">
+            Blog
+          </NavLink>
         </div>
         <div className="navbar-end">
           <a

@@ -16,9 +16,10 @@ resource "aws_iam_role" "PersonalWebsiteCodebuildRole" {
 }
 EOF
 }
+
 resource "aws_iam_role_policy" "PersonalWebsiteCodebuildPolicy" {
   name = "PersonalWebsiteCodebuildPolicy"
-  role = "${aws_iam_role.PersonalWebsiteCodebuildRole.id}"
+  role = aws_iam_role.PersonalWebsiteCodebuildRole.id
 
   policy = <<EOF
 {
@@ -58,8 +59,7 @@ resource "aws_codebuild_project" "PersonalWebsiteBuild" {
   environment {
     compute_type = "BUILD_GENERAL1_SMALL"
     type         = "LINUX_CONTAINER"
-    image        = "aws/codebuild/standard:3.0"
-
+    image        = "aws/codebuild/standard:7.0"
   }
   source {
     type      = "CODEPIPELINE"
@@ -68,5 +68,5 @@ resource "aws_codebuild_project" "PersonalWebsiteBuild" {
   artifacts {
     type = "CODEPIPELINE"
   }
-  service_role = "${aws_iam_role.PersonalWebsiteCodebuildRole.arn}"
+  service_role = aws_iam_role.PersonalWebsiteCodebuildRole.arn
 }
