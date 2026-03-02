@@ -25,7 +25,7 @@ export const BlogPostCard: React.FunctionComponent<BlogPostCardProps> = ({
     return (
       <article className="blog-post blog-post--photo">
         <div className="blog-post__meta">
-          <time className="blog-post__date">{formatDate(post.date)}</time>
+          <time className="blog-post__date" dateTime={post.date}>{formatDate(post.date)}</time>
         </div>
         <h2 className="blog-post__title">{post.title}</h2>
         {post.caption && (
@@ -54,7 +54,7 @@ export const BlogPostCard: React.FunctionComponent<BlogPostCardProps> = ({
   return (
     <article className="blog-post blog-post--text">
       <div className="blog-post__meta">
-        <time className="blog-post__date">{formatDate(post.date)}</time>
+        <time className="blog-post__date" dateTime={post.date}>{formatDate(post.date)}</time>
       </div>
       <h2 className="blog-post__title">{post.title}</h2>
       <div className="blog-post__body">

@@ -23,7 +23,7 @@ export const Navbar = () => {
           role="button"
           className={`navbar-burger ${isMenuActive ? "is-active" : ""}`}
           aria-label="menu"
-          aria-expanded="false"
+          aria-expanded={isMenuActive ? "true" : "false"}
           onClick={() => setIsMenuActive(!isMenuActive)}
         >
           {/* Required for Bulma's Hamburger menu */}
@@ -57,6 +57,7 @@ export const Navbar = () => {
             className="navbar-item centered"
             href="https://www.instagram.com/anbangz/"
             target="_blank"
+            rel="noopener noreferrer"
           >
             <FontAwesomeIcon icon={faInstagram} size="2x" />
           </a>
@@ -64,6 +65,7 @@ export const Navbar = () => {
             className="navbar-item centered"
             href="https://github.com/anbangz"
             target="_blank"
+            rel="noopener noreferrer"
           >
             <FontAwesomeIcon icon={faGithub} size="2x" />
           </a>
@@ -71,6 +73,7 @@ export const Navbar = () => {
             className="navbar-item centered"
             href="https://www.linkedin.com/in/anbang-zhang-1141b18b/"
             target="_blank"
+            rel="noopener noreferrer"
           >
             <FontAwesomeIcon icon={faLinkedin} size="2x" />
           </a>

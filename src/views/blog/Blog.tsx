@@ -1,5 +1,5 @@
 import * as React from "react";
-import { blogPosts } from "../../blog/posts/index";
+import { blogPosts } from "../../blog/posts";
 import { BlogPost } from "../../blog/types";
 import { BlogPostCard } from "../../components/blog-post/BlogPost";
 import { Lightbox } from "../../components/lightbox/Lightbox";
@@ -10,23 +10,28 @@ export const Blog = () => {
   const [lightboxOpen, setLightboxOpen] = React.useState(false);
   const [lightboxIndex, setLightboxIndex] = React.useState(0);
 
-  const photoPosts: BlogPost[] = blogPosts.filter(
-    (p) => p.type === "photo" && p.imageSrc
+  const photoPosts: BlogPost[] = React.useMemo(
+    () => blogPosts.filter((p) => p.type === "photo" && p.imageSrc),
+    []
   );
 
-  const handlePhotoClick = (post: BlogPost) => {
+  const handlePhotoClick = React.useCallback((post: BlogPost) => {
     const idx = photoPosts.findIndex((p) => p.id === post.id);
     if (idx !== -1) {
       setLightboxIndex(idx);
       setLightboxOpen(true);
     }
-  };
+  }, [photoPosts]);
 
-  const handlePrev = () =>
-    setLightboxIndex((i) => (i - 1 + photoPosts.length) % photoPosts.length);
+  const handlePrev = React.useCallback(
+    () => setLightboxIndex((i) => (i - 1 + photoPosts.length) % photoPosts.length),
+    [photoPosts.length]
+  );
 
-  const handleNext = () =>
-    setLightboxIndex((i) => (i + 1) % photoPosts.length);
+  const handleNext = React.useCallback(
+    () => setLightboxIndex((i) => (i + 1) % photoPosts.length),
+    [photoPosts.length]
+  );
 
   return (
     <div>
