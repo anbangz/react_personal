@@ -9,9 +9,9 @@ Guidelines for AI agents (Claude, Copilot, etc.) working on this codebase.
 Personal website for Anbang Zhang, deployed as a static React SPA to AWS S3 + CloudFront via a CodePipeline CI/CD pipeline.
 
 - **URL:** https://anbangz.me
-- **Stack:** React 16, TypeScript, Webpack 4, Bulma CSS, FontAwesome
+- **Stack:** React 18, TypeScript, Webpack 5, Bulma CSS, FontAwesome
 - **Infrastructure:** Terraform-managed AWS (S3, CloudFront, Route53, ACM, CodePipeline, CodeBuild)
-- **Deployment branch:** `release` (CodePipeline polls this branch)
+- **Deployment branch:** `master` (CodePipeline triggers via CodeStar Connections GitHub App)
 
 ---
 
@@ -21,20 +21,25 @@ Personal website for Anbang Zhang, deployed as a static React SPA to AWS S3 + Cl
 /
 ├── src/
 │   ├── index.tsx               # React entry point
-│   ├── App.tsx                 # Router (React Router v5)
+│   ├── App.tsx                 # Router (React Router v6)
 │   ├── declarations.d.ts       # TypeScript module declarations
 │   ├── static/images/          # Static assets
-│   ├── components/widgets/     # Reusable components
+│   ├── blog/                   # Blog post data, types, and registry
+│   ├── components/
+│   │   ├── widgets/            # Reusable components
+│   │   ├── blog-post/          # BlogPost card component
+│   │   └── lightbox/           # Photo lightbox component
 │   └── views/                  # Page sections (each has its own folder)
 │       ├── navbar/
 │       ├── home/               # Homepage.tsx aggregates all sections
 │       ├── about-me/
 │       ├── this-site/
 │       ├── contact-me/
+│       ├── blog/               # Blog feed page (/blog route)
 │       └── roadmap/
 ├── index.html                  # HTML template (loads Bulma & FontAwesome from CDN)
-├── webpack.config.js           # Webpack 4 config, output → ./dist/bundle.js
-├── tsconfig.json               # TypeScript (target ES2015, strict noImplicitAny)
+├── webpack.config.js           # Webpack 5 config, output → ./dist/bundle.js
+├── tsconfig.json               # TypeScript (target ES2020, strict noImplicitAny)
 ├── package.json
 └── infrastructure-terraform/   # All AWS infrastructure as Terraform HCL
     ├── main.tf                 # S3, CloudFront, Route53, ACM
@@ -64,8 +69,8 @@ npm test           # Not implemented — no test suite exists
 ### Language & Tooling
 - **TypeScript** is required for all source files in `src/`. No plain `.js` files.
 - `noImplicitAny: true` — all types must be explicit.
-- React 16 patterns are in use. Hooks are supported; class components should be avoided for new code.
-- **React Router v5** — not v6. Use `<Switch>` and `<Route>`, not `<Routes>`.
+- React 18 patterns are in use. Hooks are supported; class components should be avoided for new code.
+- **React Router v6** — use `<Routes>` and `<Route>`, not the v5 `<Switch>` pattern.
 - **Bulma CSS** is loaded via CDN in `index.html`. Use Bulma utility classes before writing custom CSS.
 - FontAwesome icons are available via `@fortawesome/react-fontawesome`.
 - Indentation: 2 spaces (enforced by `.vscode/settings.json`).
@@ -85,11 +90,11 @@ npm test           # Not implemented — no test suite exists
 - All AWS infrastructure is managed by **Terraform** in `infrastructure-terraform/`.
 - Do not create or modify AWS resources manually or via CDK/CloudFormation.
 - `terraform.tfstate` is committed to the repo — do not delete or corrupt it.
-- Secrets (GitHub OAuth token) are stored in **AWS Secrets Manager**, not in code or `.env` files.
+- GitHub access is managed via **AWS CodeStar Connections** (GitHub App), not OAuth tokens.
 - Never hardcode credentials or ARNs that belong to external accounts.
 
 ### Deployment
-- Merging to the `release` branch triggers CodePipeline automatically.
+- Merging to the `master` branch triggers CodePipeline automatically.
 - CodePipeline runs `npm run clean-build` via CodeBuild and deploys `./dist/` to S3.
 - CloudFront serves the site. After infrastructure changes that affect cached assets, a CloudFront invalidation may be needed (`aws cloudfront create-invalidation --distribution-id <ID> --paths "/*"`).
 
@@ -125,10 +130,17 @@ npm test           # Not implemented — no test suite exists
 
 ---
 
+## Branching Workflow
+
+- Always merge from `master` before starting work on a new branch to ensure you have the latest code.
+- When working on a long-lived branch, periodically merge from `master` to stay up to date and reduce merge conflicts.
+
+---
+
 ## Out of Scope for Agents
 
 - Do not modify `terraform.tfstate` or `terraform.tfstate.backup` directly.
-- Do not change the deployment branch from `release` without confirming with the user.
+- Do not change the deployment branch from `master` without confirming with the user.
 - Do not add dependencies that require a backend server (e.g., Express, databases).
 - Do not introduce breaking changes to the Bulma CDN version without updating `index.html`.
 - Do not attempt to run `terraform` commands unless the user explicitly asks.

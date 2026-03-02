@@ -1,6 +1,10 @@
 resource "aws_s3_bucket" "PersonalWebsitePipelineBucket" {
   bucket = "codepipeline-anbangzme-website-deployment"
-  acl    = "private"
+}
+
+resource "aws_codestarconnections_connection" "github" {
+  name          = "react-personal-github"
+  provider_type = "GitHub"
 }
 
 resource "aws_iam_role" "PersonalWebsitePipelineRole" {
@@ -24,7 +28,7 @@ EOF
 
 resource "aws_iam_role_policy" "PersonalWebsitePipelineRolePolicy" {
   name = "PersonalWebsitePipelineRolePolicy"
-  role = "${aws_iam_role.PersonalWebsitePipelineRole.id}"
+  role = aws_iam_role.PersonalWebsitePipelineRole.id
 
   policy = <<EOF
 {
@@ -50,7 +54,7 @@ resource "aws_iam_role_policy" "PersonalWebsitePipelineRolePolicy" {
         "codebuild:StartBuild"
       ],
       "Resource": "*"
-    }, 
+    },
     {
       "Effect": "Allow",
       "Action": ["s3:PutObject"],
@@ -58,6 +62,13 @@ resource "aws_iam_role_policy" "PersonalWebsitePipelineRolePolicy" {
         "${aws_s3_bucket.PersonalWebsiteRoot.arn}",
         "${aws_s3_bucket.PersonalWebsiteRoot.arn}/*"
       ]
+    },
+    {
+      "Effect": "Allow",
+      "Action": [
+        "codestar-connections:UseConnection"
+      ],
+      "Resource": "${aws_codestarconnections_connection.github.arn}"
     }
   ]
 }
@@ -66,9 +77,9 @@ EOF
 
 resource "aws_codepipeline" "PersonalWebsitePipeline" {
   name     = "PersonalWebsitePipeline"
-  role_arn = "${aws_iam_role.PersonalWebsitePipelineRole.arn}"
+  role_arn = aws_iam_role.PersonalWebsitePipelineRole.arn
   artifact_store {
-    location = "${aws_s3_bucket.PersonalWebsitePipelineBucket.bucket}"
+    location = aws_s3_bucket.PersonalWebsitePipelineBucket.bucket
     type     = "S3"
   }
   stage {
@@ -76,19 +87,15 @@ resource "aws_codepipeline" "PersonalWebsitePipeline" {
     action {
       name             = "Source"
       category         = "Source"
-      owner            = "ThirdParty"
-      provider         = "GitHub"
+      owner            = "AWS"
+      provider         = "CodeStarSourceConnection"
       version          = "1"
       output_artifacts = ["source_output"]
 
       configuration = {
-        "Owner"                = "anbangz",
-        "Repo"                 = "react_personal",
-        "PollForSourceChanges" = "true",
-        "Branch"               = "release",
-        # For some reason this doesn't ACTUALLY work - see https://github.com/terraform-providers/terraform-provider-aws/issues/2796
-        # Because this is essentially cleared every time, Terraform infers that OAuthToken is set with every apply action
-        "OAuthToken" = jsondecode(data.aws_secretsmanager_secret_version.GithubTokenSecret.secret_string)["github-react-personal"]
+        ConnectionArn    = aws_codestarconnections_connection.github.arn
+        FullRepositoryId = "anbangz/react_personal"
+        BranchName       = "master"
       }
     }
   }
@@ -105,10 +112,9 @@ resource "aws_codepipeline" "PersonalWebsitePipeline" {
       output_artifacts = ["build_output"]
 
       configuration = {
-        "ProjectName" = "${aws_codebuild_project.PersonalWebsiteBuild.name}"
+        ProjectName = aws_codebuild_project.PersonalWebsiteBuild.name
       }
     }
-
   }
 
   stage {
@@ -122,55 +128,9 @@ resource "aws_codepipeline" "PersonalWebsitePipeline" {
       input_artifacts = ["build_output"]
 
       configuration = {
-        "BucketName" = "${aws_s3_bucket.PersonalWebsiteRoot.bucket}"
-        "Extract"    = "true"
+        BucketName = aws_s3_bucket.PersonalWebsiteRoot.bucket
+        Extract    = "true"
       }
     }
   }
 }
-
-data "aws_secretsmanager_secret_version" "GithubTokenSecret" {
-  secret_id = "arn:aws:secretsmanager:us-west-2:261882595951:secret:github-react_personal-MfNPNZ"
-}
-
-# TODO: setup Github / Codepipeline webhooks for immediate sourcing
-# resource "aws_secretsmanager_secret" "AWSGithubSecret" {
-#   name = "AWSGithubSecret"
-# }
-
-# data "aws_secretsmanager_secret_version" "AWSGithubSecret" {
-#   secret_id = "${aws_secretsmanager_secret.AWSGithubSecret.arn}"
-# }
-
-
-# resource "aws_codepipeline_webhook" "PersonalWebsitePiplineSourceWebhook" {
-#   name            = "PersonalWebsitePiplineSourceWebhook"
-#   authentication  = "GITHUB_HMAC"
-#   target_action   = "Source"
-#   target_pipeline = "${aws_codepipeline.PersonalWebsitePipeline.name}"
-
-#   authentication_configuration {
-#     secret_token = jsondecode(data.aws_secretsmanager_secret_version.GithubTokenSecret.secret_string)["github-react-personal"]
-#   }
-
-#   filter {
-#     json_path    = "$.ref"
-#     match_equals = "refs/heads/{Branch}"
-#   }
-# }
-
-# # Wire the CodePipeline webhook into a GitHub repository.
-# resource "github_repository_webhook" "bar" {
-#   repository = "${github_repository.repo.name}"
-
-#   name = "web"
-
-#   configuration {
-#     url          = "${aws_codepipeline_webhook.bar.url}"
-#     content_type = "json"
-#     insecure_ssl = true
-#     secret       = "${local.webhook_secret}"
-#   }
-
-#   events = ["push"]
-# }

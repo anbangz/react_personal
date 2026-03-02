@@ -18,9 +18,7 @@ export const App = () => (
       <div className="app-layout__body">
         <Routes>
           <Route path="/" element={<Homepage />} />
-          {process.env.NODE_ENV === "development" && (
-            <Route path="/blog" element={<Blog />} />
-          )}
+          <Route path="/blog" element={<Blog />} />
         </Routes>
       </div>
     </div>
