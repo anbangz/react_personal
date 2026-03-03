@@ -101,6 +101,22 @@ resource "aws_codepipeline" "PersonalWebsitePipeline" {
   }
 
   stage {
+    name = "Terraform"
+    action {
+      name            = "TerraformApply"
+      category        = "Build"
+      owner           = "AWS"
+      provider        = "CodeBuild"
+      version         = "1"
+      input_artifacts = ["source_output"]
+
+      configuration = {
+        ProjectName = aws_codebuild_project.TerraformApply.name
+      }
+    }
+  }
+
+  stage {
     name = "Build"
     action {
       name             = "Build"
