@@ -5,11 +5,10 @@ phases:
     commands:
       - wget -qO /tmp/terraform_1.9.8_linux_amd64.zip https://releases.hashicorp.com/terraform/1.9.8/terraform_1.9.8_linux_amd64.zip
       - wget -qO /tmp/terraform_SHA256SUMS https://releases.hashicorp.com/terraform/1.9.8/terraform_1.9.8_SHA256SUMS
-      - cd /tmp && grep 'terraform_1.9.8_linux_amd64.zip' terraform_SHA256SUMS | sha256sum -c -
+      - (cd /tmp && grep 'terraform_1.9.8_linux_amd64.zip' terraform_SHA256SUMS | sha256sum -c -)
       - unzip -o /tmp/terraform_1.9.8_linux_amd64.zip -d /usr/local/bin/
       - terraform --version
   build:
     commands:
-      - cd infrastructure-terraform
-      - terraform init -input=false
-      - terraform apply -input=false -auto-approve
+      - terraform -chdir="$CODEBUILD_SRC_DIR/infrastructure-terraform" init -input=false
+      - terraform -chdir="$CODEBUILD_SRC_DIR/infrastructure-terraform" apply -input=false -auto-approve
