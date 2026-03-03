@@ -48,6 +48,15 @@ resource "aws_iam_role_policy" "PersonalWebsiteCodebuildPolicy" {
         "logs:CreateLogStream",
         "logs:PutLogEvents"
       ]
+    },
+    {
+      "Effect": "Allow",
+      "Resource": [
+        "${aws_cloudfront_distribution.PersonalWebsiteDistribution.arn}"
+      ],
+      "Action": [
+        "cloudfront:CreateInvalidation"
+      ]
     }
   ]
 }
@@ -64,6 +73,28 @@ resource "aws_codebuild_project" "PersonalWebsiteBuild" {
   source {
     type      = "CODEPIPELINE"
     buildspec = "infrastructure-terraform/buildspec.yml"
+  }
+  artifacts {
+    type = "CODEPIPELINE"
+  }
+  service_role = aws_iam_role.PersonalWebsiteCodebuildRole.arn
+}
+
+resource "aws_codebuild_project" "PersonalWebsiteInvalidateCacheBuild" {
+  name = "PersonalWebsiteInvalidateCacheBuild"
+  environment {
+    compute_type = "BUILD_GENERAL1_SMALL"
+    type         = "LINUX_CONTAINER"
+    image        = "aws/codebuild/standard:7.0"
+
+    environment_variable {
+      name  = "CLOUDFRONT_DISTRIBUTION_ID"
+      value = aws_cloudfront_distribution.PersonalWebsiteDistribution.id
+    }
+  }
+  source {
+    type      = "CODEPIPELINE"
+    buildspec = "infrastructure-terraform/buildspec-invalidate-cache.yml"
   }
   artifacts {
     type = "CODEPIPELINE"
