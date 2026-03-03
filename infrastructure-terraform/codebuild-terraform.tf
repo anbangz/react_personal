@@ -251,6 +251,19 @@ resource "aws_iam_role_policy" "TerraformCodeBuildPolicy" {
 EOF
 }
 
+# IAM policy updates are eventually consistent. When this policy changes and
+# the same apply also updates resources that require the new permissions,
+# wait briefly before those updates run.
+resource "terraform_data" "TerraformCodeBuildPolicyPropagation" {
+  triggers_replace = [
+    aws_iam_role_policy.TerraformCodeBuildPolicy.policy
+  ]
+
+  provisioner "local-exec" {
+    command = "sleep 15"
+  }
+}
+
 ################################################################################
 # CodeBuild Projects — Plan and Apply
 ################################################################################
@@ -364,7 +377,7 @@ EOF
 resource "aws_codepipeline" "TerraformPipeline" {
   name          = "TerraformInfrastructurePipeline"
   role_arn      = aws_iam_role.TerraformPipelineRole.arn
-  depends_on    = [aws_iam_role_policy.TerraformCodeBuildPolicy]
+  depends_on    = [terraform_data.TerraformCodeBuildPolicyPropagation]
   pipeline_type = "V2"
 
   artifact_store {
@@ -421,21 +434,6 @@ resource "aws_codepipeline" "TerraformPipeline" {
 
       configuration = {
         ProjectName = aws_codebuild_project.TerraformPlan.name
-      }
-    }
-  }
-
-  stage {
-    name = "Approval"
-    action {
-      name     = "ManualApproval"
-      category = "Approval"
-      owner    = "AWS"
-      provider = "Manual"
-      version  = "1"
-
-      configuration = {
-        CustomData = "Review the Terraform plan output in the CodeBuild logs before approving."
       }
     }
   }

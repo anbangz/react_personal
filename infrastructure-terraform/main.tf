@@ -178,7 +178,7 @@ resource "aws_dynamodb_table" "TerraformStateLock" {
 ################################################################################
 
 resource "aws_cloudfront_cache_policy" "PersonalWebsiteCachePolicy" {
-  depends_on = [aws_iam_role_policy.TerraformCodeBuildPolicy]
+  depends_on = [terraform_data.TerraformCodeBuildPolicyPropagation]
 
   name        = "PersonalWebsiteCachePolicy"
   comment     = "Cache policy for anbangz.me with max cache duration of 1 hour"
@@ -221,6 +221,12 @@ resource "aws_cloudfront_distribution" "PersonalWebsiteDistribution" {
   price_class         = "PriceClass_All"
   aliases             = [var.website_domain, "www.${var.website_domain}"]
   default_root_object = "index.html"
+
+  # Keep the existing managed WAF ACL attachment. This distribution is enrolled
+  # in a pricing plan subscription that disallows removing/replacing web_acl_id.
+  lifecycle {
+    ignore_changes = [web_acl_id]
+  }
 
   default_cache_behavior {
     target_origin_id       = "S3-${var.website_domain}"
