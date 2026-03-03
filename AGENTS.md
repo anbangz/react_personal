@@ -106,11 +106,13 @@ npm test           # Not implemented — no test suite exists
 - If Terraform creates or manages `aws_cloudfront_cache_policy`, the Terraform apply role (`TerraformCodeBuildRole`) must include cache-policy permissions (`cloudfront:CreateCachePolicy`, `GetCachePolicy`, `GetCachePolicyConfig`, `UpdateCachePolicy`, `DeleteCachePolicy`, `ListCachePolicies`) in addition to distribution permissions.
 - If Terraform updates an `aws_codepipeline` source action that uses CodeStar Connections, the Terraform apply role (`TerraformCodeBuildRole`) must allow both `codestar-connections:UseConnection` and `codestar-connections:PassConnection` on the connection ARN.
 - When adding new IAM permissions to `TerraformCodeBuildRole`, resources that need those permissions in the same apply can fail if Terraform runs them in parallel; add `depends_on = [aws_iam_role_policy.TerraformCodeBuildPolicy]` to affected resources (for example `aws_cloudfront_cache_policy` and `aws_codepipeline`) to force policy update ordering.
+- IAM propagation can still lag even with `depends_on` ordering. If a single apply both updates `TerraformCodeBuildPolicy` and uses the new permissions (for example `codepipeline:UpdatePipeline` requiring `codestar-connections:PassConnection`), gate those resources behind a short propagation wait (for example a `terraform_data` resource with `local-exec` `sleep`) and depend on that gate.
+- This account's CloudFront distribution is on a pricing plan subscription that requires a WAF web ACL attachment. Do not remove or replace `web_acl_id`; keep it unchanged (for example with `lifecycle { ignore_changes = [web_acl_id] }`) unless you explicitly manage the required ACL.
 
 ### Deployment
 - Merging to the `master` branch triggers the app pipeline automatically; the Terraform pipeline triggers only when files under `infrastructure-terraform/**` change.
 - **App pipeline** (`PersonalWebsitePipeline`): **Source → Build → Deploy** — builds the React app and deploys to S3.
-- **Terraform pipeline** (`TerraformInfrastructurePipeline`): **Source → Plan → Approval → Apply** — runs `terraform plan`, waits for manual approval in the AWS Console, then runs `terraform apply`.
+- **Terraform pipeline** (`TerraformInfrastructurePipeline`): **Source → Plan → Apply** — runs `terraform plan` and then `terraform apply`.
 - CloudFront serves the site. After infrastructure changes that affect cached assets, a CloudFront invalidation may be needed (`aws cloudfront create-invalidation --distribution-id <ID> --paths "/*"`).
 
 ---
