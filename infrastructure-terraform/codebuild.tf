@@ -63,7 +63,7 @@ resource "aws_codebuild_project" "PersonalWebsiteBuild" {
   }
   source {
     type      = "CODEPIPELINE"
-    buildspec = file("buildspec.yml")
+    buildspec = "infrastructure-terraform/buildspec.yml"
   }
   artifacts {
     type = "CODEPIPELINE"
