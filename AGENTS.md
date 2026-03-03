@@ -100,6 +100,8 @@ npm test           # Not implemented — no test suite exists
 - Terraform state is stored remotely in S3 (`terraform-state-anbangzme`) with DynamoDB locking (`terraform-state-lock`). Do not modify state manually.
 - GitHub access is managed via **AWS CodeStar Connections** (GitHub App), not OAuth tokens.
 - Never hardcode credentials or ARNs that belong to external accounts.
+- For `aws_codebuild_project` resources that use `source { type = "CODEPIPELINE" }`, set `buildspec` to a repository path string (for example `infrastructure-terraform/buildspec-terraform-plan.yml`) instead of `file(...)`; inline `file(...)` content can become stale in the CodeBuild project and diverge from YAML committed in Git.
+- In CodeBuild buildspec commands, avoid plain `cd /tmp && ...` because it mutates the working directory for later commands; use a subshell `(cd /tmp && ...)` and prefer absolute paths like `$CODEBUILD_SRC_DIR/...` in later Terraform commands.
 
 ### Deployment
 - Merging to the `master` branch triggers two CodePipelines automatically.

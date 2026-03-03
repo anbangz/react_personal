@@ -253,7 +253,7 @@ resource "aws_codebuild_project" "TerraformPlan" {
 
   source {
     type      = "CODEPIPELINE"
-    buildspec = file("buildspec-terraform-plan.yml")
+    buildspec = "infrastructure-terraform/buildspec-terraform-plan.yml"
   }
 
   artifacts {
@@ -274,7 +274,7 @@ resource "aws_codebuild_project" "TerraformApply" {
 
   source {
     type      = "CODEPIPELINE"
-    buildspec = file("buildspec-terraform-apply.yml")
+    buildspec = "infrastructure-terraform/buildspec-terraform-apply.yml"
   }
 
   artifacts {
