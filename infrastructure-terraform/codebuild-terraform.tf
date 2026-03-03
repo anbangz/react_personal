@@ -362,13 +362,32 @@ EOF
 }
 
 resource "aws_codepipeline" "TerraformPipeline" {
-  name       = "TerraformInfrastructurePipeline"
-  role_arn   = aws_iam_role.TerraformPipelineRole.arn
-  depends_on = [aws_iam_role_policy.TerraformCodeBuildPolicy]
+  name          = "TerraformInfrastructurePipeline"
+  role_arn      = aws_iam_role.TerraformPipelineRole.arn
+  depends_on    = [aws_iam_role_policy.TerraformCodeBuildPolicy]
+  pipeline_type = "V2"
 
   artifact_store {
     location = aws_s3_bucket.PersonalWebsitePipelineBucket.bucket
     type     = "S3"
+  }
+
+  trigger {
+    provider_type = "CodeStarSourceConnection"
+
+    git_configuration {
+      source_action_name = "Source"
+
+      push {
+        branches {
+          includes = ["master"]
+        }
+
+        file_paths {
+          includes = ["infrastructure-terraform/**"]
+        }
+      }
+    }
   }
 
   stage {
@@ -385,6 +404,7 @@ resource "aws_codepipeline" "TerraformPipeline" {
         ConnectionArn    = aws_codestarconnections_connection.github.arn
         FullRepositoryId = "anbangz/react_personal"
         BranchName       = "master"
+        DetectChanges    = "false"
       }
     }
   }
