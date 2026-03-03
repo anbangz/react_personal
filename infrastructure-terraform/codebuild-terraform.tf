@@ -127,6 +127,7 @@ resource "aws_iam_role_policy" "TerraformCodeBuildPolicy" {
         "cloudfront:DeleteDistribution",
         "cloudfront:CreateCachePolicy",
         "cloudfront:GetCachePolicy",
+        "cloudfront:GetCachePolicyConfig",
         "cloudfront:UpdateCachePolicy",
         "cloudfront:DeleteCachePolicy",
         "cloudfront:ListCachePolicies",
@@ -198,6 +199,15 @@ resource "aws_iam_role_policy" "TerraformCodeBuildPolicy" {
         "codestar-connections:ListTagsForResource"
       ],
       "Resource": "*"
+    },
+    {
+      "Sid": "CodeStarConnectionsPassUse",
+      "Effect": "Allow",
+      "Action": [
+        "codestar-connections:UseConnection",
+        "codestar-connections:PassConnection"
+      ],
+      "Resource": "${aws_codestarconnections_connection.github.arn}"
     },
     {
       "Sid": "IAMManagement",
@@ -352,8 +362,9 @@ EOF
 }
 
 resource "aws_codepipeline" "TerraformPipeline" {
-  name     = "TerraformInfrastructurePipeline"
-  role_arn = aws_iam_role.TerraformPipelineRole.arn
+  name          = "TerraformInfrastructurePipeline"
+  role_arn      = aws_iam_role.TerraformPipelineRole.arn
+  depends_on    = [aws_iam_role_policy.TerraformCodeBuildPolicy]
   pipeline_type = "V2"
 
   artifact_store {

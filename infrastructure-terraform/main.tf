@@ -178,6 +178,8 @@ resource "aws_dynamodb_table" "TerraformStateLock" {
 ################################################################################
 
 resource "aws_cloudfront_cache_policy" "PersonalWebsiteCachePolicy" {
+  depends_on = [aws_iam_role_policy.TerraformCodeBuildPolicy]
+
   name        = "PersonalWebsiteCachePolicy"
   comment     = "Cache policy for anbangz.me with max cache duration of 1 hour"
   min_ttl     = 0
