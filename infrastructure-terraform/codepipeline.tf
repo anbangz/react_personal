@@ -133,4 +133,20 @@ resource "aws_codepipeline" "PersonalWebsitePipeline" {
       }
     }
   }
+
+  stage {
+    name = "InvalidateCache"
+    action {
+      name            = "InvalidateCache"
+      category        = "Build"
+      owner           = "AWS"
+      provider        = "CodeBuild"
+      version         = "1"
+      input_artifacts = ["source_output"]
+
+      configuration = {
+        ProjectName = aws_codebuild_project.PersonalWebsiteInvalidateCacheBuild.name
+      }
+    }
+  }
 }

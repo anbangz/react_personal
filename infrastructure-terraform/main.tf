@@ -177,6 +177,31 @@ resource "aws_dynamodb_table" "TerraformStateLock" {
 # CloudFront Distribution
 ################################################################################
 
+resource "aws_cloudfront_cache_policy" "PersonalWebsiteCachePolicy" {
+  name        = "PersonalWebsiteCachePolicy"
+  comment     = "Cache policy for anbangz.me with max cache duration of 1 hour"
+  min_ttl     = 0
+  default_ttl = 3600
+  max_ttl     = 3600
+
+  parameters_in_cache_key_and_forwarded_to_origin {
+    enable_accept_encoding_brotli = true
+    enable_accept_encoding_gzip   = true
+
+    cookies_config {
+      cookie_behavior = "none"
+    }
+
+    headers_config {
+      header_behavior = "none"
+    }
+
+    query_strings_config {
+      query_string_behavior = "none"
+    }
+  }
+}
+
 resource "aws_cloudfront_distribution" "PersonalWebsiteDistribution" {
   enabled = true
   origin {
@@ -200,7 +225,7 @@ resource "aws_cloudfront_distribution" "PersonalWebsiteDistribution" {
     viewer_protocol_policy = "redirect-to-https"
     allowed_methods        = ["GET", "HEAD"]
     cached_methods         = ["GET", "HEAD"]
-    cache_policy_id        = "658327ea-f89d-4fab-a63d-7e88639e58f6" # AWS Managed CachingOptimized
+    cache_policy_id        = aws_cloudfront_cache_policy.PersonalWebsiteCachePolicy.id
   }
 
   viewer_certificate {
