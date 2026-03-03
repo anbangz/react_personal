@@ -126,6 +126,57 @@ resource "aws_acm_certificate_validation" "PersonalWebsiteSSLCertificateValidati
   validation_record_fqdns = [aws_route53_record.PersonalWebsiteSSLCertificateRecordSet.fqdn]
 }
 
+################################################################################
+# Terraform Remote State Backend
+################################################################################
+
+data "aws_caller_identity" "current" {}
+
+resource "aws_s3_bucket" "TerraformStateBucket" {
+  bucket = "terraform-state-anbangzme"
+}
+
+resource "aws_s3_bucket_versioning" "TerraformStateBucketVersioning" {
+  bucket = aws_s3_bucket.TerraformStateBucket.id
+  versioning_configuration {
+    status = "Enabled"
+  }
+}
+
+resource "aws_s3_bucket_public_access_block" "TerraformStateBucketPublicAccessBlock" {
+  bucket = aws_s3_bucket.TerraformStateBucket.id
+
+  block_public_acls       = true
+  block_public_policy     = true
+  ignore_public_acls      = true
+  restrict_public_buckets = true
+}
+
+resource "aws_s3_bucket_server_side_encryption_configuration" "TerraformStateBucketEncryption" {
+  bucket = aws_s3_bucket.TerraformStateBucket.id
+
+  rule {
+    apply_server_side_encryption_by_default {
+      sse_algorithm = "aws:kms"
+    }
+  }
+}
+
+resource "aws_dynamodb_table" "TerraformStateLock" {
+  name         = "terraform-state-lock"
+  billing_mode = "PAY_PER_REQUEST"
+  hash_key     = "LockID"
+
+  attribute {
+    name = "LockID"
+    type = "S"
+  }
+}
+
+################################################################################
+# CloudFront Distribution
+################################################################################
+
 resource "aws_cloudfront_distribution" "PersonalWebsiteDistribution" {
   enabled = true
   origin {
