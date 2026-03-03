@@ -102,9 +102,11 @@ npm test           # Not implemented — no test suite exists
 - Never hardcode credentials or ARNs that belong to external accounts.
 - For `aws_codebuild_project` resources that use `source { type = "CODEPIPELINE" }`, set `buildspec` to a repository path string (for example `infrastructure-terraform/buildspec-terraform-plan.yml`) instead of `file(...)`; inline `file(...)` content can become stale in the CodeBuild project and diverge from YAML committed in Git.
 - In CodeBuild buildspec commands, avoid plain `cd /tmp && ...` because it mutates the working directory for later commands; use a subshell `(cd /tmp && ...)` and prefer absolute paths like `$CODEBUILD_SRC_DIR/...` in later Terraform commands.
+- To restrict CodePipeline runs by changed file paths for `CodeStarSourceConnection`, use `pipeline_type = "V2"` with a `trigger { git_configuration { push { file_paths { ... }}}}` block and set the source action `DetectChanges = "false"` so unfiltered default change detection does not trigger extra runs.
+- If Terraform manages `aws_cloudfront_cache_policy`, ensure the Terraform CodeBuild role includes CloudFront cache-policy IAM actions (`cloudfront:CreateCachePolicy`, `GetCachePolicy`, `UpdateCachePolicy`, `DeleteCachePolicy`, `ListCachePolicies`) in addition to distribution permissions.
 
 ### Deployment
-- Merging to the `master` branch triggers two CodePipelines automatically.
+- Merging to the `master` branch triggers the app pipeline automatically; the Terraform pipeline triggers only when files under `infrastructure-terraform/**` change.
 - **App pipeline** (`PersonalWebsitePipeline`): **Source → Build → Deploy** — builds the React app and deploys to S3.
 - **Terraform pipeline** (`TerraformInfrastructurePipeline`): **Source → Plan → Approval → Apply** — runs `terraform plan`, waits for manual approval in the AWS Console, then runs `terraform apply`.
 - CloudFront serves the site. After infrastructure changes that affect cached assets, a CloudFront invalidation may be needed (`aws cloudfront create-invalidation --distribution-id <ID> --paths "/*"`).
