@@ -102,6 +102,9 @@ npm test           # Not implemented — no test suite exists
 - Never hardcode credentials or ARNs that belong to external accounts.
 - For `aws_codebuild_project` resources that use `source { type = "CODEPIPELINE" }`, set `buildspec` to a repository path string (for example `infrastructure-terraform/buildspec-terraform-plan.yml`) instead of `file(...)`; inline `file(...)` content can become stale in the CodeBuild project and diverge from YAML committed in Git.
 - In CodeBuild buildspec commands, avoid plain `cd /tmp && ...` because it mutates the working directory for later commands; use a subshell `(cd /tmp && ...)` and prefer absolute paths like `$CODEBUILD_SRC_DIR/...` in later Terraform commands.
+- If Terraform creates or manages `aws_cloudfront_cache_policy`, the Terraform apply role (`TerraformCodeBuildRole`) must include cache-policy permissions (`cloudfront:CreateCachePolicy`, `GetCachePolicy`, `GetCachePolicyConfig`, `UpdateCachePolicy`, `DeleteCachePolicy`, `ListCachePolicies`) in addition to distribution permissions.
+- If Terraform updates an `aws_codepipeline` source action that uses CodeStar Connections, the Terraform apply role (`TerraformCodeBuildRole`) must allow both `codestar-connections:UseConnection` and `codestar-connections:PassConnection` on the connection ARN.
+- When adding new IAM permissions to `TerraformCodeBuildRole`, resources that need those permissions in the same apply can fail if Terraform runs them in parallel; add `depends_on = [aws_iam_role_policy.TerraformCodeBuildPolicy]` to affected resources (for example `aws_cloudfront_cache_policy` and `aws_codepipeline`) to force policy update ordering.
 
 ### Deployment
 - Merging to the `master` branch triggers two CodePipelines automatically.

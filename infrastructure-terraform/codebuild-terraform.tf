@@ -125,6 +125,12 @@ resource "aws_iam_role_policy" "TerraformCodeBuildPolicy" {
         "cloudfront:CreateDistribution",
         "cloudfront:UpdateDistribution",
         "cloudfront:DeleteDistribution",
+        "cloudfront:CreateCachePolicy",
+        "cloudfront:GetCachePolicy",
+        "cloudfront:GetCachePolicyConfig",
+        "cloudfront:UpdateCachePolicy",
+        "cloudfront:DeleteCachePolicy",
+        "cloudfront:ListCachePolicies",
         "cloudfront:TagResource",
         "cloudfront:UntagResource",
         "cloudfront:ListTagsForResource"
@@ -193,6 +199,15 @@ resource "aws_iam_role_policy" "TerraformCodeBuildPolicy" {
         "codestar-connections:ListTagsForResource"
       ],
       "Resource": "*"
+    },
+    {
+      "Sid": "CodeStarConnectionsPassUse",
+      "Effect": "Allow",
+      "Action": [
+        "codestar-connections:UseConnection",
+        "codestar-connections:PassConnection"
+      ],
+      "Resource": "${aws_codestarconnections_connection.github.arn}"
     },
     {
       "Sid": "IAMManagement",
@@ -347,8 +362,9 @@ EOF
 }
 
 resource "aws_codepipeline" "TerraformPipeline" {
-  name     = "TerraformInfrastructurePipeline"
-  role_arn = aws_iam_role.TerraformPipelineRole.arn
+  name       = "TerraformInfrastructurePipeline"
+  role_arn   = aws_iam_role.TerraformPipelineRole.arn
+  depends_on = [aws_iam_role_policy.TerraformCodeBuildPolicy]
 
   artifact_store {
     location = aws_s3_bucket.PersonalWebsitePipelineBucket.bucket
