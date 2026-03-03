@@ -47,8 +47,9 @@ Personal website for Anbang Zhang, deployed as a static React SPA to AWS S3 + Cl
     ├── codepipeline.tf         # CI/CD pipeline (Source → Terraform → Build → Deploy)
     ├── codebuild.tf            # App build project (npm clean-build)
     ├── codebuild-terraform.tf  # Terraform apply build project + IAM role
-    ├── buildspec.yml           # App build steps
-    └── buildspec-terraform.yml # Terraform init + apply steps
+    ├── buildspec.yml                  # App build steps
+    ├── buildspec-terraform-plan.yml   # Terraform plan steps
+    └── buildspec-terraform-apply.yml  # Terraform apply steps
 ```
 
 ---
@@ -101,10 +102,9 @@ npm test           # Not implemented — no test suite exists
 - Never hardcode credentials or ARNs that belong to external accounts.
 
 ### Deployment
-- Merging to the `master` branch triggers CodePipeline automatically.
-- The pipeline runs four stages: **Source → Terraform → Build → Deploy**.
-- The Terraform stage applies any infrastructure changes via `terraform apply -auto-approve`.
-- The Build stage runs `npm run clean-build` via CodeBuild and the Deploy stage pushes `./dist/` to S3.
+- Merging to the `master` branch triggers two CodePipelines automatically.
+- **App pipeline** (`PersonalWebsitePipeline`): **Source → Build → Deploy** — builds the React app and deploys to S3.
+- **Terraform pipeline** (`TerraformInfrastructurePipeline`): **Source → Plan → Approval → Apply** — runs `terraform plan`, waits for manual approval in the AWS Console, then runs `terraform apply`.
 - CloudFront serves the site. After infrastructure changes that affect cached assets, a CloudFront invalidation may be needed (`aws cloudfront create-invalidation --distribution-id <ID> --paths "/*"`).
 
 ---

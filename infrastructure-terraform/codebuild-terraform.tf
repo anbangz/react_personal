@@ -1,5 +1,5 @@
 ################################################################################
-# IAM Role for Terraform CodeBuild
+# IAM Role for Terraform CodeBuild (shared by Plan and Apply projects)
 ################################################################################
 
 resource "aws_iam_role" "TerraformCodeBuildRole" {
@@ -214,7 +214,7 @@ resource "aws_iam_role_policy" "TerraformCodeBuildPolicy" {
       ],
       "Resource": [
         "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/PersonalWebsite*",
-        "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/TerraformCodeBuildRole"
+        "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/Terraform*"
       ]
     },
     {
@@ -238,8 +238,29 @@ EOF
 }
 
 ################################################################################
-# CodeBuild Project for Terraform Apply
+# CodeBuild Projects — Plan and Apply
 ################################################################################
+
+resource "aws_codebuild_project" "TerraformPlan" {
+  name         = "TerraformPlan"
+  description  = "Runs terraform plan against infrastructure-terraform/"
+  service_role = aws_iam_role.TerraformCodeBuildRole.arn
+
+  environment {
+    compute_type = "BUILD_GENERAL1_SMALL"
+    type         = "LINUX_CONTAINER"
+    image        = "aws/codebuild/standard:7.0"
+  }
+
+  source {
+    type      = "CODEPIPELINE"
+    buildspec = file("buildspec-terraform-plan.yml")
+  }
+
+  artifacts {
+    type = "CODEPIPELINE"
+  }
+}
 
 resource "aws_codebuild_project" "TerraformApply" {
   name         = "TerraformApply"
@@ -254,10 +275,149 @@ resource "aws_codebuild_project" "TerraformApply" {
 
   source {
     type      = "CODEPIPELINE"
-    buildspec = file("buildspec-terraform.yml")
+    buildspec = file("buildspec-terraform-apply.yml")
   }
 
   artifacts {
     type = "CODEPIPELINE"
+  }
+}
+
+################################################################################
+# Terraform Infrastructure Pipeline
+################################################################################
+
+resource "aws_iam_role" "TerraformPipelineRole" {
+  name = "TerraformPipelineRole"
+
+  assume_role_policy = <<EOF
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Principal": {
+        "Service": "codepipeline.amazonaws.com"
+      },
+      "Action": "sts:AssumeRole"
+    }
+  ]
+}
+EOF
+}
+
+resource "aws_iam_role_policy" "TerraformPipelineRolePolicy" {
+  name = "TerraformPipelineRolePolicy"
+  role = aws_iam_role.TerraformPipelineRole.id
+
+  policy = <<EOF
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Action": [
+        "s3:GetObject",
+        "s3:GetObjectVersion",
+        "s3:GetBucketVersioning",
+        "s3:PutObject"
+      ],
+      "Resource": [
+        "${aws_s3_bucket.PersonalWebsitePipelineBucket.arn}",
+        "${aws_s3_bucket.PersonalWebsitePipelineBucket.arn}/*"
+      ]
+    },
+    {
+      "Effect": "Allow",
+      "Action": [
+        "codebuild:BatchGetBuilds",
+        "codebuild:StartBuild"
+      ],
+      "Resource": "*"
+    },
+    {
+      "Effect": "Allow",
+      "Action": [
+        "codestar-connections:UseConnection"
+      ],
+      "Resource": "${aws_codestarconnections_connection.github.arn}"
+    }
+  ]
+}
+EOF
+}
+
+resource "aws_codepipeline" "TerraformPipeline" {
+  name     = "TerraformInfrastructurePipeline"
+  role_arn = aws_iam_role.TerraformPipelineRole.arn
+
+  artifact_store {
+    location = aws_s3_bucket.PersonalWebsitePipelineBucket.bucket
+    type     = "S3"
+  }
+
+  stage {
+    name = "Source"
+    action {
+      name             = "Source"
+      category         = "Source"
+      owner            = "AWS"
+      provider         = "CodeStarSourceConnection"
+      version          = "1"
+      output_artifacts = ["source_output"]
+
+      configuration = {
+        ConnectionArn    = aws_codestarconnections_connection.github.arn
+        FullRepositoryId = "anbangz/react_personal"
+        BranchName       = "master"
+      }
+    }
+  }
+
+  stage {
+    name = "Plan"
+    action {
+      name            = "TerraformPlan"
+      category        = "Build"
+      owner           = "AWS"
+      provider        = "CodeBuild"
+      version         = "1"
+      input_artifacts = ["source_output"]
+
+      configuration = {
+        ProjectName = aws_codebuild_project.TerraformPlan.name
+      }
+    }
+  }
+
+  stage {
+    name = "Approval"
+    action {
+      name     = "ManualApproval"
+      category = "Approval"
+      owner    = "AWS"
+      provider = "Manual"
+      version  = "1"
+
+      configuration = {
+        CustomData = "Review the Terraform plan output in the CodeBuild logs before approving."
+      }
+    }
+  }
+
+  stage {
+    name = "Apply"
+    action {
+      name            = "TerraformApply"
+      category        = "Build"
+      owner           = "AWS"
+      provider        = "CodeBuild"
+      version         = "1"
+      input_artifacts = ["source_output"]
+
+      configuration = {
+        ProjectName = aws_codebuild_project.TerraformApply.name
+      }
+    }
   }
 }
