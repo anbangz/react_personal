@@ -1,6 +1,7 @@
 import { BlogPost } from "../types";
 
 import welcomeContent from "./welcome.md";
+import trustButVerifyContent from "./the-end-of-trust-but-verify.md";
 
 import portraitImg from "../../static/images/portrait.jpg";
 import scoutImg from "../../static/images/amazon-scout.jpg";
@@ -16,6 +17,13 @@ import scoutImg from "../../static/images/amazon-scout.jpg";
 //   3. Add an entry below with type: 'photo', imageSrc: myPhoto, and optionally a .md file for caption text
 
 export const blogPosts: BlogPost[] = [
+  {
+    id: "the-end-of-trust-but-verify",
+    title: 'The end of "Trust, but Verify"',
+    date: "2026-03-02",
+    type: "text" as const,
+    content: trustButVerifyContent,
+  },
   {
     id: "welcome",
     title: "Welcome",
