@@ -233,7 +233,9 @@ resource "aws_cloudfront_distribution" "PersonalWebsiteDistribution" {
     viewer_protocol_policy = "redirect-to-https"
     allowed_methods        = ["GET", "HEAD"]
     cached_methods         = ["GET", "HEAD"]
-    cache_policy_id        = aws_cloudfront_cache_policy.PersonalWebsiteCachePolicy.id
+    # This account's CloudFront pricing plan does not allow custom cache policies.
+    # Keep an AWS-managed policy attached to this distribution.
+    cache_policy_id        = "658327ea-f89d-4fab-a63d-7e88639e58f6" # Managed-CachingOptimized
   }
 
   viewer_certificate {
