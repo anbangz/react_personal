@@ -66,7 +66,7 @@ npm test           # Not implemented — no test suite exists
 
 ### CLI Tools
 
-- **GitHub CLI (`gh`)** is installed at `/opt/homebrew/bin/gh`. It may not be on the default shell `$PATH`, so use the full path `/opt/homebrew/bin/gh` when invoking it.
+- **GitHub CLI (`gh`)** may not be on the default shell `$PATH`. Run `which gh` first; if not found, try `/opt/homebrew/bin/gh` (Apple Silicon macOS) or `/usr/local/bin/gh` (Intel macOS).
 
 > There is no `.env` file or environment variable setup. This is a fully static site with no backend API.
 

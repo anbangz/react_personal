@@ -113,7 +113,7 @@ resource "aws_iam_role_policy" "TerraformCodeBuildPolicy" {
       "Resource": [
         "arn:aws:s3:::${var.website_domain}",
         "arn:aws:s3:::www.${var.website_domain}",
-        "arn:aws:s3:::codepipeline-anbangzme-website-deployment",
+        "${aws_s3_bucket.PersonalWebsitePipelineBucket.arn}",
         "${aws_s3_bucket.TerraformStateBucket.arn}"
       ]
     },
@@ -190,8 +190,7 @@ resource "aws_iam_role_policy" "TerraformCodeBuildPolicy" {
         "codestar-connections:ListConnections",
         "codestar-connections:CreateConnection",
         "codestar-connections:DeleteConnection",
-        "codestar-connections:ListTagsForResource",
-        "codestar-connections:PassConnection"
+        "codestar-connections:ListTagsForResource"
       ],
       "Resource": "*"
     },
