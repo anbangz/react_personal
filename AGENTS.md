@@ -42,10 +42,13 @@ Personal website for Anbang Zhang, deployed as a static React SPA to AWS S3 + Cl
 ├── tsconfig.json               # TypeScript (target ES2020, strict noImplicitAny)
 ├── package.json
 └── infrastructure-terraform/   # All AWS infrastructure as Terraform HCL
-    ├── main.tf                 # S3, CloudFront, Route53, ACM
-    ├── codepipeline.tf         # CI/CD pipeline
-    ├── codebuild.tf            # Build project
-    └── buildspec.yml           # CodeBuild steps (runs npm run clean-build)
+    ├── main.tf                 # S3, CloudFront, Route53, ACM, remote state backend
+    ├── versions.tf             # Terraform/provider versions, S3 backend config
+    ├── codepipeline.tf         # CI/CD pipeline (Source → Terraform → Build → Deploy)
+    ├── codebuild.tf            # App build project (npm clean-build)
+    ├── codebuild-terraform.tf  # Terraform apply build project + IAM role
+    ├── buildspec.yml           # App build steps
+    └── buildspec-terraform.yml # Terraform init + apply steps
 ```
 
 ---
@@ -59,6 +62,10 @@ npm run clean      # Remove node_modules and dist
 npm run clean-build  # Full clean install + production build
 npm test           # Not implemented — no test suite exists
 ```
+
+### CLI Tools
+
+- **GitHub CLI (`gh`)** is installed at `/opt/homebrew/bin/gh`. It may not be on the default shell `$PATH`, so use the full path `/opt/homebrew/bin/gh` when invoking it.
 
 > There is no `.env` file or environment variable setup. This is a fully static site with no backend API.
 
@@ -89,13 +96,15 @@ npm test           # Not implemented — no test suite exists
 ### Infrastructure
 - All AWS infrastructure is managed by **Terraform** in `infrastructure-terraform/`.
 - Do not create or modify AWS resources manually or via CDK/CloudFormation.
-- `terraform.tfstate` is committed to the repo — do not delete or corrupt it.
+- Terraform state is stored remotely in S3 (`terraform-state-anbangzme`) with DynamoDB locking (`terraform-state-lock`). Do not modify state manually.
 - GitHub access is managed via **AWS CodeStar Connections** (GitHub App), not OAuth tokens.
 - Never hardcode credentials or ARNs that belong to external accounts.
 
 ### Deployment
 - Merging to the `master` branch triggers CodePipeline automatically.
-- CodePipeline runs `npm run clean-build` via CodeBuild and deploys `./dist/` to S3.
+- The pipeline runs four stages: **Source → Terraform → Build → Deploy**.
+- The Terraform stage applies any infrastructure changes via `terraform apply -auto-approve`.
+- The Build stage runs `npm run clean-build` via CodeBuild and the Deploy stage pushes `./dist/` to S3.
 - CloudFront serves the site. After infrastructure changes that affect cached assets, a CloudFront invalidation may be needed (`aws cloudfront create-invalidation --distribution-id <ID> --paths "/*"`).
 
 ---
@@ -124,8 +133,8 @@ npm test           # Not implemented — no test suite exists
 ## Infrastructure Changes
 
 1. Edit the relevant `.tf` file in `infrastructure-terraform/`.
-2. Run `terraform plan` to review changes before applying.
-3. Run `terraform apply` — state is stored locally in `terraform.tfstate`.
+2. Run `terraform plan` locally to review changes before pushing.
+3. Merge to `master` — the CodePipeline Terraform stage will run `terraform apply` automatically.
 4. Do not run `terraform destroy` without explicit user confirmation.
 
 ---
@@ -139,7 +148,7 @@ npm test           # Not implemented — no test suite exists
 
 ## Out of Scope for Agents
 
-- Do not modify `terraform.tfstate` or `terraform.tfstate.backup` directly.
+- Do not modify Terraform remote state directly (S3 bucket or DynamoDB lock table).
 - Do not change the deployment branch from `master` without confirming with the user.
 - Do not add dependencies that require a backend server (e.g., Express, databases).
 - Do not introduce breaking changes to the Bulma CDN version without updating `index.html`.
@@ -161,3 +170,16 @@ After generating or modifying code, agents must verify correctness before commit
    - Dead/redundant code (unused imports, unnecessary `/index` suffixes, stale comments)
 4. **Report findings** to the user, grouped by severity (breaking → medium → minor → cosmetic).
 5. **Fix** any issues found before asking the user to merge or deploy.
+
+---
+
+## Maintaining This File
+
+This file is a living document. When you discover something during a session that would have saved you time if you'd known it upfront — a CLI quirk, a non-obvious project convention, a gotcha with the infrastructure — **update this file** as part of your work. Examples:
+
+- A tool or binary that lives at an unexpected path
+- An AWS resource naming convention or IAM permission nuance
+- A build step that behaves differently than expected
+- A new file or directory that future agents should know about
+
+Keeping `AGENTS.md` current prevents the same lessons from being relearned across sessions.
