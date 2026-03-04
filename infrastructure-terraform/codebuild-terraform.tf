@@ -113,6 +113,7 @@ resource "aws_iam_role_policy" "TerraformCodeBuildPolicy" {
       "Resource": [
         "arn:aws:s3:::${var.website_domain}",
         "arn:aws:s3:::www.${var.website_domain}",
+        "arn:aws:s3:::dev.${var.website_domain}",
         "${aws_s3_bucket.PersonalWebsitePipelineBucket.arn}",
         "${aws_s3_bucket.TerraformStateBucket.arn}"
       ]
