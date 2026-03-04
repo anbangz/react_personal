@@ -52,7 +52,8 @@ resource "aws_iam_role_policy" "PersonalWebsiteCodebuildPolicy" {
     {
       "Effect": "Allow",
       "Resource": [
-        "${aws_cloudfront_distribution.PersonalWebsiteDistribution.arn}"
+        "${aws_cloudfront_distribution.PersonalWebsiteDistribution.arn}",
+        "${aws_cloudfront_distribution.DevWebsiteDistribution.arn}"
       ],
       "Action": [
         "cloudfront:CreateInvalidation"
