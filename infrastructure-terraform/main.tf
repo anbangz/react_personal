@@ -81,8 +81,18 @@ resource "aws_s3_bucket_website_configuration" "DevWebsiteRoot" {
   }
 }
 
+resource "aws_s3_bucket_public_access_block" "DevWebsiteRootPublicAccessBlock" {
+  bucket = aws_s3_bucket.DevWebsiteRoot.id
+
+  block_public_acls       = false
+  block_public_policy     = false
+  ignore_public_acls      = false
+  restrict_public_buckets = false
+}
+
 resource "aws_s3_bucket_policy" "DevWebsiteBucketPolicy" {
-  bucket = aws_s3_bucket.DevWebsiteRoot.bucket
+  bucket     = aws_s3_bucket.DevWebsiteRoot.bucket
+  depends_on = [aws_s3_bucket_public_access_block.DevWebsiteRootPublicAccessBlock]
   policy = <<POLICY
 {
   "Version":"2012-10-17",
