@@ -60,7 +60,9 @@ resource "aws_iam_role_policy" "PersonalWebsitePipelineRolePolicy" {
       "Action": ["s3:PutObject"],
       "Resource": [
         "${aws_s3_bucket.PersonalWebsiteRoot.arn}",
-        "${aws_s3_bucket.PersonalWebsiteRoot.arn}/*"
+        "${aws_s3_bucket.PersonalWebsiteRoot.arn}/*",
+        "${aws_s3_bucket.DevWebsiteRoot.arn}",
+        "${aws_s3_bucket.DevWebsiteRoot.arn}/*"
       ]
     },
     {
@@ -118,9 +120,42 @@ resource "aws_codepipeline" "PersonalWebsitePipeline" {
   }
 
   stage {
-    name = "Deploy"
+    name = "DeployDev"
     action {
-      name            = "Deploy"
+      name            = "DeployDev"
+      category        = "Deploy"
+      owner           = "AWS"
+      provider        = "S3"
+      version         = "1"
+      input_artifacts = ["build_output"]
+
+      configuration = {
+        BucketName = aws_s3_bucket.DevWebsiteRoot.bucket
+        Extract    = "true"
+      }
+    }
+  }
+
+  stage {
+    name = "InvalidateDevCache"
+    action {
+      name            = "InvalidateDevCache"
+      category        = "Build"
+      owner           = "AWS"
+      provider        = "CodeBuild"
+      version         = "1"
+      input_artifacts = ["source_output"]
+
+      configuration = {
+        ProjectName = aws_codebuild_project.DevWebsiteInvalidateCacheBuild.name
+      }
+    }
+  }
+
+  stage {
+    name = "DeployProd"
+    action {
+      name            = "DeployProd"
       category        = "Deploy"
       owner           = "AWS"
       provider        = "S3"
@@ -135,9 +170,9 @@ resource "aws_codepipeline" "PersonalWebsitePipeline" {
   }
 
   stage {
-    name = "InvalidateCache"
+    name = "InvalidateProdCache"
     action {
-      name            = "InvalidateCache"
+      name            = "InvalidateProdCache"
       category        = "Build"
       owner           = "AWS"
       provider        = "CodeBuild"

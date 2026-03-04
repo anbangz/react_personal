@@ -61,6 +61,111 @@ resource "aws_s3_bucket_policy" "PersonalWebsiteBucketPolicy" {
 POLICY
 }
 
+################################################################################
+# Dev Website (dev.anbangz.me)
+################################################################################
+
+resource "aws_s3_bucket" "DevWebsiteRoot" {
+  bucket = "dev.${var.website_domain}"
+}
+
+resource "aws_s3_bucket_website_configuration" "DevWebsiteRoot" {
+  bucket = aws_s3_bucket.DevWebsiteRoot.id
+
+  index_document {
+    suffix = "index.html"
+  }
+
+  error_document {
+    key = "index.html"
+  }
+}
+
+resource "aws_s3_bucket_policy" "DevWebsiteBucketPolicy" {
+  bucket = aws_s3_bucket.DevWebsiteRoot.bucket
+  policy = <<POLICY
+{
+  "Version":"2012-10-17",
+  "Statement": [
+    {
+      "Sid":"DevWebsiteBucketPublicAccess",
+      "Effect":"Allow",
+      "Principal":"*",
+      "Action": "s3:GetObject",
+      "Resource": "${aws_s3_bucket.DevWebsiteRoot.arn}/*"
+    },
+    {
+      "Sid":"DevWebsiteBucketCodePipelineAccess",
+      "Effect":"Allow",
+      "Principal": {
+        "Service": "codepipeline.amazonaws.com"
+      },
+      "Action": [
+        "s3:GetObject",
+        "s3:PutObject"
+      ],
+      "Resource": "${aws_s3_bucket.DevWebsiteRoot.arn}/*"
+    }
+  ]
+}
+POLICY
+}
+
+resource "aws_cloudfront_distribution" "DevWebsiteDistribution" {
+  enabled = true
+  origin {
+    domain_name = aws_s3_bucket_website_configuration.DevWebsiteRoot.website_endpoint
+    origin_id   = "S3-dev.${var.website_domain}"
+
+    custom_origin_config {
+      http_port              = "80"
+      https_port             = "443"
+      origin_protocol_policy = "http-only"
+      origin_ssl_protocols   = ["TLSv1", "TLSv1.1", "TLSv1.2"]
+    }
+  }
+
+  price_class         = "PriceClass_All"
+  aliases             = ["dev.${var.website_domain}"]
+  default_root_object = "index.html"
+
+  lifecycle {
+    ignore_changes = [web_acl_id]
+  }
+
+  default_cache_behavior {
+    target_origin_id       = "S3-dev.${var.website_domain}"
+    viewer_protocol_policy = "redirect-to-https"
+    allowed_methods        = ["GET", "HEAD"]
+    cached_methods         = ["GET", "HEAD"]
+    # This account's CloudFront pricing plan does not allow custom cache policies.
+    cache_policy_id        = "658327ea-f89d-4fab-a63d-7e88639e58f6" # Managed-CachingOptimized
+  }
+
+  viewer_certificate {
+    acm_certificate_arn = aws_acm_certificate.PersonalWebsiteSSLCertificate.arn
+    ssl_support_method  = "sni-only"
+  }
+
+  restrictions {
+    geo_restriction {
+      restriction_type = "none"
+    }
+  }
+}
+
+resource "aws_route53_record" "DevWebsiteRecordSet" {
+  zone_id = aws_route53_zone.PersonalWebsiteHostedZone.zone_id
+  name    = "dev.${var.website_domain}"
+  type    = "A"
+
+  alias {
+    name                   = aws_cloudfront_distribution.DevWebsiteDistribution.domain_name
+    zone_id                = aws_cloudfront_distribution.DevWebsiteDistribution.hosted_zone_id
+    evaluate_target_health = false
+  }
+}
+
 resource "aws_s3_bucket" "PersonalWebsiteRedirect" {
   bucket = "www.${var.website_domain}"
 }
