@@ -147,7 +147,12 @@ resource "aws_codepipeline" "PersonalWebsitePipeline" {
       input_artifacts = ["source_output"]
 
       configuration = {
-        ProjectName = aws_codebuild_project.DevWebsiteInvalidateCacheBuild.name
+        ProjectName          = aws_codebuild_project.PersonalWebsiteInvalidateCacheBuild.name
+        EnvironmentVariables = jsonencode([{
+          name  = "CLOUDFRONT_DISTRIBUTION_ID"
+          value = aws_cloudfront_distribution.DevWebsiteDistribution.id
+          type  = "PLAINTEXT"
+        }])
       }
     }
   }
