@@ -67,6 +67,11 @@ POLICY
 
 resource "aws_s3_bucket" "DevWebsiteRoot" {
   bucket = "dev.${var.website_domain}"
+
+  # IAM policy changes are eventually consistent. Wait for the propagation
+  # delay before attempting to create this bucket, otherwise CreateBucket
+  # may be denied if it races ahead of the updated TerraformCodeBuildPolicy.
+  depends_on = [terraform_data.TerraformCodeBuildPolicyPropagation]
 }
 
 resource "aws_s3_bucket_website_configuration" "DevWebsiteRoot" {
