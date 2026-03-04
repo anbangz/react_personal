@@ -57,11 +57,14 @@ Personal website for Anbang Zhang, deployed as a static React SPA to AWS S3 + Cl
 ## Development Commands
 
 ```bash
-npm start          # Dev server on http://localhost:8080 (hot reload)
-npm run build      # Production webpack build → ./dist/
-npm run clean      # Remove node_modules and dist
-npm run clean-build  # Full clean install + production build
-npm test           # Not implemented — no test suite exists
+npm start              # Dev server on http://localhost:8080 (hot reload)
+npm run build          # Production webpack build → ./dist/
+npm run clean          # Remove node_modules and dist
+npm run clean-build    # Full clean install + production build
+npm test               # Run Jest unit/integration tests
+npm run test:watch     # Jest in watch mode (re-runs on file save)
+npm run test:coverage  # Jest with Istanbul coverage report
+npm run test:e2e       # Playwright end-to-end tests (requires npm start running, or auto-starts it)
 ```
 
 ### CLI Tools
@@ -152,6 +155,54 @@ npm test           # Not implemented — no test suite exists
 
 - Always merge from `master` before starting work on a new branch to ensure you have the latest code.
 - When working on a long-lived branch, periodically merge from `master` to stay up to date and reduce merge conflicts.
+- **When creating a new worktree**, always pull the latest `master` from the remote first (`git fetch origin master && git pull origin master`) and branch from that commit. Never create a worktree from a stale local `master`.
+
+---
+
+## Testing
+
+### Stack
+- **Jest 30 + ts-jest 29** — unit and integration test runner (ts-jest v29 peer-dep supports Jest v29 and v30)
+- **React Testing Library** (`@testing-library/react`, `@testing-library/user-event` v14, `@testing-library/jest-dom`) — component rendering and user interaction
+- **Playwright** (`@playwright/test`) — end-to-end browser tests against the running dev server (Chromium only)
+
+### Configuration files
+| File | Purpose |
+|------|---------|
+| `jest.config.ts` | Jest preset, jsdom environment, `moduleNameMapper` for CSS/images/.md/react-markdown |
+| `playwright.config.ts` | E2E config targeting `localhost:8080`; auto-starts `npm start` via `webServer` |
+| `src/setupTests.ts` | Runs `@testing-library/jest-dom` matchers after each test environment load |
+| `src/__mocks__/fileMock.ts` | Stubs image imports as `"test-file-stub"` |
+| `src/__mocks__/markdownMock.ts` | Stubs `.md` imports as a fixed string |
+| `src/__mocks__/ReactMarkdown.tsx` | Replaces `react-markdown` (ESM-only, breaks Jest CJS transform) with a `<div data-testid="markdown">` wrapper |
+
+### Where the tests live
+```
+src/components/blog-post/__tests__/BlogPost.test.tsx   # formatDate, photo/text rendering
+src/components/lightbox/__tests__/Lightbox.test.tsx    # keyboard nav, backdrop, effect cleanup
+src/views/navbar/__tests__/Navbar.test.tsx             # burger toggle, aria-expanded, links
+src/views/blog/__tests__/Blog.test.tsx                 # photo filtering, lightbox open/close, carousel modulo
+src/views/footer/__tests__/Footer.test.tsx             # year-range display logic
+e2e/navigation.spec.ts                                 # routing, nav links, mobile menu
+e2e/lightbox.spec.ts                                   # click-to-open, keyboard, backdrop close
+```
+
+### Key conventions
+- `jest.mock(path, factory)` factories must be self-contained (data inlined, no outer variables) because Jest hoists `jest.mock` calls before variable declarations.
+- Scope queries to `within(screen.getByRole('dialog'))` when the lightbox and the blog feed both render the same image (e.g., thumbnail vs. lightbox full-size).
+- The Navbar test wraps in `<MemoryRouter>` because it uses `Link`/`NavLink`; React Router v6 emits two benign deprecation warnings about v7 future flags — these are expected and harmless.
+
+### npm install quirk (npm 11 + Node 25)
+npm 11 running on Node 25 occasionally installs packages with truncated files (the file exists but its content is cut off). If you see errors like:
+- `Cannot find module 'foo/bar'` (where bar.js exists but the directory is empty)
+- `SyntaxError: Unexpected end of input` at a specific line in `node_modules/…`
+
+Fix by deleting and reinstalling the affected package:
+```bash
+rm -rf node_modules/<package-name>
+npm install <package-name>
+```
+Known affected packages in this project: `safer-buffer`, `source-map`, `fs.realpath`, `relateurl`, `@fortawesome/fontawesome-common-types`.
 
 ---
 
