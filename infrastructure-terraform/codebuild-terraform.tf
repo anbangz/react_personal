@@ -114,6 +114,8 @@ resource "aws_iam_role_policy" "TerraformCodeBuildPolicy" {
         "arn:aws:s3:::${var.website_domain}",
         "arn:aws:s3:::www.${var.website_domain}",
         "arn:aws:s3:::dev.${var.website_domain}",
+        "arn:aws:s3:::photos.${var.website_domain}",
+        "arn:aws:s3:::dev-photos.${var.website_domain}",
         "${aws_s3_bucket.PersonalWebsitePipelineBucket.arn}",
         "${aws_s3_bucket.TerraformStateBucket.arn}"
       ]
@@ -229,7 +231,9 @@ resource "aws_iam_role_policy" "TerraformCodeBuildPolicy" {
       ],
       "Resource": [
         "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/PersonalWebsite*",
-        "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/Terraform*"
+        "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/Terraform*",
+        "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/DevBackendAPI*",
+        "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/BackendAPI*"
       ]
     },
     {
@@ -246,6 +250,55 @@ resource "aws_iam_role_policy" "TerraformCodeBuildPolicy" {
         "dynamodb:UntagResource"
       ],
       "Resource": "${aws_dynamodb_table.TerraformStateLock.arn}"
+    },
+    {
+      "Sid": "LambdaManagement",
+      "Effect": "Allow",
+      "Action": [
+        "lambda:CreateFunction",
+        "lambda:GetFunction",
+        "lambda:GetFunctionConfiguration",
+        "lambda:UpdateFunctionCode",
+        "lambda:UpdateFunctionConfiguration",
+        "lambda:DeleteFunction",
+        "lambda:AddPermission",
+        "lambda:RemovePermission",
+        "lambda:GetPolicy",
+        "lambda:ListVersionsByFunction",
+        "lambda:TagResource",
+        "lambda:UntagResource",
+        "lambda:ListTags"
+      ],
+      "Resource": "*"
+    },
+    {
+      "Sid": "APIGatewayManagement",
+      "Effect": "Allow",
+      "Action": [
+        "apigateway:GET",
+        "apigateway:POST",
+        "apigateway:PUT",
+        "apigateway:PATCH",
+        "apigateway:DELETE"
+      ],
+      "Resource": "*"
+    },
+    {
+      "Sid": "SecretsManagerManagement",
+      "Effect": "Allow",
+      "Action": [
+        "secretsmanager:CreateSecret",
+        "secretsmanager:GetSecretValue",
+        "secretsmanager:DescribeSecret",
+        "secretsmanager:DeleteSecret",
+        "secretsmanager:PutSecretValue",
+        "secretsmanager:TagResource",
+        "secretsmanager:UntagResource",
+        "secretsmanager:GetResourcePolicy",
+        "secretsmanager:PutResourcePolicy",
+        "secretsmanager:DeleteResourcePolicy"
+      ],
+      "Resource": "*"
     }
   ]
 }

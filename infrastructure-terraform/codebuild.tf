@@ -58,6 +58,14 @@ resource "aws_iam_role_policy" "PersonalWebsiteCodebuildPolicy" {
       "Action": [
         "cloudfront:CreateInvalidation"
       ]
+    },
+    {
+      "Effect": "Allow",
+      "Action": ["lambda:UpdateFunctionCode"],
+      "Resource": [
+        "${aws_lambda_function.DevBackendAPIHandler.arn}",
+        "${aws_lambda_function.BackendAPIHandler.arn}"
+      ]
     }
   ]
 }
