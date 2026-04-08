@@ -10,6 +10,29 @@ phases:
       - terraform --version
   build:
     commands:
+      - |
+        cat > /tmp/terraform-codebuild-bootstrap-policy.json <<'EOF'
+        {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Sid": "TerraformBootstrapReadAndCreate",
+              "Effect": "Allow",
+              "Action": [
+                "lambda:GetFunctionCodeSigningConfig",
+                "iam:CreateServiceLinkedRole",
+                "cloudfront:CreateOriginAccessControl",
+                "cloudfront:GetOriginAccessControl",
+                "cloudfront:UpdateOriginAccessControl",
+                "cloudfront:DeleteOriginAccessControl",
+                "cloudfront:ListOriginAccessControls"
+              ],
+              "Resource": "*"
+            }
+          ]
+        }
+        EOF
+      - aws iam put-role-policy --role-name TerraformCodeBuildRole --policy-name TerraformCodeBuildBootstrap --policy-document file:///tmp/terraform-codebuild-bootstrap-policy.json
       - python3 -c "import zipfile; z=zipfile.ZipFile('$CODEBUILD_SRC_DIR/infrastructure-terraform/lambda-placeholder.zip','w'); z.writestr('placeholder.txt','placeholder for initial lambda provisioning'); z.close()"
       - terraform -chdir="$CODEBUILD_SRC_DIR/infrastructure-terraform" init -input=false
       - terraform -chdir="$CODEBUILD_SRC_DIR/infrastructure-terraform" apply -input=false -auto-approve
