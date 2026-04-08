@@ -127,6 +127,7 @@ cd backend && make test     # Run Go tests
 - Reusable widgets live in `frontend/src/components/widgets/`.
 - `Homepage.tsx` imports and renders all sections — add new sections there.
 - Each section that needs its own styles gets a co-located `.css` file.
+- **Static images** in `frontend/src/static/images/` are imported by multiple components (TitleBanner, AboutMe, Resume). Do not delete images without checking all import references first (`portrait.jpg` is used by TitleBanner and AboutMe; `amazon-scout.jpg` is used by Resume).
 
 ### Styling
 - Prefer Bulma classes over custom CSS.
@@ -160,10 +161,11 @@ cd backend && make test     # Run Go tests
 
 ## What Doesn't Exist Yet (Do Not Assume)
 
-- No test suite. Do not reference or run `npm test`.
+- No frontend test suite. Do not reference or run `npm test`. Backend has Go unit tests (`make test`).
 - No form submission handler (the contact section links to email only).
-- No authentication.
+- No admin UI for blog management (API-only via `X-API-Key` auth header).
 - No Storybook or component documentation.
+- MongoDB Atlas and Secrets Manager values are not yet populated — the infrastructure is defined in Terraform but requires manual setup (see Post-Implementation Manual Steps in the plan).
 
 ---
 
