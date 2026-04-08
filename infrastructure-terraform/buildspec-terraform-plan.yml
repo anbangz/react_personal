@@ -10,5 +10,6 @@ phases:
       - terraform --version
   build:
     commands:
+      - python3 -c "import zipfile; z=zipfile.ZipFile('$CODEBUILD_SRC_DIR/infrastructure-terraform/lambda-placeholder.zip','w'); z.writestr('placeholder.txt','placeholder for initial lambda provisioning'); z.close()"
       - terraform -chdir="$CODEBUILD_SRC_DIR/infrastructure-terraform" init -input=false
       - terraform -chdir="$CODEBUILD_SRC_DIR/infrastructure-terraform" plan -input=false
