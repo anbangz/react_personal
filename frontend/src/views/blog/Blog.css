@@ -1,0 +1,39 @@
+.blog-feed {
+  max-width: 720px;
+  margin: 0 auto;
+}
+
+.blog-feed__empty,
+.blog-feed__loading {
+  color: #888;
+  font-style: italic;
+}
+
+.blog-feed__error {
+  color: #cc0000;
+  margin-bottom: 1rem;
+}
+
+.blog-feed__post-link {
+  text-decoration: none;
+  color: inherit;
+}
+
+.blog-feed__post-link:hover .blog-post__title {
+  color: #3273dc;
+}
+
+.blog-feed__pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  margin-top: 2rem;
+  padding-top: 1rem;
+  border-top: 1px solid #e8e8e8;
+}
+
+.blog-feed__page-info {
+  font-size: 0.9rem;
+  color: #666;
+}
