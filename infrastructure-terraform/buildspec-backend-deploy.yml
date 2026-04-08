@@ -3,7 +3,7 @@ version: 0.2
 phases:
   build:
     commands:
-      - aws lambda update-function-code --function-name $LAMBDA_FUNCTION_NAME --zip-file fileb://function.zip
+      - aws lambda update-function-code --function-name $LAMBDA_FUNCTION_NAME --zip-file fileb://$CODEBUILD_SRC_DIR_build_output/function.zip
 
 artifacts:
   files: []
