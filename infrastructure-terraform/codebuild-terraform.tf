@@ -128,6 +128,11 @@ resource "aws_iam_role_policy" "TerraformCodeBuildPolicy" {
         "cloudfront:CreateDistribution",
         "cloudfront:UpdateDistribution",
         "cloudfront:DeleteDistribution",
+        "cloudfront:CreateOriginAccessControl",
+        "cloudfront:GetOriginAccessControl",
+        "cloudfront:UpdateOriginAccessControl",
+        "cloudfront:DeleteOriginAccessControl",
+        "cloudfront:ListOriginAccessControls",
         "cloudfront:CreateCachePolicy",
         "cloudfront:GetCachePolicy",
         "cloudfront:GetCachePolicyConfig",
@@ -237,6 +242,22 @@ resource "aws_iam_role_policy" "TerraformCodeBuildPolicy" {
       ]
     },
     {
+      "Sid": "IAMServiceLinkedRoleManagement",
+      "Effect": "Allow",
+      "Action": [
+        "iam:CreateServiceLinkedRole"
+      ],
+      "Resource": "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/aws-service-role/*",
+      "Condition": {
+        "StringLike": {
+          "iam:AWSServiceName": [
+            "ops.apigateway.amazonaws.com",
+            "apigateway.amazonaws.com"
+          ]
+        }
+      }
+    },
+    {
       "Sid": "DynamoDBManagement",
       "Effect": "Allow",
       "Action": [
@@ -258,6 +279,7 @@ resource "aws_iam_role_policy" "TerraformCodeBuildPolicy" {
         "lambda:CreateFunction",
         "lambda:GetFunction",
         "lambda:GetFunctionConfiguration",
+        "lambda:GetFunctionCodeSigningConfig",
         "lambda:UpdateFunctionCode",
         "lambda:UpdateFunctionConfiguration",
         "lambda:DeleteFunction",
