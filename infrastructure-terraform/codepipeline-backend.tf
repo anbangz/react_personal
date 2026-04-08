@@ -77,7 +77,8 @@ resource "aws_codepipeline" "BackendAPIPipeline" {
       input_artifacts = ["source_output", "build_output"]
 
       configuration = {
-        ProjectName = aws_codebuild_project.BackendAPIDeploy.name
+        ProjectName   = aws_codebuild_project.BackendAPIDeploy.name
+        PrimarySource = "source_output"
         EnvironmentVariables = jsonencode([{
           name  = "LAMBDA_FUNCTION_NAME"
           value = aws_lambda_function.DevBackendAPIHandler.function_name
@@ -98,7 +99,8 @@ resource "aws_codepipeline" "BackendAPIPipeline" {
       input_artifacts = ["source_output", "build_output"]
 
       configuration = {
-        ProjectName = aws_codebuild_project.BackendAPIDeploy.name
+        ProjectName   = aws_codebuild_project.BackendAPIDeploy.name
+        PrimarySource = "source_output"
       }
     }
   }
