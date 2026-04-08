@@ -163,3 +163,11 @@ func TestTruncateContent(t *testing.T) {
 		t.Errorf("expected length 303, got %d", len(result))
 	}
 }
+
+func TestTruncateContent_UTF8Safe(t *testing.T) {
+	input := "你好世界"
+	got := TruncateContent(input, 3)
+	if got != "你好世..." {
+		t.Fatalf("expected UTF-8 safe truncation, got %q", got)
+	}
+}

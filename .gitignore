@@ -3,6 +3,7 @@ dist/*
 frontend/node_modules
 frontend/dist/*
 backend/bin/
+backend/api
 infrastructure-terraform/.terraform/
 infrastructure-terraform/terraform.tfstate
 infrastructure-terraform/terraform.tfstate.backup

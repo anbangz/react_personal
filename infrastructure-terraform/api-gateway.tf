@@ -84,17 +84,43 @@ resource "aws_lambda_permission" "BackendAPIGatewayInvoke" {
 
 ################################################################################
 # Custom Domain Names
-# NOTE: API Gateway HTTP API custom domains require the ACM cert to be in the
-# same region as the API Gateway. If the existing cert is in us-east-1 only
-# (for CloudFront), a regional cert in the API Gateway region may be needed.
-# See the plan (Task 14 note) for the regional cert resource to add if needed.
 ################################################################################
+
+resource "aws_acm_certificate" "APIGatewayRegionalCertificate" {
+  domain_name               = "api.${var.website_domain}"
+  subject_alternative_names = ["dev-api.${var.website_domain}"]
+  validation_method         = "DNS"
+}
+
+resource "aws_route53_record" "APIGatewayRegionalCertificateValidationRecord" {
+  for_each = {
+    for dvo in aws_acm_certificate.APIGatewayRegionalCertificate.domain_validation_options : dvo.domain_name => {
+      name   = dvo.resource_record_name
+      record = dvo.resource_record_value
+      type   = dvo.resource_record_type
+    }
+  }
+
+  allow_overwrite = true
+  zone_id         = aws_route53_zone.PersonalWebsiteHostedZone.zone_id
+  name            = each.value.name
+  type            = each.value.type
+  ttl             = 60
+  records         = [each.value.record]
+}
+
+resource "aws_acm_certificate_validation" "APIGatewayRegionalCertificateValidation" {
+  certificate_arn = aws_acm_certificate.APIGatewayRegionalCertificate.arn
+  validation_record_fqdns = [
+    for record in aws_route53_record.APIGatewayRegionalCertificateValidationRecord : record.fqdn
+  ]
+}
 
 resource "aws_apigatewayv2_domain_name" "DevAPIDomain" {
   domain_name = "dev-api.${var.website_domain}"
 
   domain_name_configuration {
-    certificate_arn = aws_acm_certificate.PersonalWebsiteSSLCertificate.arn
+    certificate_arn = aws_acm_certificate_validation.APIGatewayRegionalCertificateValidation.certificate_arn
     endpoint_type   = "REGIONAL"
     security_policy = "TLS_1_2"
   }
@@ -104,7 +130,7 @@ resource "aws_apigatewayv2_domain_name" "ProdAPIDomain" {
   domain_name = "api.${var.website_domain}"
 
   domain_name_configuration {
-    certificate_arn = aws_acm_certificate.PersonalWebsiteSSLCertificate.arn
+    certificate_arn = aws_acm_certificate_validation.APIGatewayRegionalCertificateValidation.certificate_arn
     endpoint_type   = "REGIONAL"
     security_policy = "TLS_1_2"
   }

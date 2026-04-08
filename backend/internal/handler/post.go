@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 	"strconv"
+	"strings"
 
 	"github.com/anbangz/react_personal/backend/internal/model"
 	"github.com/anbangz/react_personal/backend/internal/service"
@@ -77,7 +78,11 @@ func (h *PostHandler) Create(w http.ResponseWriter, r *http.Request) {
 
 	post, err := h.svc.Create(r.Context(), req)
 	if err != nil {
-		respondError(w, http.StatusBadRequest, err.Error())
+		if isClientPostError(err) {
+			respondError(w, http.StatusBadRequest, err.Error())
+			return
+		}
+		respondError(w, http.StatusInternalServerError, err.Error())
 		return
 	}
 	respondJSON(w, http.StatusCreated, post)
@@ -94,7 +99,15 @@ func (h *PostHandler) Update(w http.ResponseWriter, r *http.Request) {
 
 	post, err := h.svc.Update(r.Context(), slug, req)
 	if err != nil {
-		respondError(w, http.StatusBadRequest, err.Error())
+		if strings.Contains(err.Error(), "post not found") {
+			respondError(w, http.StatusNotFound, err.Error())
+			return
+		}
+		if isClientPostError(err) {
+			respondError(w, http.StatusBadRequest, err.Error())
+			return
+		}
+		respondError(w, http.StatusInternalServerError, err.Error())
 		return
 	}
 	respondJSON(w, http.StatusOK, post)
@@ -105,10 +118,27 @@ func (h *PostHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	slug := chi.URLParam(r, "slug")
 	_, err := h.svc.Delete(r.Context(), slug)
 	if err != nil {
-		respondError(w, http.StatusNotFound, err.Error())
+		if strings.Contains(err.Error(), "post not found") {
+			respondError(w, http.StatusNotFound, err.Error())
+			return
+		}
+		respondError(w, http.StatusInternalServerError, err.Error())
 		return
 	}
 	w.WriteHeader(http.StatusNoContent)
+}
+
+func isClientPostError(err error) bool {
+	if err == nil {
+		return false
+	}
+	msg := err.Error()
+	return strings.Contains(msg, "title is required") ||
+		strings.Contains(msg, "slug is required") ||
+		strings.Contains(msg, "slug must") ||
+		strings.Contains(msg, "slug already exists") ||
+		strings.Contains(msg, "title cannot be empty") ||
+		strings.Contains(msg, "no fields to update")
 }
 
 func respondJSON(w http.ResponseWriter, status int, v interface{}) {

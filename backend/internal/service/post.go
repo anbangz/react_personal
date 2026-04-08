@@ -122,10 +122,11 @@ func (s *PostService) Delete(ctx context.Context, slug string) (*model.Post, err
 
 // TruncateContent truncates post content for feed listings.
 func TruncateContent(content string, maxLen int) string {
-	if len(content) <= maxLen {
+	runes := []rune(content)
+	if len(runes) <= maxLen {
 		return content
 	}
-	return content[:maxLen] + "..."
+	return string(runes[:maxLen]) + "..."
 }
 
 func validateCreateRequest(req model.CreatePostRequest) error {

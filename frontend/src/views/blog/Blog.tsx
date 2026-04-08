@@ -13,6 +13,7 @@ export const Blog = () => {
   const [posts, setPosts] = React.useState<BlogPost[]>([]);
   const [total, setTotal] = React.useState(0);
   const [page, setPage] = React.useState(1);
+  const [reloadToken, setReloadToken] = React.useState(0);
   const [loading, setLoading] = React.useState(true);
   const [error, setError] = React.useState<string | null>(null);
 
@@ -41,7 +42,7 @@ export const Blog = () => {
       });
 
     return () => { cancelled = true; };
-  }, [page]);
+  }, [page, reloadToken]);
 
   const handlePhotoClick = React.useCallback(
     (post: BlogPost, photoIndex: number) => {
@@ -81,7 +82,7 @@ export const Blog = () => {
                 <p>Failed to load posts: {error}</p>
                 <button
                   className="button is-small"
-                  onClick={() => setPage(page)}
+                  onClick={() => setReloadToken((token) => token + 1)}
                 >
                   Retry
                 </button>

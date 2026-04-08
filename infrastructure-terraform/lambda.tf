@@ -100,12 +100,14 @@ resource "aws_lambda_function" "DevBackendAPIHandler" {
 
   environment {
     variables = {
-      MONGODB_URI      = "PLACEHOLDER_SET_VIA_SECRETS"
-      API_KEY          = "PLACEHOLDER_SET_VIA_SECRETS"
-      MONGODB_DATABASE = "anbangz_blog_dev"
-      S3_BUCKET        = aws_s3_bucket.DevPhotoBucket.bucket
-      PHOTOS_CDN_URL   = "https://dev-photos.${var.website_domain}"
-      ALLOWED_ORIGIN   = "https://dev.${var.website_domain}"
+      MONGODB_URI            = "PLACEHOLDER_SET_VIA_SECRETS"
+      MONGODB_URI_SECRET_ARN = aws_secretsmanager_secret.DevBackendMongoDBURI.arn
+      API_KEY                = "PLACEHOLDER_SET_VIA_SECRETS"
+      API_KEY_SECRET_ARN     = aws_secretsmanager_secret.DevBackendAPIKey.arn
+      MONGODB_DATABASE       = "anbangz_blog_dev"
+      S3_BUCKET              = aws_s3_bucket.DevPhotoBucket.bucket
+      PHOTOS_CDN_URL         = "https://dev-photos.${var.website_domain}"
+      ALLOWED_ORIGIN         = "https://dev.${var.website_domain}"
     }
   }
 
@@ -128,12 +130,14 @@ resource "aws_lambda_function" "BackendAPIHandler" {
 
   environment {
     variables = {
-      MONGODB_URI      = "PLACEHOLDER_SET_VIA_SECRETS"
-      API_KEY          = "PLACEHOLDER_SET_VIA_SECRETS"
-      MONGODB_DATABASE = "anbangz_blog_prod"
-      S3_BUCKET        = aws_s3_bucket.ProdPhotoBucket.bucket
-      PHOTOS_CDN_URL   = "https://photos.${var.website_domain}"
-      ALLOWED_ORIGIN   = "https://${var.website_domain}"
+      MONGODB_URI            = "PLACEHOLDER_SET_VIA_SECRETS"
+      MONGODB_URI_SECRET_ARN = aws_secretsmanager_secret.ProdBackendMongoDBURI.arn
+      API_KEY                = "PLACEHOLDER_SET_VIA_SECRETS"
+      API_KEY_SECRET_ARN     = aws_secretsmanager_secret.ProdBackendAPIKey.arn
+      MONGODB_DATABASE       = "anbangz_blog_prod"
+      S3_BUCKET              = aws_s3_bucket.ProdPhotoBucket.bucket
+      PHOTOS_CDN_URL         = "https://photos.${var.website_domain}"
+      ALLOWED_ORIGIN         = "https://${var.website_domain}"
     }
   }
 
