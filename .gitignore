@@ -8,3 +8,6 @@ infrastructure-terraform/terraform.tfstate
 infrastructure-terraform/terraform.tfstate.backup
 infrastructure-terraform/terraform.tfstate.*.backup
 infrastructure-terraform/lambda-placeholder.zip
+.playwright-mcp/
+*.png
+*.jpeg

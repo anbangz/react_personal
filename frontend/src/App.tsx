@@ -4,6 +4,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 
 import { Homepage } from "./views/home/Homepage";
 import { Blog } from "./views/blog/Blog";
+import { BlogPostPage } from "./views/blog-post/BlogPostPage";
 import { Navbar } from "./views/navbar/Navbar";
 
 // App-wide CSS import
@@ -19,6 +20,7 @@ export const App = () => (
         <Routes>
           <Route path="/" element={<Homepage />} />
           <Route path="/blog" element={<Blog />} />
+          <Route path="/blog/:slug" element={<BlogPostPage />} />
         </Routes>
       </div>
     </div>

@@ -1,9 +1,9 @@
 import * as React from "react";
-import { BlogPost } from "../../blog/types";
+import { Photo } from "../../blog/types";
 import "./Lightbox.css";
 
 interface LightboxProps {
-  photos: BlogPost[];
+  photos: Photo[];
   currentIndex: number;
   onClose: () => void;
   onPrev: () => void;
@@ -34,7 +34,7 @@ export const Lightbox: React.FunctionComponent<LightboxProps> = ({
   return (
     <div className="lightbox" role="dialog" aria-modal="true" aria-label="Photo lightbox" onClick={onClose}>
       <button className="lightbox__close" onClick={(e) => { e.stopPropagation(); onClose(); }} aria-label="Close">
-        ✕
+        &#x2715;
       </button>
 
       {photos.length > 1 && (
@@ -43,15 +43,15 @@ export const Lightbox: React.FunctionComponent<LightboxProps> = ({
           onClick={(e) => { e.stopPropagation(); onPrev(); }}
           aria-label="Previous photo"
         >
-          ‹
+          &#x2039;
         </button>
       )}
 
       <div className="lightbox__content" onClick={(e) => e.stopPropagation()}>
         <img
           className="lightbox__image"
-          src={photo.imageSrc}
-          alt={photo.caption || photo.title}
+          src={photo.src}
+          alt={photo.caption || "Photo"}
         />
         {photo.caption && (
           <p className="lightbox__caption">{photo.caption}</p>
@@ -64,7 +64,7 @@ export const Lightbox: React.FunctionComponent<LightboxProps> = ({
           onClick={(e) => { e.stopPropagation(); onNext(); }}
           aria-label="Next photo"
         >
-          ›
+          &#x203A;
         </button>
       )}
 

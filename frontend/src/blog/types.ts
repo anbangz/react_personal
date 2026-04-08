@@ -1,11 +1,23 @@
-export type PostType = "text" | "photo";
+export interface Photo {
+  src: string;
+  caption?: string;
+  order: number;
+}
 
 export interface BlogPost {
   id: string;
+  slug: string;
   title: string;
-  date: string; // "YYYY-MM-DD"
-  type: PostType;
-  content: string; // raw markdown string imported from .md file
-  imageSrc?: string; // only for type: 'photo'
-  caption?: string; // optional subtitle shown below the photo
+  content: string;
+  photos: Photo[];
+  published: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface PaginatedPostsResponse {
+  posts: BlogPost[];
+  total: number;
+  page: number;
+  limit: number;
 }

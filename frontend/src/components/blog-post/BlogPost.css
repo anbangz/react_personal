@@ -66,3 +66,9 @@
 .blog-post__photo-btn:hover .blog-post__photo {
   opacity: 0.9;
 }
+
+.blog-post__gallery-hint {
+  font-size: 0.85rem;
+  color: #888;
+  margin-bottom: 0.75rem;
+}
