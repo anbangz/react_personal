@@ -7,11 +7,15 @@ import {
   faInstagram,
   faLinkedin
 } from "@fortawesome/free-brands-svg-icons";
+import { faMoon, faSun } from "@fortawesome/free-solid-svg-icons";
+
+import { useTheme } from "../../context/ThemeContext";
 
 import "./Navbar.css";
 
 export const Navbar = () => {
   const [isMenuActive, setIsMenuActive] = React.useState(false);
+  const { theme, toggleTheme } = useTheme();
 
   return (
     <nav className="navbar">
@@ -75,6 +79,13 @@ export const Navbar = () => {
           >
             <FontAwesomeIcon icon={faLinkedin} size="2x" />
           </a>
+          <button
+            className="navbar-item theme-toggle"
+            onClick={toggleTheme}
+            aria-label={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
+          >
+            <FontAwesomeIcon icon={theme === "dark" ? faSun : faMoon} size="lg" />
+          </button>
         </div>
       </div>
     </nav>

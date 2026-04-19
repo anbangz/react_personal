@@ -2,3 +2,31 @@
   display: flex;
   justify-content: center;
 }
+
+.theme-toggle {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: inherit;
+  padding: 0.5rem 0.75rem;
+}
+
+/* Bulma navbar dark overrides (CDN version has no dark mode) */
+[data-theme="dark"] .navbar {
+  background-color: var(--bg-page);
+}
+
+[data-theme="dark"] .navbar-item,
+[data-theme="dark"] .navbar-burger {
+  color: var(--text-primary);
+}
+
+[data-theme="dark"] .navbar-item:hover,
+[data-theme="dark"] .navbar-item.is-active {
+  background-color: var(--bg-surface);
+  color: var(--text-primary);
+}
+
+[data-theme="dark"] .navbar-menu {
+  background-color: var(--bg-page);
+}
