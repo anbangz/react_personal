@@ -94,7 +94,7 @@ export const Navbar = () => {
             <FontAwesomeIcon icon={faLinkedin} size="2x" />
           </a>
           <button
-            className="navbar-item theme-toggle"
+            className="navbar-item theme-toggle centered"
             onClick={handleToggle}
             aria-label={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
           >
