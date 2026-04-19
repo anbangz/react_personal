@@ -32,9 +32,9 @@ hr {
 }
 
 [data-theme="dark"] {
-  --bg-page: #003262;
-  --bg-surface: #004080;
-  --bg-footer: #001f42;
+  --bg-page: #002676;
+  --bg-surface: #003d9e;
+  --bg-footer: #010133;
   --text-primary: #f5f5f5;
   --text-secondary: #c4820e;
   --text-muted: rgba(245, 245, 245, 0.65);
