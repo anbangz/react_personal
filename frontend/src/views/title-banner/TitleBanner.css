@@ -16,3 +16,7 @@
 
 .title-banner__description {
 }
+
+[data-theme="dark"] .title-banner {
+  background-color: var(--bg-page);
+}

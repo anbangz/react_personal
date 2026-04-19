@@ -2,3 +2,53 @@
   display: flex;
   justify-content: center;
 }
+
+@keyframes theme-icon-swap {
+  0%   { transform: rotate(0deg)   scale(1); opacity: 1; }
+  45%  { transform: rotate(160deg) scale(0); opacity: 0; }
+  55%  { transform: rotate(200deg) scale(0); opacity: 0; }
+  100% { transform: rotate(360deg) scale(1); opacity: 1; }
+}
+
+.theme-toggle {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: inherit;
+  padding: 0.5rem 0.75rem;
+}
+
+/* Full-width only in mobile hamburger menu (matches Bulma's navbar breakpoint) */
+@media screen and (max-width: 1023px) {
+  .theme-toggle {
+    width: 100%;
+  }
+}
+
+.theme-toggle__icon {
+  display: inline-flex;
+}
+
+.theme-toggle__icon--animating {
+  animation: theme-icon-swap 0.4s ease-in-out forwards;
+}
+
+/* Bulma navbar dark overrides (CDN version has no dark mode) */
+[data-theme="dark"] .navbar {
+  background-color: var(--bg-page);
+}
+
+[data-theme="dark"] .navbar-item,
+[data-theme="dark"] .navbar-burger {
+  color: var(--text-primary);
+}
+
+[data-theme="dark"] .navbar-item:hover,
+[data-theme="dark"] .navbar-item.is-active {
+  background-color: var(--bg-surface);
+  color: var(--text-primary);
+}
+
+[data-theme="dark"] .navbar-menu {
+  background-color: var(--bg-page);
+}

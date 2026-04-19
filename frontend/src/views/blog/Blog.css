@@ -5,12 +5,12 @@
 
 .blog-feed__empty,
 .blog-feed__loading {
-  color: #888;
+  color: var(--text-muted);
   font-style: italic;
 }
 
 .blog-feed__error {
-  color: #cc0000;
+  color: var(--text-error);
   margin-bottom: 1rem;
 }
 
@@ -20,7 +20,7 @@
 }
 
 .blog-feed__post-link:hover .blog-post__title {
-  color: #3273dc;
+  color: var(--link-color);
 }
 
 .blog-feed__pagination {
@@ -30,10 +30,10 @@
   gap: 1rem;
   margin-top: 2rem;
   padding-top: 1rem;
-  border-top: 1px solid #e8e8e8;
+  border-top: 1px solid var(--border-default);
 }
 
 .blog-feed__page-info {
   font-size: 0.9rem;
-  color: #666;
+  color: var(--text-secondary);
 }

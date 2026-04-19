@@ -6,7 +6,7 @@
 .blog-post-page__back {
   display: inline-block;
   margin-bottom: 1.5rem;
-  color: #3273dc;
+  color: var(--link-color);
   text-decoration: none;
 }
 
@@ -16,7 +16,7 @@
 
 .blog-post-page__date {
   font-size: 0.8rem;
-  color: #888;
+  color: var(--text-muted);
   letter-spacing: 0.04em;
   text-transform: uppercase;
 }
@@ -55,7 +55,7 @@
 }
 
 .blog-post-page__body {
-  color: #333;
+  color: var(--text-primary);
   line-height: 1.7;
 }
 
@@ -65,11 +65,11 @@
 
 .blog-post-page__loading,
 .blog-post-page__error {
-  color: #888;
+  color: var(--text-muted);
   font-style: italic;
 }
 
 .blog-post-page__error {
-  color: #cc0000;
+  color: var(--text-error);
   margin-bottom: 1rem;
 }

@@ -7,11 +7,29 @@ import {
   faInstagram,
   faLinkedin
 } from "@fortawesome/free-brands-svg-icons";
+import { faMoon, faSun } from "@fortawesome/free-solid-svg-icons";
+
+import { useTheme } from "../../context/ThemeContext";
 
 import "./Navbar.css";
 
+const ANIMATION_DURATION = 400;
+const SWAP_DELAY = ANIMATION_DURATION * 0.45;
+
 export const Navbar = () => {
   const [isMenuActive, setIsMenuActive] = React.useState(false);
+  const [isAnimating, setIsAnimating] = React.useState(false);
+  const { theme, toggleTheme } = useTheme();
+
+  const handleToggle = React.useCallback(() => {
+    if (isAnimating) return;
+    setIsAnimating(true);
+    setTimeout(() => toggleTheme(), SWAP_DELAY);
+  }, [isAnimating, toggleTheme]);
+
+  const handleAnimationEnd = React.useCallback(() => {
+    setIsAnimating(false);
+  }, []);
 
   return (
     <nav className="navbar">
@@ -75,6 +93,18 @@ export const Navbar = () => {
           >
             <FontAwesomeIcon icon={faLinkedin} size="2x" />
           </a>
+          <button
+            className="navbar-item theme-toggle centered"
+            onClick={handleToggle}
+            aria-label={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
+          >
+            <span
+              className={`theme-toggle__icon${isAnimating ? " theme-toggle__icon--animating" : ""}`}
+              onAnimationEnd={handleAnimationEnd}
+            >
+              <FontAwesomeIcon icon={theme === "dark" ? faSun : faMoon} size="lg" />
+            </span>
+          </button>
         </div>
       </div>
     </nav>

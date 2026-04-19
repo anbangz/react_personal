@@ -1,5 +1,5 @@
 .about-me__banner {
-  background-color: #003262;
+  background-color: var(--color-berkeley-navy);
 }
 
 .about-me__container {
@@ -19,12 +19,12 @@
   margin: 10px;
 }
 
-h1 {
+.about-me__banner h1,
+.title-banner h1 {
   color: white;
-  font-size: 2rem;
 }
 
-h2 {
+.about-me__banner h2,
+.title-banner h2 {
   color: white;
-  font-size: 1.25rem;
 }
