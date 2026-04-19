@@ -16,7 +16,13 @@
   cursor: pointer;
   color: inherit;
   padding: 0.5rem 0.75rem;
-  width: 100%;
+}
+
+/* Full-width only in mobile hamburger menu (matches Bulma's navbar breakpoint) */
+@media screen and (max-width: 1023px) {
+  .theme-toggle {
+    width: 100%;
+  }
 }
 
 .theme-toggle__icon {
