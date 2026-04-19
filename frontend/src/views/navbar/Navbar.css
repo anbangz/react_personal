@@ -26,19 +26,6 @@
   animation: theme-icon-swap 0.4s ease-in-out forwards;
 }
 
-/* Override Bulma's transition:none on navbar elements (specificity wins via nav.navbar parent) */
-nav.navbar,
-nav.navbar .navbar-brand,
-nav.navbar a.navbar-item,
-nav.navbar .navbar-start,
-nav.navbar .navbar-end,
-nav.navbar .navbar-menu,
-nav.navbar .navbar-burger,
-nav.navbar b {
-  transition: background-color 0.4s ease, color 0.4s ease,
-              border-color 0.4s ease, outline-color 0.4s ease !important;
-}
-
 /* Bulma navbar dark overrides (CDN version has no dark mode) */
 [data-theme="dark"] .navbar {
   background-color: var(--bg-page);

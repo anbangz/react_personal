@@ -50,13 +50,6 @@ body {
 
 /* Smooth theme transitions on all color-bearing elements */
 body,
-.navbar,
-.navbar-brand,
-.navbar-start,
-.navbar-end,
-.navbar-item,
-.navbar-burger,
-.navbar-menu,
 footer,
 h1, h2, h3,
 a, b, strong {
