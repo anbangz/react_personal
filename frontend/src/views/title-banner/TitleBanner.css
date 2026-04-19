@@ -16,3 +16,7 @@
 
 .title-banner__description {
 }
+
+[data-theme="dark"] .title-banner {
+  border-bottom: 2px solid var(--color-berkeley-california-gold);
+}
