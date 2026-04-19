@@ -1,9 +1,11 @@
+.worktrees/*
 node_modules
 dist/*
 frontend/node_modules
 frontend/dist/*
 backend/bin/
 backend/api
+docs/*
 infrastructure-terraform/.terraform/
 infrastructure-terraform/terraform.tfstate
 infrastructure-terraform/terraform.tfstate.backup
