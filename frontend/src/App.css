@@ -51,11 +51,14 @@ body {
 /* Smooth theme transitions on all color-bearing elements */
 body,
 .navbar,
+.navbar-brand,
+.navbar-start,
+.navbar-end,
 .navbar-item,
 .navbar-burger,
 .navbar-menu,
 footer,
 h1, h2, h3,
-a {
+a, b, strong {
   transition: background-color 0.4s ease, color 0.4s ease, border-color 0.4s ease;
 }
