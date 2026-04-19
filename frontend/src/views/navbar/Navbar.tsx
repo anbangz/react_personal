@@ -13,9 +13,23 @@ import { useTheme } from "../../context/ThemeContext";
 
 import "./Navbar.css";
 
+const ANIMATION_DURATION = 400;
+const SWAP_DELAY = ANIMATION_DURATION * 0.45;
+
 export const Navbar = () => {
   const [isMenuActive, setIsMenuActive] = React.useState(false);
+  const [isAnimating, setIsAnimating] = React.useState(false);
   const { theme, toggleTheme } = useTheme();
+
+  const handleToggle = React.useCallback(() => {
+    if (isAnimating) return;
+    setIsAnimating(true);
+    setTimeout(() => toggleTheme(), SWAP_DELAY);
+  }, [isAnimating, toggleTheme]);
+
+  const handleAnimationEnd = React.useCallback(() => {
+    setIsAnimating(false);
+  }, []);
 
   return (
     <nav className="navbar">
@@ -81,10 +95,15 @@ export const Navbar = () => {
           </a>
           <button
             className="navbar-item theme-toggle"
-            onClick={toggleTheme}
+            onClick={handleToggle}
             aria-label={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
           >
-            <FontAwesomeIcon icon={theme === "dark" ? faSun : faMoon} size="lg" />
+            <span
+              className={`theme-toggle__icon${isAnimating ? " theme-toggle__icon--animating" : ""}`}
+              onAnimationEnd={handleAnimationEnd}
+            >
+              <FontAwesomeIcon icon={theme === "dark" ? faSun : faMoon} size="lg" />
+            </span>
           </button>
         </div>
       </div>
