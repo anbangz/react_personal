@@ -15,6 +15,21 @@ resource "aws_s3_bucket_public_access_block" "DevPhotoBucketPublicAccess" {
   restrict_public_buckets = true
 }
 
+resource "aws_s3_bucket" "LocalPhotoBucket" {
+  bucket = "local-photos.${var.website_domain}"
+
+  depends_on = [terraform_data.TerraformCodeBuildPolicyPropagation]
+}
+
+resource "aws_s3_bucket_public_access_block" "LocalPhotoBucketPublicAccess" {
+  bucket = aws_s3_bucket.LocalPhotoBucket.id
+
+  block_public_acls       = true
+  block_public_policy     = true
+  ignore_public_acls      = true
+  restrict_public_buckets = true
+}
+
 resource "aws_s3_bucket" "ProdPhotoBucket" {
   bucket = "photos.${var.website_domain}"
 }
@@ -63,6 +78,25 @@ resource "aws_s3_bucket_policy" "DevPhotoBucketPolicy" {
   })
 }
 
+resource "aws_s3_bucket_policy" "LocalPhotoBucketPolicy" {
+  bucket = aws_s3_bucket.LocalPhotoBucket.id
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Sid       = "AllowCloudFrontOAC"
+      Effect    = "Allow"
+      Principal = { Service = "cloudfront.amazonaws.com" }
+      Action    = "s3:GetObject"
+      Resource  = "${aws_s3_bucket.LocalPhotoBucket.arn}/*"
+      Condition = {
+        StringEquals = {
+          "AWS:SourceArn" = aws_cloudfront_distribution.LocalPhotoDistribution.arn
+        }
+      }
+    }]
+  })
+}
+
 resource "aws_s3_bucket_policy" "ProdPhotoBucketPolicy" {
   bucket = aws_s3_bucket.ProdPhotoBucket.id
   policy = jsonencode({
@@ -103,6 +137,42 @@ resource "aws_cloudfront_distribution" "DevPhotoDistribution" {
 
   default_cache_behavior {
     target_origin_id       = "S3-dev-photos"
+    viewer_protocol_policy = "redirect-to-https"
+    allowed_methods        = ["GET", "HEAD"]
+    cached_methods         = ["GET", "HEAD"]
+    cache_policy_id        = "658327ea-f89d-4fab-a63d-7e88639e58f6"
+  }
+
+  viewer_certificate {
+    acm_certificate_arn      = aws_acm_certificate.PersonalWebsiteSSLCertificate.arn
+    ssl_support_method       = "sni-only"
+    minimum_protocol_version = "TLSv1.2_2021"
+  }
+
+  restrictions {
+    geo_restriction {
+      restriction_type = "none"
+    }
+  }
+}
+
+resource "aws_cloudfront_distribution" "LocalPhotoDistribution" {
+  enabled = true
+  origin {
+    domain_name              = aws_s3_bucket.LocalPhotoBucket.bucket_regional_domain_name
+    origin_id                = "S3-local-photos"
+    origin_access_control_id = aws_cloudfront_origin_access_control.PhotoOAC.id
+  }
+
+  price_class = "PriceClass_All"
+  aliases     = ["local-photos.${var.website_domain}"]
+
+  lifecycle {
+    ignore_changes = [web_acl_id]
+  }
+
+  default_cache_behavior {
+    target_origin_id       = "S3-local-photos"
     viewer_protocol_policy = "redirect-to-https"
     allowed_methods        = ["GET", "HEAD"]
     cached_methods         = ["GET", "HEAD"]
@@ -170,6 +240,18 @@ resource "aws_route53_record" "DevPhotoRecordSet" {
   alias {
     name                   = aws_cloudfront_distribution.DevPhotoDistribution.domain_name
     zone_id                = aws_cloudfront_distribution.DevPhotoDistribution.hosted_zone_id
+    evaluate_target_health = false
+  }
+}
+
+resource "aws_route53_record" "LocalPhotoRecordSet" {
+  zone_id = aws_route53_zone.PersonalWebsiteHostedZone.zone_id
+  name    = "local-photos.${var.website_domain}"
+  type    = "A"
+
+  alias {
+    name                   = aws_cloudfront_distribution.LocalPhotoDistribution.domain_name
+    zone_id                = aws_cloudfront_distribution.LocalPhotoDistribution.hosted_zone_id
     evaluate_target_health = false
   }
 }
