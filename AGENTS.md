@@ -195,8 +195,16 @@ cd backend && make test     # Run Go tests
 
 ## Branching Workflow
 
-- Always merge from `master` before starting work on a new branch to ensure you have the latest code.
-- When working on a long-lived branch, periodically merge from `master` to stay up to date and reduce merge conflicts.
+- Whenever starting a new piece of work, create a git worktree that builds off the latest version of `origin/master`:
+
+  ```bash
+  git fetch origin
+  git worktree add -b <branch-name> .worktrees/<branch-name> origin/master
+  ```
+
+  Work inside that worktree for the duration of the task. This keeps the main working directory clean and ensures every branch starts from the current state of `origin/master`.
+
+- When working on a long-lived branch, periodically rebase onto `origin/master` to stay up to date and reduce merge conflicts.
 
 ---
 
