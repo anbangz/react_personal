@@ -2,6 +2,10 @@
   background-color: var(--color-berkeley-navy);
 }
 
+[data-theme="dark"] .about-me__banner {
+  background-color: var(--bg-page);
+}
+
 .about-me__container {
   display: flex;
   flex-direction: row;
@@ -20,11 +24,8 @@
 }
 
 .about-me__banner h1,
-.title-banner h1 {
-  color: white;
-}
-
 .about-me__banner h2,
+.title-banner h1,
 .title-banner h2 {
   color: white;
 }

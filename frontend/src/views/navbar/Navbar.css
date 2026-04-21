@@ -44,9 +44,18 @@
 }
 
 [data-theme="dark"] .navbar-item:hover,
+[data-theme="dark"] .navbar-item:focus,
+[data-theme="dark"] .navbar-item:focus-visible,
+[data-theme="dark"] .navbar-item:focus-within,
 [data-theme="dark"] .navbar-item.is-active {
-  background-color: var(--bg-surface);
-  color: var(--text-primary);
+  background-color: var(--bg-surface) !important;
+  color: var(--text-primary) !important;
+}
+
+/* Suppress click-linger outline without removing keyboard focus ring */
+[data-theme="dark"] .navbar-item:focus:not(:focus-visible) {
+  outline: none !important;
+  box-shadow: none !important;
 }
 
 [data-theme="dark"] .navbar-menu {
