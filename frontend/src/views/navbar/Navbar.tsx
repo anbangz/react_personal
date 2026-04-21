@@ -13,18 +13,23 @@ import { useTheme } from "../../context/ThemeContext";
 
 import "./Navbar.css";
 
-const ANIMATION_DURATION = 400;
-const SWAP_DELAY = ANIMATION_DURATION * 0.45;
+// Must match theme-icon-swap animation duration in Navbar.css (0.4s)
+const SWAP_DELAY = 180;
 
 export const Navbar = () => {
   const [isMenuActive, setIsMenuActive] = React.useState(false);
   const [isAnimating, setIsAnimating] = React.useState(false);
   const { theme, toggleTheme } = useTheme();
+  const swapTimer = React.useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  React.useEffect(() => {
+    return () => { if (swapTimer.current) clearTimeout(swapTimer.current); };
+  }, []);
 
   const handleToggle = React.useCallback(() => {
     if (isAnimating) return;
     setIsAnimating(true);
-    setTimeout(() => toggleTheme(), SWAP_DELAY);
+    swapTimer.current = setTimeout(() => toggleTheme(), SWAP_DELAY);
   }, [isAnimating, toggleTheme]);
 
   const handleAnimationEnd = React.useCallback(() => {
@@ -102,7 +107,7 @@ export const Navbar = () => {
               className={`theme-toggle__icon${isAnimating ? " theme-toggle__icon--animating" : ""}`}
               onAnimationEnd={handleAnimationEnd}
             >
-              <FontAwesomeIcon icon={theme === "dark" ? faSun : faMoon} size="lg" />
+              <FontAwesomeIcon icon={theme === "dark" ? faSun : faMoon} size="2x" />
             </span>
           </button>
         </div>
