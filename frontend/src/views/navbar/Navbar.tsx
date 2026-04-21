@@ -63,9 +63,6 @@ export const Navbar = () => {
           <Link className="navbar-item centered " to="/#resume">
             R&#233;sum&#233;
           </Link>
-          <Link className="navbar-item centered " to="/#roadmap">
-            Roadmap
-          </Link>
           <Link className="navbar-item centered " to="/#contact-me">
             Contact Me
           </Link>
