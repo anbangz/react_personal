@@ -120,6 +120,7 @@ cd backend && make test     # Run Go tests
 - **React Router v6** — use `<Routes>` and `<Route>`, not the v5 `<Switch>` pattern.
 - **Bulma CSS** is loaded via CDN in `index.html`. Use Bulma utility classes before writing custom CSS.
 - FontAwesome icons are available via `@fortawesome/react-fontawesome`.
+- See `frontend/DESIGN_SYSTEM.md` for the full frontend design system, color tokens, component patterns, and theming conventions.
 - Indentation: 2 spaces (enforced by `.vscode/settings.json`).
 
 ### Component Structure
@@ -203,6 +204,12 @@ cd backend && make test     # Run Go tests
   ```
 
   Work inside that worktree for the duration of the task. This keeps the main working directory clean and ensures every branch starts from the current state of `origin/master`.
+
+  **Worktree discipline:**
+  - After creating a worktree, ALL project file edits, reads, and shell commands that touch project files must use the worktree path (`.worktrees/<branch-name>/`).
+  - Do not read from or write to files in the main working directory (`frontend/`, `backend/`, `AGENTS.md`, etc.) once a worktree is in use for the current task.
+  - Non-project configuration (e.g., `~/.config/opencode/opencode.json`) can be edited from the main directory, but explicitly confirm the context switch.
+  - Use absolute paths in tool calls when operating on worktree files, or run bash commands with `workdir="/Users/anbang/react_personal/.worktrees/<branch-name>"`.
 
 - When working on a long-lived branch, periodically rebase onto `origin/master` to stay up to date and reduce merge conflicts.
 
