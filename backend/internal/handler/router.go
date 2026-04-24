@@ -3,7 +3,6 @@ package handler
 import (
 	"github.com/anbangz/react_personal/backend/internal/middleware"
 	"github.com/go-chi/chi/v5"
-	chimiddleware "github.com/go-chi/chi/v5/middleware"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
@@ -21,9 +20,9 @@ func NewRouter(cfg RouterConfig) *chi.Mux {
 	r := chi.NewRouter()
 
 	// Global middleware
-	r.Use(chimiddleware.Logger)
-	r.Use(chimiddleware.Recoverer)
-	r.Use(chimiddleware.RequestID)
+	r.Use(middleware.TraceID)
+	r.Use(middleware.StructuredLogger)
+	r.Use(middleware.RecoveryLogger)
 	r.Use(middleware.CORS(cfg.AllowedOrigin))
 
 	// Health
