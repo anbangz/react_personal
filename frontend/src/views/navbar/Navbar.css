@@ -185,7 +185,7 @@
     align-items: stretch;
   }
 
-  .site-nav__item {
+  .site-nav__menu .site-nav__item {
     justify-content: flex-start;
     width: 100%;
   }
