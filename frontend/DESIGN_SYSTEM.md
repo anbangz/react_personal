@@ -15,8 +15,7 @@
 7. [Accessibility Standards](#accessibility-standards)
 8. [Animation & Motion](#animation--motion)
 9. [File Organization](#file-organization)
-10. [Bulma Integration](#bulma-integration)
-11. [Anti-Patterns to Avoid](#anti-patterns-to-avoid)
+10. [Anti-Patterns to Avoid](#anti-patterns-to-avoid)
 
 ---
 
@@ -26,7 +25,7 @@
 - **Berkeley Identity**: Primary accent colors come from UC Berkeley's brand palette (navy, gold). This creates personal brand consistency.
 - **Content-First**: The homepage is a single scrollable page with anchored sections. Blog is a separate route with its own feed + detail pages.
 - **Progressive Enhancement**: Dark mode is a visual enhancement, not required. All content is fully accessible in either theme.
-- **Mobile-First Responsive**: Bulma's navbar breakpoint at 1023px is the primary responsive divider. Layouts use `flex-wrap` to reflow on narrow viewports.
+- **Mobile-First Responsive**: The navbar breakpoint at 1023px is the primary responsive divider. Layouts use `flex-wrap` to reflow on narrow viewports.
 
 ---
 
@@ -37,14 +36,13 @@
 | Framework | React | 18.x | Functional components + hooks only |
 | Language | TypeScript | 5.7.x | `noImplicitAny: true`. No `.js` files in `src/` |
 | Router | React Router | v6 | `<Routes>`, `<Route>`, `useParams`, `useLocation` |
-| CSS Framework | Bulma | 0.8.0 | Loaded via CDN in `index.html`. NOT 1.x |
+| CSS Framework | Custom CSS | — | `base.css` + component CSS |
 | Icons | FontAwesome | 5.3.1 (CDN) + 6.7.2 (npm) | CDN for base JS; `@fortawesome/react-fontawesome` for React integration |
 | Bundler | Webpack | 5.x | Custom `webpack.config.js` |
 | Styling | Plain CSS | — | CSS files co-located with components. No CSS-in-JS |
 
 **Key dependencies to know about:**
 - `react-markdown` — used for blog post content rendering
-- `bulma` npm package is installed but the CDN link in `index.html` is what actually loads at runtime
 
 ---
 
@@ -86,7 +84,7 @@ Defined in `App.css` `:root` and overridden in `[data-theme="dark"]`:
 
 ### Dark Mode Override Patterns
 
-When overriding Bulma components for dark mode, use this pattern:
+When overriding components for dark mode, use this pattern:
 
 ```css
 [data-theme="dark"] .navbar {
@@ -106,7 +104,7 @@ When overriding Bulma components for dark mode, use this pattern:
 }
 ```
 
-For Bulma `.button` elements, see `App.css` lines 64–77 for the full override pattern.
+For `.button` elements, see `App.css` lines 64–77 for the full override pattern.
 
 ---
 
@@ -114,7 +112,7 @@ For Bulma `.button` elements, see `App.css` lines 64–77 for the full override 
 
 ### Base Scale
 
-Defined in `App.css` (overrides Bulma defaults):
+Defined in `App.css`:
 
 | Element | Size |
 |---------|------|
@@ -127,12 +125,12 @@ Defined in `App.css` (overrides Bulma defaults):
 - **Section headings** (`<h1>`): Used for major section titles ("Experience", "Education", "Blog")
 - **Card/Item titles** (`<h2>`): Used for resume items, blog post titles
 - **Subtitles** (`<h3>`): Job titles, dates, secondary labels
-- **Body text**: Bulma's default (`1rem`, `16px`). Line-height `1.7` in blog content areas
+- **Body text**: `1rem` (`16px`). Line-height `1.7` in blog content areas
 - **Meta text** (dates, captions): `0.8rem`–`0.9rem`, `color: var(--text-muted)`, often `text-transform: uppercase` with `letter-spacing: 0.04em`
 
 ### Font Family
 
-Bulma default: system font stack (BlinkMacSystemFont, -apple-system, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Fira Sans", "Droid Sans", "Helvetica Neue", Helvetica, Arial, sans-serif). **Do not introduce custom web fonts.**
+System font stack: BlinkMacSystemFont, -apple-system, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Fira Sans", "Droid Sans", "Helvetica Neue", Helvetica, Arial, sans-serif. **Do not introduce custom web fonts.**
 
 ---
 
@@ -142,7 +140,7 @@ Bulma default: system font stack (BlinkMacSystemFont, -apple-system, "Segoe UI",
 
 ```
 App
-├── Navbar (sticky/fixed via Bulma, always visible)
+├── Navbar (sticky/fixed, always visible)
 ├── AppContent (router outlet)
 │   ├── Homepage
 │   │   ├── TitleBanner (full-width, navy bg)
@@ -153,14 +151,6 @@ App
 │   ├── Blog (section + container + Footer)
 │   └── BlogPostPage (section + container + Footer)
 ```
-
-### Bulma Layout Classes
-
-| Class | Purpose |
-|-------|---------|
-| `.section` | Vertical padding (3rem 1.5rem by default). Wrap every page section. |
-| `.container` | Horizontal max-width + auto margins. Use inside `.section` for content width. |
-| `.content` | Bulma's typography wrapper. Used for Footer. |
 
 ### Custom Layout Patterns
 
@@ -285,7 +275,7 @@ Duration is `0.4s`. The React component swaps the icon at `180ms` (halfway throu
 
 ### Hover Effects
 
-- Links: Bulma default (color change + underline on hover for some contexts)
+- Links: color change + underline on hover
 - Blog post titles: `color: var(--link-color)` on hover via `.blog-feed__post-link:hover .blog-post__title`
 - Photos: `opacity: 0.9` on hover with `transition: opacity 0.2s`
 - Lightbox arrows: `opacity: 0.6` → `1` on hover
@@ -347,49 +337,16 @@ frontend/src/
 
 ---
 
-## Bulma Integration
-
-### What's Available
-
-Bulma 0.8.0 is loaded from CDN in `index.html`. Key utilities used:
-
-| Class | Usage |
-|-------|-------|
-| `.navbar` | Top navigation |
-| `.navbar-brand` | Logo + hamburger toggle |
-| `.navbar-menu` / `.navbar-start` / `.navbar-end` | Nav links layout |
-| `.navbar-burger` | Mobile hamburger button |
-| `.navbar-item` | Individual nav items |
-| `.section` | Vertical section padding |
-| `.container` | Content width constraint |
-| `.content` | Typography wrapper (Footer) |
-| `.button` | Action buttons (with `.is-small` modifier) |
-
-### Bulma Dark Mode Gotchas
-
-Bulma 0.8.0 has **no built-in dark mode**. Every Bulma component needs manual overrides in `[data-theme="dark"]` selectors. See `Navbar.css` and `App.css` for the established override patterns.
-
-Key overrides already in place:
-- `.navbar` background, text, hover, focus
-- `.button` background, border, text, hover, disabled
-- `.navbar-menu` background
-
-When adding new Bulma components (e.g., `.card`, `.modal`, `.tag`), you **must** also add dark mode overrides following the same pattern.
-
----
-
 ## Anti-Patterns to Avoid
 
 1. **No CSS-in-JS**: Do not introduce styled-components, emotion, or inline style objects. Use co-located `.css` files.
-2. **No additional CSS frameworks**: Do not add Tailwind, Material UI, Bootstrap, etc. Bulma + custom CSS is sufficient.
-3. **No class components**: Use functional components with hooks exclusively.
-4. **No `any` types**: `noImplicitAny` is enabled. All props, state, and API responses must be typed.
-5. **No breaking Bulma CDN changes**: The version in `index.html` is the runtime version. Changing it requires testing all components.
-6. **No Express/server-side rendering**: The frontend is a static SPA built by Webpack and served from S3.
-7. **No custom web fonts**: Stick to Bulma's system font stack.
-8. **No hardcoded colors**: Always use CSS custom properties (`var(--text-primary)`), never raw hex values in component CSS (except for Berkeley brand colors which are already defined as variables).
-9. **No unscoped global CSS**: Global styles belong in `App.css` only. Component CSS should be scoped via BEM classes.
-10. **No `switch` prop names for layout**: Use `reverse` (boolean) for alternating layouts, not `direction` or `align`.
+2. **No class components**: Use functional components with hooks exclusively.
+3. **No `any` types**: `noImplicitAny` is enabled. All props, state, and API responses must be typed.
+4. **No Express/server-side rendering**: The frontend is a static SPA built by Webpack and served from S3.
+5. **No custom web fonts**: Stick to the system font stack.
+6. **No hardcoded colors**: Always use CSS custom properties (`var(--text-primary)`), never raw hex values in component CSS (except for Berkeley brand colors which are already defined as variables).
+7. **No unscoped global CSS**: Global styles belong in `App.css` only. Component CSS should be scoped via BEM classes.
+8. **No `switch` prop names for layout**: Use `reverse` (boolean) for alternating layouts, not `direction` or `align`.
 
 ---
 
