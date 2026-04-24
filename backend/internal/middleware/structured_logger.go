@@ -14,10 +14,11 @@ type responseRecorder struct {
 }
 
 func (rr *responseRecorder) WriteHeader(code int) {
-	if !rr.written {
-		rr.status = code
-		rr.written = true
+	if rr.written {
+		return
 	}
+	rr.status = code
+	rr.written = true
 	rr.ResponseWriter.WriteHeader(code)
 }
 
@@ -27,6 +28,12 @@ func (rr *responseRecorder) Write(b []byte) (int, error) {
 		rr.written = true
 	}
 	return rr.ResponseWriter.Write(b)
+}
+
+func (rr *responseRecorder) Flush() {
+	if f, ok := rr.ResponseWriter.(http.Flusher); ok {
+		f.Flush()
+	}
 }
 
 // StructuredLogger logs one structured JSON line per HTTP request.

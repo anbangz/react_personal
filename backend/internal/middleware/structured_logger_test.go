@@ -2,6 +2,7 @@ package middleware
 
 import (
 	"bytes"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -13,6 +14,7 @@ import (
 func TestStructuredLogger_LogsRequest(t *testing.T) {
 	var buf bytes.Buffer
 	logger.Init(&buf)
+	defer logger.Init(io.Discard)
 
 	handler := StructuredLogger(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusCreated)
@@ -38,11 +40,18 @@ func TestStructuredLogger_LogsRequest(t *testing.T) {
 	if !strings.Contains(line, `"duration_ms"`) {
 		t.Fatalf("expected duration_ms, got: %s", line)
 	}
+	if !strings.Contains(line, `"user_agent"`) {
+		t.Fatalf("expected user_agent, got: %s", line)
+	}
+	if !strings.Contains(line, `"remote_addr"`) {
+		t.Fatalf("expected remote_addr, got: %s", line)
+	}
 }
 
 func TestStructuredLogger_DefaultsTo200(t *testing.T) {
 	var buf bytes.Buffer
 	logger.Init(&buf)
+	defer logger.Init(io.Discard)
 
 	handler := StructuredLogger(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte("ok"))
