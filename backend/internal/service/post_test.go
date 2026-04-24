@@ -193,3 +193,53 @@ func TestPostService_Create_WithSummary(t *testing.T) {
 		t.Errorf("expected summary to be set, got %q", post.Summary)
 	}
 }
+
+func TestPostService_Update_Summary(t *testing.T) {
+	repo := &mockPostRepo{
+		posts: []model.Post{{
+			ID:        primitive.NewObjectID(),
+			Slug:      "summary-update-test",
+			Title:     "Original Title",
+			Content:   "# Original content",
+			Published: true,
+		}},
+	}
+	svc := NewPostService(repo)
+	ctx := context.Background()
+
+	firstSummary := "First summary value"
+	updatedPost, err := svc.Update(ctx, "summary-update-test", model.UpdatePostRequest{
+		Summary: &firstSummary,
+	})
+	if err != nil {
+		t.Fatalf("unexpected error setting initial summary: %v", err)
+	}
+	if updatedPost.Summary != firstSummary {
+		t.Fatalf("expected summary %q, got %q", firstSummary, updatedPost.Summary)
+	}
+
+	secondSummary := "Second summary value"
+	updatedPost, err = svc.Update(ctx, "summary-update-test", model.UpdatePostRequest{
+		Summary: &secondSummary,
+	})
+	if err != nil {
+		t.Fatalf("unexpected error overwriting summary: %v", err)
+	}
+	if updatedPost.Summary != secondSummary {
+		t.Fatalf("expected summary %q, got %q", secondSummary, updatedPost.Summary)
+	}
+
+	newTitle := "Retitled Post"
+	updatedPost, err = svc.Update(ctx, "summary-update-test", model.UpdatePostRequest{
+		Title: &newTitle,
+	})
+	if err != nil {
+		t.Fatalf("unexpected error updating title without summary: %v", err)
+	}
+	if updatedPost.Title != newTitle {
+		t.Fatalf("expected title %q, got %q", newTitle, updatedPost.Title)
+	}
+	if updatedPost.Summary != secondSummary {
+		t.Fatalf("expected summary to remain %q, got %q", secondSummary, updatedPost.Summary)
+	}
+}
