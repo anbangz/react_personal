@@ -6,6 +6,7 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/anbangz/react_personal/backend/internal/logger"
 	"github.com/anbangz/react_personal/backend/internal/model"
 	"github.com/anbangz/react_personal/backend/internal/repository"
 	"go.mongodb.org/mongo-driver/bson"
@@ -51,6 +52,7 @@ func (s *PostService) GetBySlug(ctx context.Context, slug string, publishedOnly 
 // Create validates and creates a new post.
 func (s *PostService) Create(ctx context.Context, req model.CreatePostRequest) (*model.Post, error) {
 	if err := validateCreateRequest(req); err != nil {
+		logger.Warn(ctx, "create post validation failed", "error", err.Error())
 		return nil, err
 	}
 
@@ -60,6 +62,7 @@ func (s *PostService) Create(ctx context.Context, req model.CreatePostRequest) (
 		return nil, err
 	}
 	if existing != nil {
+		logger.Warn(ctx, "duplicate slug", "slug", req.Slug)
 		return nil, fmt.Errorf("slug already exists: %s", req.Slug)
 	}
 
@@ -71,6 +74,7 @@ func (s *PostService) Create(ctx context.Context, req model.CreatePostRequest) (
 		Published: req.Published,
 	}
 	if err := s.repo.Create(ctx, post); err != nil {
+		logger.Error(ctx, "repository create failed", err)
 		return nil, err
 	}
 	return post, nil
@@ -82,6 +86,7 @@ func (s *PostService) Update(ctx context.Context, slug string, req model.UpdateP
 	if req.Title != nil {
 		title := strings.TrimSpace(*req.Title)
 		if title == "" {
+			logger.Warn(ctx, "update post empty title")
 			return nil, fmt.Errorf("title cannot be empty")
 		}
 		update["title"] = title
@@ -96,25 +101,34 @@ func (s *PostService) Update(ctx context.Context, slug string, req model.UpdateP
 		update["published"] = *req.Published
 	}
 	if len(update) == 0 {
+		logger.Warn(ctx, "update post no fields")
 		return nil, fmt.Errorf("no fields to update")
 	}
 
 	if err := s.repo.Update(ctx, slug, update); err != nil {
+		logger.Error(ctx, "repository update failed", err, "slug", slug)
 		return nil, err
 	}
-	return s.repo.FindBySlug(ctx, slug, false)
+	post, err := s.repo.FindBySlug(ctx, slug, false)
+	if err != nil {
+		logger.Error(ctx, "repository find after update failed", err, "slug", slug)
+	}
+	return post, err
 }
 
 // Delete removes a post by slug and returns the deleted post (for photo cleanup).
 func (s *PostService) Delete(ctx context.Context, slug string) (*model.Post, error) {
 	post, err := s.repo.FindBySlug(ctx, slug, false)
 	if err != nil {
+		logger.Error(ctx, "repository find for delete failed", err, "slug", slug)
 		return nil, err
 	}
 	if post == nil {
+		logger.Warn(ctx, "post not found for delete", "slug", slug)
 		return nil, fmt.Errorf("post not found: %s", slug)
 	}
 	if err := s.repo.Delete(ctx, slug); err != nil {
+		logger.Error(ctx, "repository delete failed", err, "slug", slug)
 		return nil, err
 	}
 	return post, nil

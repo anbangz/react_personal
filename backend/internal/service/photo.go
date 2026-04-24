@@ -8,6 +8,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/anbangz/react_personal/backend/internal/logger"
 	"github.com/anbangz/react_personal/backend/internal/model"
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
@@ -42,6 +43,7 @@ func (s *PhotoService) Upload(ctx context.Context, key string, contentType strin
 		ContentType: aws.String(contentType),
 	})
 	if err != nil {
+		logger.Error(ctx, "S3 upload failed", err, "key", key)
 		return "", fmt.Errorf("upload to S3: %w", err)
 	}
 	return s.cdnURL + "/" + key, nil
@@ -54,6 +56,7 @@ func (s *PhotoService) Delete(ctx context.Context, key string) error {
 		Key:    aws.String(key),
 	})
 	if err != nil {
+		logger.Error(ctx, "S3 delete failed", err, "key", key)
 		return fmt.Errorf("delete from S3: %w", err)
 	}
 	return nil
@@ -69,6 +72,7 @@ func (s *PhotoService) List(ctx context.Context) ([]model.PhotoListItem, error) 
 	for paginator.HasMorePages() {
 		output, err := paginator.NextPage(ctx)
 		if err != nil {
+			logger.Error(ctx, "S3 list failed", err)
 			return nil, fmt.Errorf("list S3 objects: %w", err)
 		}
 		for _, obj := range output.Contents {
