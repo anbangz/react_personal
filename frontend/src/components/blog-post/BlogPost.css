@@ -6,12 +6,11 @@
   border: 1px solid var(--border-default);
   border-radius: 12px;
   padding: 1rem;
-  transition: box-shadow 0.2s, border-color 0.2s;
+  transition: border-color 0.2s ease;
 }
 
 .blog-feed-card:hover {
   border-color: var(--link-color);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
 }
 
 .blog-feed-card__image-wrapper {
@@ -37,7 +36,7 @@
 .blog-feed-card__title {
   font-size: 1.05rem;
   font-weight: 700;
-  margin: 0 0 0.5rem 0 !important;
+  margin: 0 0 0.5rem 0;
   color: var(--text-primary);
 }
 
