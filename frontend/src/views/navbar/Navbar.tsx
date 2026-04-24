@@ -45,8 +45,9 @@ export const Navbar = () => {
         <button
           type="button"
           className={`site-nav__toggle ${isMenuActive ? "is-open" : ""}`}
-          aria-label="menu"
-          aria-expanded={isMenuActive ? "true" : "false"}
+          aria-label={isMenuActive ? "Close menu" : "Open menu"}
+          aria-expanded={isMenuActive}
+          aria-controls="site-nav-menu"
           onClick={() => setIsMenuActive(!isMenuActive)}
         >
           {/* Required for Hamburger menu */}
@@ -55,7 +56,7 @@ export const Navbar = () => {
           <span aria-hidden="true"></span>
         </button>
       </div>
-      <div className={`site-nav__menu ${isMenuActive ? "is-open" : ""}`}>
+      <div id="site-nav-menu" className={`site-nav__menu ${isMenuActive ? "is-open" : ""}`}>
         <div className="site-nav__start">
           <Link className="site-nav__item" to="/#this-site">
             This Site
@@ -66,7 +67,10 @@ export const Navbar = () => {
           <Link className="site-nav__item" to="/#contact-me">
             Contact Me
           </Link>
-          <NavLink className="site-nav__item" to="/blog">
+          <NavLink
+            className={({ isActive }) => `site-nav__item${isActive ? " active" : ""}`}
+            to="/blog"
+          >
             Blog
           </NavLink>
         </div>

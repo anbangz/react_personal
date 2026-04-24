@@ -45,14 +45,18 @@ async function captureScreenshots() {
 
       // Mobile hamburger menu opened (mobile only)
       if (viewport.name === 'mobile') {
-        // Click hamburger to open menu
         const burger = await page.$('.site-nav__toggle');
         if (burger) {
-          await burger.click();
-          await page.waitForTimeout(300);
-          const menuPath = path.join(OUTPUT_DIR, `${route.name}-${viewport.name}-menu-open.png`);
-          await page.screenshot({ path: menuPath, fullPage: true });
-          console.log(`Captured: ${menuPath}`);
+          const isVisible = await burger.isVisible().catch(() => false);
+          if (isVisible) {
+            await burger.click();
+            await page.waitForTimeout(300);
+            const menuPath = path.join(OUTPUT_DIR, `${route.name}-${viewport.name}-menu-open.png`);
+            await page.screenshot({ path: menuPath, fullPage: true });
+            console.log(`Captured: ${menuPath}`);
+          } else {
+            console.log(`SKIP: ${route.name}-${viewport.name}-menu-open (toggle not visible)`);
+          }
         }
       }
 

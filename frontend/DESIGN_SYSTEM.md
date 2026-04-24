@@ -40,6 +40,7 @@
 | Icons | FontAwesome | 5.3.1 (CDN) + 6.7.2 (npm) | CDN for base JS; `@fortawesome/react-fontawesome` for React integration |
 | Bundler | Webpack | 5.x | Custom `webpack.config.js` |
 | Styling | Plain CSS | — | CSS files co-located with components. No CSS-in-JS |
+| Visual Regression | Playwright | 1.59.1 | `playwright` downloads browser binaries on `npm install`. Set `PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1` to skip if you don't use the screenshot scripts |
 
 **Key dependencies to know about:**
 - `react-markdown` — used for blog post content rendering
@@ -345,7 +346,7 @@ frontend/src/
 4. **No Express/server-side rendering**: The frontend is a static SPA built by Webpack and served from S3.
 5. **No custom web fonts**: Stick to the system font stack.
 6. **No hardcoded colors**: Always use CSS custom properties (`var(--text-primary)`), never raw hex values in component CSS (except for Berkeley brand colors which are already defined as variables).
-7. **No unscoped global CSS**: Global styles belong in `App.css` only. Component CSS should be scoped via BEM classes.
+7. **No unscoped global CSS**: Global styles may live only in the approved global stylesheets (`base.css` and `App.css`). Component CSS should remain co-located and scoped via BEM classes.
 8. **No `switch` prop names for layout**: Use `reverse` (boolean) for alternating layouts, not `direction` or `align`.
 
 ---

@@ -33,10 +33,16 @@ async function captureScreenshots() {
       await page.screenshot({ path: lightPath, fullPage: true });
       console.log(`Captured: ${lightPath}`);
 
-      await page.evaluate(() => {
-        document.documentElement.setAttribute('data-theme', 'dark');
-      });
-      await page.waitForTimeout(500);
+      // Click the real theme toggle to exercise the interaction
+      const themeToggle = await page.$('button[aria-label^="Switch to"]');
+      if (themeToggle) {
+        const toggleVisible = await themeToggle.isVisible().catch(() => false);
+        if (toggleVisible) {
+          await themeToggle.click();
+          // Wait for the icon-swap animation (0.4s) plus a small buffer
+          await page.waitForTimeout(500);
+        }
+      }
       const darkPath = path.join(OUTPUT_DIR, `${route.name}-${viewport.name}-dark.png`);
       await page.screenshot({ path: darkPath, fullPage: true });
       console.log(`Captured: ${darkPath}`);
