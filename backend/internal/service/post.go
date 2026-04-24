@@ -66,6 +66,7 @@ func (s *PostService) Create(ctx context.Context, req model.CreatePostRequest) (
 	post := &model.Post{
 		Slug:      req.Slug,
 		Title:     req.Title,
+		Summary:   req.Summary,
 		Content:   req.Content,
 		Photos:    req.Photos,
 		Published: req.Published,
@@ -88,6 +89,9 @@ func (s *PostService) Update(ctx context.Context, slug string, req model.UpdateP
 	}
 	if req.Content != nil {
 		update["content"] = *req.Content
+	}
+	if req.Summary != nil {
+		update["summary"] = *req.Summary
 	}
 	if req.Photos != nil {
 		update["photos"] = *req.Photos

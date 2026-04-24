@@ -70,6 +70,9 @@ func (m *mockPostRepo) Update(ctx context.Context, slug string, update bson.M) e
 			if title, ok := update["title"]; ok {
 				m.posts[i].Title = title.(string)
 			}
+			if summary, ok := update["summary"]; ok {
+				m.posts[i].Summary = summary.(string)
+			}
 			if content, ok := update["content"]; ok {
 				m.posts[i].Content = content.(string)
 			}
@@ -169,5 +172,24 @@ func TestTruncateContent_UTF8Safe(t *testing.T) {
 	got := TruncateContent(input, 3)
 	if got != "你好世..." {
 		t.Fatalf("expected UTF-8 safe truncation, got %q", got)
+	}
+}
+
+func TestPostService_Create_WithSummary(t *testing.T) {
+	repo := &mockPostRepo{}
+	svc := NewPostService(repo)
+
+	post, err := svc.Create(context.Background(), model.CreatePostRequest{
+		Slug:      "summary-test",
+		Title:     "Summary Test",
+		Summary:   "A short summary for the feed.",
+		Content:   "# Full content here",
+		Published: true,
+	})
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if post.Summary != "A short summary for the feed." {
+		t.Errorf("expected summary to be set, got %q", post.Summary)
 	}
 }
