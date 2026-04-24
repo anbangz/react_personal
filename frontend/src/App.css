@@ -12,6 +12,10 @@ h3 {
 
 hr {
   background-color: var(--color-berkeley-metallic-gold);
+  border: none;
+  display: block;
+  height: 2px;
+  margin: 1.5rem 0;
 }
 
 :root {
