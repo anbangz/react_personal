@@ -15,15 +15,17 @@
 }
 
 .blog-post-page__date {
+  display: block;
   font-size: 0.8rem;
   color: var(--text-muted);
   letter-spacing: 0.04em;
   text-transform: uppercase;
+  margin-bottom: 1rem;
 }
 
 .blog-post-page__title {
-  margin-top: 0.25rem !important;
-  margin-bottom: 1.5rem !important;
+  margin-top: 0 !important;
+  margin-bottom: 0.5rem !important;
 }
 
 .blog-post-page__gallery {

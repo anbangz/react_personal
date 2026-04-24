@@ -111,13 +111,13 @@ export const BlogPostPage = () => {
             </Link>
 
             <article>
+              <h1 className="blog-post-page__title">{post.title}</h1>
               <time
                 className="blog-post-page__date"
                 dateTime={post.createdAt}
               >
                 {formatDate(post.createdAt)}
               </time>
-              <h1 className="blog-post-page__title">{post.title}</h1>
 
               {photos.length > 0 && (
                 <div className="blog-post-page__gallery">
