@@ -8,7 +8,10 @@
     "start": "webpack serve --config webpack.config.js --mode development",
     "clean": "rm -rf node_modules && rm -rf dist",
     "build": "webpack --mode production",
-    "clean-build": "npm run clean && npm i && webpack --mode production"
+    "clean-build": "npm run clean && npm i && webpack --mode production",
+    "screenshot:baseline": "node scripts/capture-baseline.js",
+    "screenshot:after": "node scripts/capture-after.js",
+    "screenshot:compare": "node scripts/compare-screenshots.js"
   },
   "repository": {
     "type": "git",

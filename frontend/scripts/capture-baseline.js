@@ -46,7 +46,7 @@ async function captureScreenshots() {
       // Mobile hamburger menu opened (mobile only)
       if (viewport.name === 'mobile') {
         // Click hamburger to open menu
-        const burger = await page.$('.navbar-burger, .site-nav__toggle');
+        const burger = await page.$('.site-nav__toggle');
         if (burger) {
           await burger.click();
           await page.waitForTimeout(300);

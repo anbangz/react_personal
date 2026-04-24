@@ -87,24 +87,24 @@ Defined in `App.css` `:root` and overridden in `[data-theme="dark"]`:
 When overriding components for dark mode, use this pattern:
 
 ```css
-[data-theme="dark"] .navbar {
+[data-theme="dark"] .site-nav {
   background-color: var(--bg-page);
 }
 
-[data-theme="dark"] .navbar-item,
-[data-theme="dark"] .navbar-burger {
+[data-theme="dark"] .site-nav__item,
+[data-theme="dark"] .site-nav__toggle {
   color: var(--text-primary);
 }
 
-[data-theme="dark"] .navbar-item:hover,
-[data-theme="dark"] .navbar-item:focus,
-[data-theme="dark"] .navbar-item.is-active {
-  background-color: var(--bg-surface) !important;
-  color: var(--text-primary) !important;
+[data-theme="dark"] .site-nav__item:hover,
+[data-theme="dark"] .site-nav__item:focus,
+[data-theme="dark"] .site-nav__item.active {
+  background-color: var(--bg-surface);
+  color: var(--text-primary);
 }
 ```
 
-For `.button` elements, see `App.css` lines 64–77 for the full override pattern.
+For `.button` elements, see `base.css` for the full override pattern.
 
 ---
 
