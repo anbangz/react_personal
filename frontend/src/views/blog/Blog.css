@@ -15,12 +15,10 @@
 }
 
 .blog-feed__post-link {
+  display: block;
+  margin-bottom: 1rem;
   text-decoration: none;
   color: inherit;
-}
-
-.blog-feed__post-link:hover .blog-post__title {
-  color: var(--link-color);
 }
 
 .blog-feed__pagination {
