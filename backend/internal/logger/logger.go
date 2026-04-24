@@ -23,7 +23,10 @@ func Init(w io.Writer) {
 		}
 	}
 
-	addSource := os.Getenv("LOG_SOURCE") == "true"
+	addSource := isLocal()
+	if v := os.Getenv("LOG_SOURCE"); v != "" {
+		addSource = v == "true"
+	}
 	opts := &slog.HandlerOptions{
 		Level:     level,
 		AddSource: addSource,
@@ -73,4 +76,9 @@ func appendTraceID(ctx context.Context, args []any) []any {
 		return append([]any{"trace_id", id}, args...)
 	}
 	return args
+}
+
+// isLocal returns true when not running in AWS Lambda.
+func isLocal() bool {
+	return os.Getenv("AWS_LAMBDA_FUNCTION_NAME") == "" && os.Getenv("LAMBDA_TASK_ROOT") == ""
 }

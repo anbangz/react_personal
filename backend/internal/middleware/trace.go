@@ -3,7 +3,9 @@ package middleware
 import (
 	"crypto/rand"
 	"encoding/hex"
+	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/anbangz/react_personal/backend/internal/logger"
 )
@@ -19,6 +21,12 @@ func TraceID(next http.Handler) http.Handler {
 
 func generateTraceID() string {
 	b := make([]byte, 8)
-	rand.Read(b)
-	return hex.EncodeToString(b)
+	for i := 0; i < 3; i++ {
+		n, err := rand.Read(b)
+		if err == nil && n == len(b) {
+			return hex.EncodeToString(b)
+		}
+	}
+	// Fallback to timestamp-based hex if RNG fails repeatedly.
+	return fmt.Sprintf("%016x", time.Now().UnixNano())
 }

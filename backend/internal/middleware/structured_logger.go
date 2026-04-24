@@ -1,6 +1,10 @@
 package middleware
 
 import (
+	"bufio"
+	"fmt"
+	"io"
+	"net"
 	"net/http"
 	"time"
 
@@ -34,6 +38,32 @@ func (rr *responseRecorder) Flush() {
 	if f, ok := rr.ResponseWriter.(http.Flusher); ok {
 		f.Flush()
 	}
+}
+
+func (rr *responseRecorder) Hijack() (net.Conn, *bufio.ReadWriter, error) {
+	if h, ok := rr.ResponseWriter.(http.Hijacker); ok {
+		return h.Hijack()
+	}
+	return nil, nil, fmt.Errorf("response recorder does not support hijacking")
+}
+
+func (rr *responseRecorder) ReadFrom(r io.Reader) (int64, error) {
+	if rf, ok := rr.ResponseWriter.(io.ReaderFrom); ok {
+		return rf.ReadFrom(r)
+	}
+	return io.Copy(rr.ResponseWriter, r)
+}
+
+func (rr *responseRecorder) Push(target string, opts *http.PushOptions) error {
+	if p, ok := rr.ResponseWriter.(http.Pusher); ok {
+		return p.Push(target, opts)
+	}
+	return http.ErrNotSupported
+}
+
+// Unwrap returns the underlying ResponseWriter.
+func (rr *responseRecorder) Unwrap() http.ResponseWriter {
+	return rr.ResponseWriter
 }
 
 // StructuredLogger logs one structured JSON line per HTTP request.
