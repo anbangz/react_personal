@@ -9,8 +9,8 @@ Guidelines for AI agents (Claude, Copilot, etc.) working on this codebase.
 Personal website for Anbang Zhang with a Go backend API for blog content management. The frontend is a static React SPA deployed to AWS S3 + CloudFront. The backend is a Go Lambda behind API Gateway, using MongoDB Atlas for data and S3 for photo storage.
 
 - **URL:** https://anbangz.me (frontend), https://api.anbangz.me (backend API)
-- **Frontend stack:** React 18, TypeScript, Webpack 5, Bulma CSS, FontAwesome
-- **Backend stack:** Go 1.26, chi router, MongoDB Go driver, AWS Lambda, API Gateway HTTP API
+- **Frontend stack:** React 18, TypeScript, Webpack 5, Bulma CSS, FontAwesome, react-markdown
+- **Backend stack:** Go 1.24, chi router, MongoDB Go driver, AWS Lambda, API Gateway HTTP API
 - **Infrastructure:** Terraform-managed AWS (S3, CloudFront, Route53, ACM, CodePipeline, CodeBuild, Lambda, API Gateway, Secrets Manager)
 - **Deployment branch:** `master` (CodePipeline triggers via CodeStar Connections GitHub App)
 
@@ -33,19 +33,24 @@ Personal website for Anbang Zhang with a Go backend API for blog content managem
 │       ├── api/client.ts           # API client for backend
 │       ├── static/images/          # Static assets
 │       ├── blog/types.ts           # Blog data types
+│       ├── context/
+│       │   └── ThemeContext.tsx    # React theme context provider
 │       ├── components/
 │       │   ├── widgets/            # Reusable components
+│       │   │   └── trello/
 │       │   ├── blog-post/          # BlogPost card component
-│       │   └── lightbox/           # Photo lightbox component
+│       │   ├── lightbox/           # Photo lightbox component
+│       │   └── resume-item/        # Resume item component
 │       └── views/                  # Page sections (each has its own folder)
 │           ├── navbar/
 │           ├── home/               # Homepage.tsx aggregates all sections
-│           ├── about-me/
+│           ├── title-banner/
 │           ├── this-site/
+│           ├── resume/
 │           ├── contact-me/
+│           ├── footer/
 │           ├── blog/               # Blog feed page (/blog route)
-│           ├── blog-post/          # Individual blog post page (/blog/:slug)
-│           └── roadmap/
+│           └── blog-post/          # Individual blog post page (/blog/:slug)
 ├── backend/
 │   ├── go.mod
 │   ├── go.sum
@@ -53,15 +58,22 @@ Personal website for Anbang Zhang with a Go backend API for blog content managem
 │   ├── cmd/api/main.go             # Lambda + local HTTP entry point
 │   └── internal/
 │       ├── model/post.go           # Post, Photo structs
-│       ├── repository/post.go      # PostRepository interface + MongoDB impl
-│       ├── service/post.go         # Post CRUD business logic
-│       ├── service/photo.go        # S3 photo operations
-│       ├── handler/router.go       # Chi router wiring
-│       ├── handler/health.go       # GET /health
-│       ├── handler/post.go         # Post endpoints
-│       ├── handler/photo.go        # Photo endpoints
-│       ├── middleware/auth.go      # API key middleware
-│       └── middleware/cors.go      # CORS middleware
+│       ├── repository/
+│       │   ├── post.go             # PostRepository interface + MongoDB impl
+│       │   └── post_test.go        # Repository tests
+│       ├── service/
+│       │   ├── post.go             # Post CRUD business logic
+│       │   ├── post_test.go        # Post service tests
+│       │   ├── photo.go            # S3 photo operations
+│       │   └── photo_test.go       # Photo service tests
+│       ├── handler/
+│       │   ├── router.go           # Chi router wiring
+│       │   ├── health.go           # GET /health
+│       │   ├── post.go             # Post endpoints
+│       │   └── photo.go            # Photo endpoints
+│       ├── middleware/
+│       │   ├── auth.go             # API key middleware
+│       │   └── cors.go             # CORS middleware
 └── infrastructure-terraform/       # All AWS infrastructure as Terraform HCL
     ├── main.tf                     # S3, CloudFront, Route53, ACM, remote state backend
     ├── versions.tf                 # Terraform/provider versions, S3 backend config
@@ -78,7 +90,8 @@ Personal website for Anbang Zhang with a Go backend API for blog content managem
     ├── buildspec-backend-build.yml # Backend Go compile steps
     ├── buildspec-backend-deploy.yml # Backend Lambda deploy steps
     ├── buildspec-terraform-plan.yml   # Terraform plan steps
-    └── buildspec-terraform-apply.yml  # Terraform apply steps
+    ├── buildspec-terraform-apply.yml  # Terraform apply steps
+    └── buildspec-invalidate-cache.yml # CloudFront cache invalidation
 ```
 
 ---
@@ -118,17 +131,17 @@ cd backend && make test     # Run Go tests
 - `noImplicitAny: true` — all types must be explicit.
 - React 18 patterns are in use. Hooks are supported; class components should be avoided for new code.
 - **React Router v6** — use `<Routes>` and `<Route>`, not the v5 `<Switch>` pattern.
-- **Bulma CSS** is loaded via CDN in `index.html`. Use Bulma utility classes before writing custom CSS.
+- **Bulma CSS** is loaded via CDN in `index.html` (`bulma@0.8.0`). Note: `bulma@1.0.2` is also installed via npm, but the CDN version takes precedence at runtime. Keep both in sync if updating.
 - FontAwesome icons are available via `@fortawesome/react-fontawesome`.
 - See `frontend/DESIGN_SYSTEM.md` for the full frontend design system, color tokens, component patterns, and theming conventions.
-- Indentation: 2 spaces (enforced by `.vscode/settings.json`).
+- Indentation: 2 spaces (set in `.vscode/settings.json`).
 
 ### Component Structure
 - Views (page sections) live in `frontend/src/views/<section-name>/`.
 - Reusable widgets live in `frontend/src/components/widgets/`.
 - `Homepage.tsx` imports and renders all sections — add new sections there.
 - Each section that needs its own styles gets a co-located `.css` file.
-- **Static images** in `frontend/src/static/images/` are imported by multiple components (TitleBanner, AboutMe, Resume). Do not delete images without checking all import references first (`portrait.jpg` is used by TitleBanner and AboutMe; `amazon-scout.jpg` is used by Resume).
+- **Static images** in `frontend/src/static/images/` are imported by multiple components (TitleBanner, AboutMe, Resume). Do not delete images without checking all import references first (`portrait.jpg` is used by TitleBanner and AboutMe; `amazon-scout.jpg` is used by Resume). Other images present: `amazon-logo.jpg`, `berkeley-seal.jpg`, `riptide-logo.jpg`.
 
 ### Styling
 - Prefer Bulma classes over custom CSS.
@@ -230,7 +243,7 @@ cd backend && make test     # Run Go tests
 After generating or modifying code, agents must verify correctness before committing:
 
 1. **Build** — run `cd frontend && npm run build` (or start the dev server) and confirm zero errors.
-2. **Visual check** — use the `preview_start` tool to load the app; use `preview_snapshot` or `preview_screenshot` to verify the affected UI renders as expected.
+2. **Visual check** — start the dev server (`cd frontend && npm start`) and verify the affected UI renders as expected in a browser.
 3. **Self-review** — read every file that was created or changed and audit for:
    - Correctness (logic errors, off-by-one, missing guards)
    - React patterns (stable references for `useEffect` deps via `useCallback`/`useMemo`, correct hook dependency arrays)
