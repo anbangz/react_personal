@@ -16,6 +16,7 @@ type Post struct {
 	ID        primitive.ObjectID `bson:"_id,omitempty" json:"id"`
 	Slug      string             `bson:"slug" json:"slug"`
 	Title     string             `bson:"title" json:"title"`
+	Summary   string             `bson:"summary,omitempty" json:"summary,omitempty"`
 	Content   string             `bson:"content" json:"content"`
 	Photos    []Photo            `bson:"photos,omitempty" json:"photos"`
 	Published bool               `bson:"published" json:"published"`
@@ -27,6 +28,7 @@ type Post struct {
 type CreatePostRequest struct {
 	Slug      string  `json:"slug"`
 	Title     string  `json:"title"`
+	Summary   string  `json:"summary,omitempty"`
 	Content   string  `json:"content"`
 	Photos    []Photo `json:"photos,omitempty"`
 	Published bool    `json:"published"`
@@ -36,6 +38,7 @@ type CreatePostRequest struct {
 // All fields are pointers to support partial updates.
 type UpdatePostRequest struct {
 	Title     *string  `json:"title,omitempty"`
+	Summary   *string  `json:"summary,omitempty"`
 	Content   *string  `json:"content,omitempty"`
 	Photos    *[]Photo `json:"photos,omitempty"`
 	Published *bool    `json:"published,omitempty"`
