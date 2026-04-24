@@ -11,7 +11,7 @@ type ctxKey string
 
 const traceIDKey ctxKey = "trace_id"
 
-var defaultLogger *slog.Logger
+var defaultLogger = slog.New(slog.NewJSONHandler(io.Discard, nil))
 
 // Init initializes the default JSON logger.
 func Init(w io.Writer) {
@@ -62,7 +62,7 @@ func Warn(ctx context.Context, msg string, args ...any) {
 // Error logs an error message with trace_id from context.
 func Error(ctx context.Context, msg string, err error, args ...any) {
 	if err != nil {
-		args = append(args, "error", err.Error())
+		args = append(append([]any(nil), args...), "error", err.Error())
 	}
 	args = appendTraceID(ctx, args)
 	defaultLogger.Error(msg, args...)

@@ -25,6 +25,9 @@ func TestTraceIDFromContext_Missing(t *testing.T) {
 }
 
 func TestInfo_IncludesTraceID(t *testing.T) {
+	old := defaultLogger
+	defer func() { defaultLogger = old }()
+
 	var buf bytes.Buffer
 	handler := slog.NewJSONHandler(&buf, &slog.HandlerOptions{Level: slog.LevelInfo})
 	defaultLogger = slog.New(handler)
@@ -42,6 +45,9 @@ func TestInfo_IncludesTraceID(t *testing.T) {
 }
 
 func TestWarn_IncludesTraceID(t *testing.T) {
+	old := defaultLogger
+	defer func() { defaultLogger = old }()
+
 	var buf bytes.Buffer
 	handler := slog.NewJSONHandler(&buf, &slog.HandlerOptions{Level: slog.LevelInfo})
 	defaultLogger = slog.New(handler)
@@ -59,6 +65,9 @@ func TestWarn_IncludesTraceID(t *testing.T) {
 }
 
 func TestError_IncludesError(t *testing.T) {
+	old := defaultLogger
+	defer func() { defaultLogger = old }()
+
 	var buf bytes.Buffer
 	handler := slog.NewJSONHandler(&buf, &slog.HandlerOptions{Level: slog.LevelInfo})
 	defaultLogger = slog.New(handler)
