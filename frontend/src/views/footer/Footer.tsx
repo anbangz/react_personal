@@ -7,7 +7,7 @@ export const Footer = () => {
   const yearDisplay = currentYear > 2020 ? `2020–${currentYear}` : "2020";
 
   return (
-    <footer className="content">
+    <footer>
       <div className="footer__content">
         <div>&copy; {yearDisplay} Anbang Zhang</div>
         <a href="https://github.com/anbangz/react_personal">GitHub repo</a>
