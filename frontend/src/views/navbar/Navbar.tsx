@@ -46,44 +46,48 @@ export const Navbar = () => {
 
   return (
     <>
-      <nav className="navbar">
-        <div className="navbar-brand">
-          <Link className="navbar-item centered " to="/">
+      <nav className="site-nav">
+        <div className="site-nav__brand">
+          <Link className="site-nav__item" to="/">
             <b>Anbang Zhang</b>
           </Link>
-          <a
-            role="button"
-            className={`navbar-burger ${isMenuActive ? "is-active" : ""}`}
-            aria-label="menu"
-            aria-expanded={isMenuActive ? "true" : "false"}
+          <button
+            type="button"
+            className={`site-nav__toggle ${isMenuActive ? "is-open" : ""}`}
+            aria-label={isMenuActive ? "Close menu" : "Open menu"}
+            aria-expanded={isMenuActive}
+            aria-controls="site-nav-menu"
             onClick={() => setIsMenuActive(!isMenuActive)}
           >
-            {/* Required for Bulma's Hamburger menu */}
+            {/* Required for Hamburger menu */}
             <span aria-hidden="true"></span>
             <span aria-hidden="true"></span>
             <span aria-hidden="true"></span>
-          </a>
+          </button>
         </div>
-        <div className={`navbar-menu ${isMenuActive ? "is-active" : ""}`}>
-          <div className="navbar-start">
-            <Link className="navbar-item centered " to="/#this-site">
+        <div id="site-nav-menu" className={`site-nav__menu ${isMenuActive ? "is-open" : ""}`}>
+          <div className="site-nav__start">
+            <Link className="site-nav__item" to="/#this-site">
               This Site
             </Link>
-            <Link className="navbar-item centered " to="/#resume">
+            <Link className="site-nav__item" to="/#resume">
               R&#233;sum&#233;
             </Link>
-            <Link className="navbar-item centered " to="/#contact-me">
+            <Link className="site-nav__item" to="/#contact-me">
               Contact Me
             </Link>
-            <NavLink className="navbar-item centered" to="/blog">
+            <NavLink
+              className={({ isActive }) => `site-nav__item${isActive ? " active" : ""}`}
+              to="/blog"
+            >
               Blog
             </NavLink>
           </div>
-          <div className="navbar-end">
+          <div className="site-nav__end">
             <button
               ref={secretTriggerButtonRef}
               type="button"
-              className="navbar-item bear-game-trigger centered"
+              className="site-nav__item bear-game-trigger"
               aria-label="Open the hidden bear game"
               onClick={() => setIsSecretBearRunOpen(true)}
             >
@@ -95,7 +99,7 @@ export const Navbar = () => {
               />
             </button>
             <a
-              className="navbar-item centered"
+              className="site-nav__item"
               href="https://www.instagram.com/anbangz/"
               target="_blank"
               rel="noopener noreferrer"
@@ -103,7 +107,7 @@ export const Navbar = () => {
               <FontAwesomeIcon icon={faInstagram} size="2x" />
             </a>
             <a
-              className="navbar-item centered"
+              className="site-nav__item"
               href="https://github.com/anbangz"
               target="_blank"
               rel="noopener noreferrer"
@@ -111,7 +115,7 @@ export const Navbar = () => {
               <FontAwesomeIcon icon={faGithub} size="2x" />
             </a>
             <a
-              className="navbar-item centered"
+              className="site-nav__item"
               href="https://www.linkedin.com/in/anbang-zhang-1141b18b/"
               target="_blank"
               rel="noopener noreferrer"
@@ -119,7 +123,7 @@ export const Navbar = () => {
               <FontAwesomeIcon icon={faLinkedin} size="2x" />
             </a>
             <button
-              className="navbar-item theme-toggle centered"
+              className="site-nav__item theme-toggle"
               onClick={handleToggle}
               aria-label={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
             >
