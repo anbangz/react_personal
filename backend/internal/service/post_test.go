@@ -194,6 +194,56 @@ func TestPostService_Create_WithSummary(t *testing.T) {
 	}
 }
 
+func TestPostService_NormalizesSummaryWhitespace(t *testing.T) {
+	repo := &mockPostRepo{
+		posts: []model.Post{{
+			ID:        primitive.NewObjectID(),
+			Slug:      "summary-whitespace-test",
+			Title:     "Whitespace Summary",
+			Content:   "# Original content",
+			Published: true,
+		}},
+	}
+	svc := NewPostService(repo)
+	ctx := context.Background()
+
+	createdPost, err := svc.Create(ctx, model.CreatePostRequest{
+		Slug:      "summary-whitespace-created",
+		Title:     "Created Post",
+		Summary:   "  padded summary  ",
+		Content:   "# Full content here",
+		Published: true,
+	})
+	if err != nil {
+		t.Fatalf("unexpected create error: %v", err)
+	}
+	if createdPost.Summary != "padded summary" {
+		t.Fatalf("expected trimmed create summary %q, got %q", "padded summary", createdPost.Summary)
+	}
+
+	updatedSummary := "  updated summary  "
+	updatedPost, err := svc.Update(ctx, "summary-whitespace-test", model.UpdatePostRequest{
+		Summary: &updatedSummary,
+	})
+	if err != nil {
+		t.Fatalf("unexpected update error: %v", err)
+	}
+	if updatedPost.Summary != "updated summary" {
+		t.Fatalf("expected trimmed update summary %q, got %q", "updated summary", updatedPost.Summary)
+	}
+
+	blankSummary := "   "
+	updatedPost, err = svc.Update(ctx, "summary-whitespace-test", model.UpdatePostRequest{
+		Summary: &blankSummary,
+	})
+	if err != nil {
+		t.Fatalf("unexpected blank-summary update error: %v", err)
+	}
+	if updatedPost.Summary != "" {
+		t.Fatalf("expected blank summary to normalize to empty string, got %q", updatedPost.Summary)
+	}
+}
+
 func TestPostService_Update_Summary(t *testing.T) {
 	repo := &mockPostRepo{
 		posts: []model.Post{{

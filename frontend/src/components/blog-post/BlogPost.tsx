@@ -4,7 +4,6 @@ import "./BlogPost.css";
 
 interface BlogFeedCardProps {
   post: BlogPost;
-  onPhotoClick?: (photoIndex: number) => void;
 }
 
 const formatDate = (dateStr: string): string => {
@@ -35,13 +34,11 @@ const markdownToSummaryText = (content: string): string => {
     .trim();
 };
 
-export const BlogFeedCard: React.FunctionComponent<BlogFeedCardProps> = ({
-  post,
-  onPhotoClick: _onPhotoClick,
-}) => {
+export const BlogFeedCard: React.FunctionComponent<BlogFeedCardProps> = ({ post }) => {
   const coverPhoto = post.photos?.[0];
+  const normalizedSummary = post.summary?.trim();
   const summary =
-    post.summary || truncateContent(markdownToSummaryText(post.content || ""), 160);
+    normalizedSummary || truncateContent(markdownToSummaryText(post.content || ""), 160);
 
   return (
     <article className="blog-feed-card">
@@ -63,8 +60,4 @@ export const BlogFeedCard: React.FunctionComponent<BlogFeedCardProps> = ({
       </div>
     </article>
   );
-};
-
-export const BlogPostCard: React.FunctionComponent<BlogFeedCardProps> = (props) => {
-  return <BlogFeedCard {...props} />;
 };
