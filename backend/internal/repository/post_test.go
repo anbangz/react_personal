@@ -3,6 +3,7 @@ package repository
 import (
 	"context"
 	"os"
+	"strings"
 	"testing"
 	"time"
 
@@ -15,12 +16,30 @@ import (
 // These tests require a running MongoDB instance.
 // Set MONGODB_URI env var to run them. They are skipped otherwise.
 
+func testCollectionTarget() (string, string) {
+	return "anbangz_blog_test", "posts_test_" + time.Now().Format("20060102150405.000000000")
+}
+
+func TestTestCollectionTarget(t *testing.T) {
+	dbName, collectionName := testCollectionTarget()
+
+	if dbName != "anbangz_blog_test" {
+		t.Fatalf("expected test db %q, got %q", "anbangz_blog_test", dbName)
+	}
+
+	if !strings.HasPrefix(collectionName, "posts_test_") {
+		t.Fatalf("expected test collection to start with %q, got %q", "posts_test_", collectionName)
+	}
+}
+
 func setupTestDB(t *testing.T) (*mongo.Collection, func()) {
 	t.Helper()
 	uri := os.Getenv("MONGODB_URI")
 	if uri == "" {
 		t.Skip("MONGODB_URI not set, skipping integration test")
 	}
+
+	dbName, collectionName := testCollectionTarget()
 
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
@@ -30,11 +49,10 @@ func setupTestDB(t *testing.T) (*mongo.Collection, func()) {
 		t.Fatalf("connect: %v", err)
 	}
 
-	dbName := "anbangz_blog_test_" + time.Now().Format("20060102150405")
-	collection := client.Database(dbName).Collection("posts")
+	collection := client.Database(dbName).Collection(collectionName)
 
 	cleanup := func() {
-		_ = client.Database(dbName).Drop(context.Background())
+		_ = collection.Drop(context.Background())
 		_ = client.Disconnect(context.Background())
 	}
 

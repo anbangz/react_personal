@@ -4,13 +4,14 @@ import (
 	"context"
 	"flag"
 	"fmt"
-	"log"
+	"log/slog"
 	"net/http"
 	"os"
 	"strings"
 	"time"
 
 	"github.com/anbangz/react_personal/backend/internal/handler"
+	"github.com/anbangz/react_personal/backend/internal/logger"
 	"github.com/anbangz/react_personal/backend/internal/repository"
 	"github.com/anbangz/react_personal/backend/internal/service"
 	"github.com/aws/aws-lambda-go/lambda"
@@ -26,6 +27,7 @@ func main() {
 	local := flag.Bool("local", false, "run as local HTTP server instead of Lambda")
 	port := flag.String("port", "8081", "local server port")
 	flag.Parse()
+	logger.Init(os.Stdout)
 
 	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
 	defer cancel()
@@ -33,34 +35,39 @@ func main() {
 	// AWS clients used by runtime services
 	awsCfg, err := awsconfig.LoadDefaultConfig(ctx)
 	if err != nil {
-		log.Fatalf("aws config: %v", err)
+		slog.Error("aws config", "error", err)
+		os.Exit(1)
 	}
 	smClient := secretsmanager.NewFromConfig(awsCfg)
 
 	// Config from environment (optionally secret-backed)
 	mongoURI, err := resolveEnvOrSecret(ctx, smClient, "MONGODB_URI", "MONGODB_URI_SECRET_ARN")
 	if err != nil {
-		log.Fatalf("mongodb uri config: %v", err)
+		slog.Error("mongodb uri config", "error", err)
+		os.Exit(1)
 	}
 	apiKey, err := resolveEnvOrSecret(ctx, smClient, "API_KEY", "API_KEY_SECRET_ARN")
 	if err != nil {
-		log.Fatalf("api key config: %v", err)
+		slog.Error("api key config", "error", err)
+		os.Exit(1)
 	}
 	s3Bucket := mustEnv("S3_BUCKET")
 	cdnURL := mustEnv("PHOTOS_CDN_URL")
 	allowedOrigin := getEnv("ALLOWED_ORIGIN", "https://anbangz.me")
 
 	// Connect to MongoDB
+	dbName := getEnv("MONGODB_DATABASE", "anbangz_blog_prod")
 	mongoClient, err := mongo.Connect(ctx, options.Client().ApplyURI(mongoURI))
 	if err != nil {
-		log.Fatalf("mongodb connect: %v", err)
+		slog.Error("mongodb connect", "error", err)
+		os.Exit(1)
 	}
 	if err := mongoClient.Ping(ctx, nil); err != nil {
-		log.Fatalf("mongodb ping: %v", err)
+		slog.Error("mongodb ping", "error", err)
+		os.Exit(1)
 	}
-	log.Println("Connected to MongoDB")
+	slog.Info("connected to MongoDB", "database", dbName)
 
-	dbName := getEnv("MONGODB_DATABASE", "anbangz_blog_prod")
 	collection := mongoClient.Database(dbName).Collection("posts")
 
 	// Build services
@@ -82,8 +89,11 @@ func main() {
 
 	if *local {
 		addr := fmt.Sprintf(":%s", *port)
-		log.Printf("Starting local server on %s", addr)
-		log.Fatal(http.ListenAndServe(addr, router))
+		slog.Info("starting local server", "address", addr)
+		if err := http.ListenAndServe(addr, router); err != nil {
+			slog.Error("server error", "error", err)
+			os.Exit(1)
+		}
 	} else {
 		lambda.Start(httpadapter.NewV2(router).ProxyWithContext)
 	}
@@ -92,7 +102,8 @@ func main() {
 func mustEnv(key string) string {
 	val := os.Getenv(key)
 	if val == "" {
-		log.Fatalf("required environment variable %s is not set", key)
+		slog.Error("required environment variable is not set", "variable", key)
+		os.Exit(1)
 	}
 	return val
 }

@@ -12,6 +12,10 @@ h3 {
 
 hr {
   background-color: var(--color-berkeley-metallic-gold);
+  border: none;
+  display: block;
+  height: 2px;
+  margin: 1.5rem 0;
 }
 
 :root {
@@ -61,17 +65,3 @@ a {
   transition: background-color 0.4s ease, color 0.4s ease, border-color 0.4s ease;
 }
 
-[data-theme="dark"] .button {
-  background-color: var(--bg-surface) !important;
-  border-color: var(--border-default) !important;
-  color: var(--text-primary) !important;
-}
-
-[data-theme="dark"] .button:hover:not([disabled]) {
-  border-color: var(--link-color) !important;
-  color: var(--link-color) !important;
-}
-
-[data-theme="dark"] .button[disabled] {
-  opacity: 0.35 !important;
-}

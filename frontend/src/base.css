@@ -1,0 +1,99 @@
+/* Minimal reset — formerly provided by Bulma */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -moz-osx-font-smoothing: grayscale;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+body {
+  font-family: BlinkMacSystemFont, -apple-system, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Fira Sans", "Droid Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  line-height: 1.5;
+}
+
+/* Section — vertical padding wrapper */
+.section {
+  padding: 3rem 1.5rem;
+}
+
+/* Container — max-width + centered content */
+.container {
+  max-width: 960px;
+  margin: 0 auto;
+}
+
+@media screen and (min-width: 1216px) {
+  .container {
+    max-width: 1152px;
+  }
+}
+
+@media screen and (min-width: 1408px) {
+  .container {
+    max-width: 1344px;
+  }
+}
+
+/* Button — styled action buttons */
+.button {
+  display: inline-block;
+  padding: 0.5em 1em;
+  border: 1px solid var(--border-default);
+  border-radius: 4px;
+  background-color: var(--bg-page);
+  color: var(--text-primary);
+  font-size: 1rem;
+  line-height: 1.5;
+  cursor: pointer;
+  text-align: center;
+  white-space: nowrap;
+  text-decoration: none;
+  font-family: inherit;
+}
+
+.button:hover:not([disabled]),
+.button:focus-visible {
+  border-color: var(--link-color);
+  color: var(--link-color);
+}
+
+.button:focus-visible {
+  outline: 2px solid var(--link-color);
+  outline-offset: 2px;
+}
+
+.button[disabled] {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.button.is-small {
+  font-size: 0.75rem;
+  padding: 0.25em 0.5em;
+}
+
+/* Dark mode button overrides */
+[data-theme="dark"] .button {
+  background-color: var(--bg-surface);
+  border-color: var(--border-default);
+  color: var(--text-primary);
+}
+
+[data-theme="dark"] .button:hover:not([disabled]),
+[data-theme="dark"] .button:focus-visible {
+  border-color: var(--link-color);
+  color: var(--link-color);
+}
+
+[data-theme="dark"] .button:focus-visible {
+  outline-color: var(--link-color);
+}
+
+[data-theme="dark"] .button[disabled] {
+  opacity: 0.35;
+}

@@ -6,6 +6,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/anbangz/react_personal/backend/internal/logger"
 	"github.com/anbangz/react_personal/backend/internal/model"
 	"github.com/anbangz/react_personal/backend/internal/service"
 	"github.com/go-chi/chi/v5"
@@ -28,6 +29,7 @@ func (h *PostHandler) ListPublished(w http.ResponseWriter, r *http.Request) {
 
 	result, err := h.svc.ListPublished(r.Context(), page, limit)
 	if err != nil {
+		logger.Error(r.Context(), "failed to list published posts", err)
 		respondError(w, http.StatusInternalServerError, err.Error())
 		return
 	}
@@ -45,10 +47,12 @@ func (h *PostHandler) GetBySlug(w http.ResponseWriter, r *http.Request) {
 	slug := chi.URLParam(r, "slug")
 	post, err := h.svc.GetBySlug(r.Context(), slug, true)
 	if err != nil {
+		logger.Error(r.Context(), "failed to get post by slug", err, "slug", slug)
 		respondError(w, http.StatusInternalServerError, err.Error())
 		return
 	}
 	if post == nil {
+		logger.Warn(r.Context(), "post not found", "slug", slug)
 		respondError(w, http.StatusNotFound, "post not found")
 		return
 	}
@@ -62,6 +66,7 @@ func (h *PostHandler) ListAll(w http.ResponseWriter, r *http.Request) {
 
 	result, err := h.svc.ListAll(r.Context(), page, limit)
 	if err != nil {
+		logger.Error(r.Context(), "failed to list all posts", err)
 		respondError(w, http.StatusInternalServerError, err.Error())
 		return
 	}
@@ -79,12 +84,15 @@ func (h *PostHandler) Create(w http.ResponseWriter, r *http.Request) {
 	post, err := h.svc.Create(r.Context(), req)
 	if err != nil {
 		if isClientPostError(err) {
+			logger.Warn(r.Context(), "client error creating post", "error", err.Error())
 			respondError(w, http.StatusBadRequest, err.Error())
 			return
 		}
+		logger.Error(r.Context(), "failed to create post", err)
 		respondError(w, http.StatusInternalServerError, err.Error())
 		return
 	}
+	logger.Info(r.Context(), "post created", "slug", post.Slug, "title", post.Title)
 	respondJSON(w, http.StatusCreated, post)
 }
 
@@ -100,16 +108,20 @@ func (h *PostHandler) Update(w http.ResponseWriter, r *http.Request) {
 	post, err := h.svc.Update(r.Context(), slug, req)
 	if err != nil {
 		if strings.Contains(err.Error(), "post not found") {
+			logger.Warn(r.Context(), "post not found for update", "slug", slug)
 			respondError(w, http.StatusNotFound, err.Error())
 			return
 		}
 		if isClientPostError(err) {
+			logger.Warn(r.Context(), "client error updating post", "error", err.Error())
 			respondError(w, http.StatusBadRequest, err.Error())
 			return
 		}
+		logger.Error(r.Context(), "failed to update post", err, "slug", slug)
 		respondError(w, http.StatusInternalServerError, err.Error())
 		return
 	}
+	logger.Info(r.Context(), "post updated", "slug", post.Slug)
 	respondJSON(w, http.StatusOK, post)
 }
 
@@ -119,12 +131,15 @@ func (h *PostHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	_, err := h.svc.Delete(r.Context(), slug)
 	if err != nil {
 		if strings.Contains(err.Error(), "post not found") {
+			logger.Warn(r.Context(), "post not found for delete", "slug", slug)
 			respondError(w, http.StatusNotFound, err.Error())
 			return
 		}
+		logger.Error(r.Context(), "failed to delete post", err, "slug", slug)
 		respondError(w, http.StatusInternalServerError, err.Error())
 		return
 	}
+	logger.Info(r.Context(), "post deleted", "slug", slug)
 	w.WriteHeader(http.StatusNoContent)
 }
 
