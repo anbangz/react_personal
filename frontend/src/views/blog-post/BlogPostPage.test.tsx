@@ -87,4 +87,44 @@ describe("BlogPostPage", () => {
     expect(dialog).toBeInTheDocument();
     expect(dialog.querySelector("img")).toHaveAttribute("alt", "Photo A");
   });
+
+  it("navigates lightbox photos and closes", async () => {
+    server.use(
+      http.get("*/posts/:slug", () => {
+        return HttpResponse.json(
+          createMockPost({
+            slug: "my-post",
+            photos: [
+              createMockPhoto({ src: "https://example.com/a.jpg", caption: "Photo A" }),
+              createMockPhoto({ src: "https://example.com/b.jpg", caption: "Photo B" }),
+            ],
+          })
+        );
+      })
+    );
+
+    renderWithProviders(<BlogPostRoutes />, {
+      routerProps: { initialEntries: ["/blog/my-post"] },
+    });
+
+    expect(await screen.findByAltText("Photo A")).toBeInTheDocument();
+
+    const firstPhotoBtn = screen.getByRole("button", { name: /view photo: photo a/i });
+    await userEvent.click(firstPhotoBtn);
+
+    const dialog = screen.getByRole("dialog");
+    expect(dialog.querySelector("img")).toHaveAttribute("alt", "Photo A");
+
+    const nextBtn = screen.getByLabelText("Next photo");
+    await userEvent.click(nextBtn);
+    expect(dialog.querySelector("img")).toHaveAttribute("alt", "Photo B");
+
+    const prevBtn = screen.getByLabelText("Previous photo");
+    await userEvent.click(prevBtn);
+    expect(dialog.querySelector("img")).toHaveAttribute("alt", "Photo A");
+
+    const closeBtn = screen.getByLabelText("Close");
+    await userEvent.click(closeBtn);
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+  });
 });

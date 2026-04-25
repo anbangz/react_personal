@@ -5,7 +5,7 @@ import { renderWithProviders } from "../../test-utils";
 import { Blog } from "./Blog";
 import { server } from "../../mocks/server";
 import { http, HttpResponse } from "msw";
-import { createMockPost } from "../../mocks/factories";
+import { createMockPost, createMockPhoto } from "../../mocks/factories";
 
 describe("Blog", () => {
   it("shows loading state initially", () => {
@@ -144,5 +144,47 @@ describe("Blog", () => {
     const nextBtn = screen.getByRole("button", { name: /next/i });
     expect(prevBtn).toBeDisabled();
     expect(nextBtn).toBeDisabled();
+  });
+
+  it("opens lightbox and navigates photos", async () => {
+    server.use(
+      http.get("*/posts", () => {
+        return HttpResponse.json({
+          posts: [
+            createMockPost({
+              photos: [
+                createMockPhoto({ src: "https://example.com/a.jpg", caption: "Photo A" }),
+                createMockPhoto({ src: "https://example.com/b.jpg", caption: "Photo B" }),
+              ],
+            }),
+          ],
+          total: 1,
+          page: 1,
+          limit: 10,
+        });
+      })
+    );
+
+    renderWithProviders(<Blog />);
+    expect(await screen.findByAltText("Photo A")).toBeInTheDocument();
+
+    const photoBtn = screen.getByRole("button", { name: /view photo: photo a/i });
+    await userEvent.click(photoBtn);
+
+    const dialog = screen.getByRole("dialog");
+    expect(dialog).toBeInTheDocument();
+    expect(dialog.querySelector("img")).toHaveAttribute("alt", "Photo A");
+
+    const nextBtn = screen.getByLabelText("Next photo");
+    await userEvent.click(nextBtn);
+    expect(dialog.querySelector("img")).toHaveAttribute("alt", "Photo B");
+
+    const prevBtn = screen.getByLabelText("Previous photo");
+    await userEvent.click(prevBtn);
+    expect(dialog.querySelector("img")).toHaveAttribute("alt", "Photo A");
+
+    const closeBtn = screen.getByLabelText("Close");
+    await userEvent.click(closeBtn);
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
   });
 });

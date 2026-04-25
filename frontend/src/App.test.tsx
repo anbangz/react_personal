@@ -1,7 +1,8 @@
 import * as React from "react";
-import { screen, waitFor } from "@testing-library/react";
+import { render, screen, waitFor } from "@testing-library/react";
 import { renderWithProviders } from "./test-utils";
-import { AppContent } from "./App";
+import { App, AppContent } from "./App";
+import { ThemeProvider } from "./context/ThemeContext";
 
 describe("App routing", () => {
   it("renders homepage on /", () => {
@@ -39,5 +40,14 @@ describe("App routing", () => {
     });
 
     jest.restoreAllMocks();
+  });
+
+  it("renders the full App wrapper", () => {
+    render(
+      <ThemeProvider>
+        <App />
+      </ThemeProvider>
+    );
+    expect(screen.getByText("Hi! I'm Anbang.")).toBeInTheDocument();
   });
 });

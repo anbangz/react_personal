@@ -90,4 +90,24 @@ describe("Lightbox", () => {
     await userEvent.click(closeBtn);
     expect(onClose).toHaveBeenCalledTimes(1);
   });
+
+  it("calls onPrev when previous arrow is clicked", async () => {
+    const onPrev = jest.fn();
+    renderWithProviders(
+      <Lightbox photos={photos} currentIndex={1} onClose={jest.fn()} onPrev={onPrev} onNext={jest.fn()} />
+    );
+    const prevBtn = screen.getByLabelText("Previous photo");
+    await userEvent.click(prevBtn);
+    expect(onPrev).toHaveBeenCalledTimes(1);
+  });
+
+  it("calls onNext when next arrow is clicked", async () => {
+    const onNext = jest.fn();
+    renderWithProviders(
+      <Lightbox photos={photos} currentIndex={0} onClose={jest.fn()} onPrev={jest.fn()} onNext={onNext} />
+    );
+    const nextBtn = screen.getByLabelText("Next photo");
+    await userEvent.click(nextBtn);
+    expect(onNext).toHaveBeenCalledTimes(1);
+  });
 });
