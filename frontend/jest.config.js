@@ -3,6 +3,7 @@ module.exports = {
   testEnvironment: "jest-fixed-jsdom",
   setupFilesAfterEnv: ["<rootDir>/src/jest.setup.ts"],
   moduleNameMapper: {
+    "react-markdown": "<rootDir>/src/__mocks__/react-markdown.tsx",
     "\\.(css|less|scss)$": "identity-obj-proxy",
     "\\.(jpg|jpeg|png|gif|svg)$": "<rootDir>/src/mocks/fileMock.ts",
   },
