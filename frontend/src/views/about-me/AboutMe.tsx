@@ -7,7 +7,7 @@ export const AboutMe = () => {
   return (
     <div className="about-me__banner">
       <div className="about-me__container">
-        <img className="about-me__portrait" src={Portrait} />
+        <img className="about-me__portrait" src={Portrait} alt="Portrait of Anbang" />
         <div className="about-me__description">
           <h1>Hi! I'm Anbang.</h1>
           <h2>I'm a software engineer currently living in Seattle.</h2>
