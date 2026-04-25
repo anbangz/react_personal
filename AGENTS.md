@@ -121,6 +121,8 @@ cd backend && make test     # Run Go tests
 - **GitHub CLI (`gh`)** may not be on the default shell `$PATH`. Run `which gh` first; if not found, try `/opt/homebrew/bin/gh` (Apple Silicon macOS) or `/usr/local/bin/gh` (Intel macOS).
 
 > The frontend is a static site with no `.env` file. The backend requires environment variables (`MONGODB_URI`, `API_KEY`, `S3_BUCKET`, `PHOTOS_CDN_URL`) — set these locally for `make run`.
+>
+> Backend repository integration tests (`backend/internal/repository/post_test.go`) use the fixed MongoDB database `anbangz_blog_test` and a unique per-run collection named `posts_test_<timestamp>`. The Mongo user behind `MONGODB_URI` therefore needs access to `anbangz_blog_test`, but does not need permission to create brand-new databases.
 
 ---
 

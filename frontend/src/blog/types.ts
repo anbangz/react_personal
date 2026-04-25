@@ -8,6 +8,7 @@ export interface BlogPost {
   id: string;
   slug: string;
   title: string;
+  summary?: string;
   content: string;
   photos: Photo[];
   published: boolean;

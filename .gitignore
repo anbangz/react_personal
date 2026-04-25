@@ -6,11 +6,13 @@ frontend/dist/*
 backend/bin/
 backend/api
 docs/*
+docs/superpowers/
 infrastructure-terraform/.terraform/
 infrastructure-terraform/terraform.tfstate
 infrastructure-terraform/terraform.tfstate.backup
 infrastructure-terraform/terraform.tfstate.*.backup
 infrastructure-terraform/lambda-placeholder.zip
+.superpowers/
 .playwright-mcp/
 *.png
 *.jpeg
