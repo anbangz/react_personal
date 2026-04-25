@@ -70,6 +70,9 @@ func (m *mockPostRepo) Update(ctx context.Context, slug string, update bson.M) e
 			if title, ok := update["title"]; ok {
 				m.posts[i].Title = title.(string)
 			}
+			if summary, ok := update["summary"]; ok {
+				m.posts[i].Summary = summary.(string)
+			}
 			if content, ok := update["content"]; ok {
 				m.posts[i].Content = content.(string)
 			}
@@ -169,5 +172,124 @@ func TestTruncateContent_UTF8Safe(t *testing.T) {
 	got := TruncateContent(input, 3)
 	if got != "你好世..." {
 		t.Fatalf("expected UTF-8 safe truncation, got %q", got)
+	}
+}
+
+func TestPostService_Create_WithSummary(t *testing.T) {
+	repo := &mockPostRepo{}
+	svc := NewPostService(repo)
+
+	post, err := svc.Create(context.Background(), model.CreatePostRequest{
+		Slug:      "summary-test",
+		Title:     "Summary Test",
+		Summary:   "A short summary for the feed.",
+		Content:   "# Full content here",
+		Published: true,
+	})
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if post.Summary != "A short summary for the feed." {
+		t.Errorf("expected summary to be set, got %q", post.Summary)
+	}
+}
+
+func TestPostService_NormalizesSummaryWhitespace(t *testing.T) {
+	repo := &mockPostRepo{
+		posts: []model.Post{{
+			ID:        primitive.NewObjectID(),
+			Slug:      "summary-whitespace-test",
+			Title:     "Whitespace Summary",
+			Content:   "# Original content",
+			Published: true,
+		}},
+	}
+	svc := NewPostService(repo)
+	ctx := context.Background()
+
+	createdPost, err := svc.Create(ctx, model.CreatePostRequest{
+		Slug:      "summary-whitespace-created",
+		Title:     "Created Post",
+		Summary:   "  padded summary  ",
+		Content:   "# Full content here",
+		Published: true,
+	})
+	if err != nil {
+		t.Fatalf("unexpected create error: %v", err)
+	}
+	if createdPost.Summary != "padded summary" {
+		t.Fatalf("expected trimmed create summary %q, got %q", "padded summary", createdPost.Summary)
+	}
+
+	updatedSummary := "  updated summary  "
+	updatedPost, err := svc.Update(ctx, "summary-whitespace-test", model.UpdatePostRequest{
+		Summary: &updatedSummary,
+	})
+	if err != nil {
+		t.Fatalf("unexpected update error: %v", err)
+	}
+	if updatedPost.Summary != "updated summary" {
+		t.Fatalf("expected trimmed update summary %q, got %q", "updated summary", updatedPost.Summary)
+	}
+
+	blankSummary := "   "
+	updatedPost, err = svc.Update(ctx, "summary-whitespace-test", model.UpdatePostRequest{
+		Summary: &blankSummary,
+	})
+	if err != nil {
+		t.Fatalf("unexpected blank-summary update error: %v", err)
+	}
+	if updatedPost.Summary != "" {
+		t.Fatalf("expected blank summary to normalize to empty string, got %q", updatedPost.Summary)
+	}
+}
+
+func TestPostService_Update_Summary(t *testing.T) {
+	repo := &mockPostRepo{
+		posts: []model.Post{{
+			ID:        primitive.NewObjectID(),
+			Slug:      "summary-update-test",
+			Title:     "Original Title",
+			Content:   "# Original content",
+			Published: true,
+		}},
+	}
+	svc := NewPostService(repo)
+	ctx := context.Background()
+
+	firstSummary := "First summary value"
+	updatedPost, err := svc.Update(ctx, "summary-update-test", model.UpdatePostRequest{
+		Summary: &firstSummary,
+	})
+	if err != nil {
+		t.Fatalf("unexpected error setting initial summary: %v", err)
+	}
+	if updatedPost.Summary != firstSummary {
+		t.Fatalf("expected summary %q, got %q", firstSummary, updatedPost.Summary)
+	}
+
+	secondSummary := "Second summary value"
+	updatedPost, err = svc.Update(ctx, "summary-update-test", model.UpdatePostRequest{
+		Summary: &secondSummary,
+	})
+	if err != nil {
+		t.Fatalf("unexpected error overwriting summary: %v", err)
+	}
+	if updatedPost.Summary != secondSummary {
+		t.Fatalf("expected summary %q, got %q", secondSummary, updatedPost.Summary)
+	}
+
+	newTitle := "Retitled Post"
+	updatedPost, err = svc.Update(ctx, "summary-update-test", model.UpdatePostRequest{
+		Title: &newTitle,
+	})
+	if err != nil {
+		t.Fatalf("unexpected error updating title without summary: %v", err)
+	}
+	if updatedPost.Title != newTitle {
+		t.Fatalf("expected title %q, got %q", newTitle, updatedPost.Title)
+	}
+	if updatedPost.Summary != secondSummary {
+		t.Fatalf("expected summary to remain %q, got %q", secondSummary, updatedPost.Summary)
 	}
 }

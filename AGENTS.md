@@ -121,6 +121,8 @@ cd backend && make test     # Run Go tests
 - **GitHub CLI (`gh`)** may not be on the default shell `$PATH`. Run `which gh` first; if not found, try `/opt/homebrew/bin/gh` (Apple Silicon macOS) or `/usr/local/bin/gh` (Intel macOS).
 
 > The frontend is a static site with no `.env` file. The backend requires environment variables (`MONGODB_URI`, `API_KEY`, `S3_BUCKET`, `PHOTOS_CDN_URL`) — set these locally for `make run`.
+>
+> Backend repository integration tests (`backend/internal/repository/post_test.go`) use the fixed MongoDB database `anbangz_blog_test` and a unique per-run collection named `posts_test_<timestamp>`. The Mongo user behind `MONGODB_URI` therefore needs access to `anbangz_blog_test`, but does not need permission to create brand-new databases.
 
 ---
 
@@ -171,6 +173,8 @@ cd backend && make test     # Run Go tests
 
 ### Deployment
 - Merging to the `master` branch triggers the app pipeline automatically; the Terraform pipeline triggers only when files under `infrastructure-terraform/**` change.
+- GitHub Actions PR checks run on all pull requests via `.github/workflows/pr-checks.yml`; they validate the `frontend` build, `backend` `make test`, and `backend` `make build`.
+- The PR `backend-test` job explicitly clears `MONGODB_URI` so the Mongo-backed repository integration test skips and the check stays limited to the repo's unit-test-safe coverage.
 - **App pipeline** (`PersonalWebsitePipeline`): **Source → Build → Deploy** — builds the React app and deploys to S3.
 - **Backend pipeline** (`BackendAPIPipeline`): **Source → Build → DeployDev → DeployProd** — compiles the Go binary and deploys to Lambda. Triggers only when files under `backend/**` change.
 - **Terraform pipeline** (`TerraformInfrastructurePipeline`): **Source → Plan → Apply** — runs `terraform plan` and then `terraform apply`.

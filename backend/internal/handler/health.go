@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/anbangz/react_personal/backend/internal/logger"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
@@ -29,6 +30,9 @@ func (h *HealthHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if err := h.mongoClient.Ping(ctx, nil); err != nil {
 		status = "degraded"
 		mongoStatus = "disconnected: " + err.Error()
+		logger.Warn(r.Context(), "health check degraded", "mongodb", mongoStatus)
+	} else {
+		logger.Info(r.Context(), "health check ok")
 	}
 
 	w.Header().Set("Content-Type", "application/json")

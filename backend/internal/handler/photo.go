@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/anbangz/react_personal/backend/internal/logger"
 	"github.com/anbangz/react_personal/backend/internal/service"
 	"github.com/go-chi/chi/v5"
 )
@@ -40,10 +41,12 @@ func (h *PhotoHandler) Upload(w http.ResponseWriter, r *http.Request) {
 
 	url, err := h.svc.Upload(r.Context(), header.Filename, contentType, file)
 	if err != nil {
+		logger.Error(r.Context(), "photo upload failed", err, "filename", header.Filename)
 		respondError(w, http.StatusInternalServerError, fmt.Sprintf("upload failed: %v", err))
 		return
 	}
 
+	logger.Info(r.Context(), "photo uploaded", "filename", header.Filename, "url", url)
 	respondJSON(w, http.StatusCreated, map[string]string{"url": url})
 }
 
@@ -51,6 +54,7 @@ func (h *PhotoHandler) Upload(w http.ResponseWriter, r *http.Request) {
 func (h *PhotoHandler) List(w http.ResponseWriter, r *http.Request) {
 	items, err := h.svc.List(r.Context())
 	if err != nil {
+		logger.Error(r.Context(), "photo list failed", err)
 		respondError(w, http.StatusInternalServerError, fmt.Sprintf("list failed: %v", err))
 		return
 	}
@@ -66,8 +70,10 @@ func (h *PhotoHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := h.svc.Delete(r.Context(), key); err != nil {
+		logger.Error(r.Context(), "photo delete failed", err, "key", key)
 		respondError(w, http.StatusInternalServerError, fmt.Sprintf("delete failed: %v", err))
 		return
 	}
+	logger.Info(r.Context(), "photo deleted", "key", key)
 	w.WriteHeader(http.StatusNoContent)
 }
