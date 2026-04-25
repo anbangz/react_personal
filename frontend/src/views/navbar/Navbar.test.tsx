@@ -12,14 +12,14 @@ describe("Navbar", () => {
 
   it("toggles burger menu on click", async () => {
     renderWithProviders(<Navbar />);
-    const burger = screen.getByRole("button", { name: /menu/i });
-    const menu = burger.closest(".navbar")!.querySelector(".navbar-menu");
+    const burger = screen.getByRole("button", { name: /open menu/i });
+    const menu = document.getElementById("site-nav-menu");
 
-    expect(menu).not.toHaveClass("is-active");
+    expect(menu).not.toHaveClass("is-open");
     await userEvent.click(burger);
-    expect(menu).toHaveClass("is-active");
+    expect(menu).toHaveClass("is-open");
     await userEvent.click(burger);
-    expect(menu).not.toHaveClass("is-active");
+    expect(menu).not.toHaveClass("is-open");
   });
 
   it("has external links with rel=noopener noreferrer", () => {
