@@ -15,4 +15,5 @@ infrastructure-terraform/lambda-placeholder.zip
 .superpowers/
 .playwright-mcp/
 *.png
+!frontend/src/static/images/bear.png
 *.jpeg
