@@ -112,7 +112,7 @@ export const Blog = () => {
                 </div>
               ))}
 
-            {!loading && !error && totalPages >= 1 && (
+            {!loading && !error && totalPages > 1 && (
               <nav className="blog-feed__pagination" aria-label="Pagination">
                 <button
                   className="button is-small"

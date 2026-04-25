@@ -18,3 +18,15 @@ Object.defineProperty(window, "matchMedia", {
     dispatchEvent: jest.fn(),
   })),
 });
+
+// Suppress React Router v7 future-flag warnings in test output
+const originalWarn = console.warn;
+console.warn = (...args: unknown[]) => {
+  if (
+    typeof args[0] === "string" &&
+    args[0].includes("React Router Future Flag Warning")
+  ) {
+    return;
+  }
+  originalWarn(...args);
+};

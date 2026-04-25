@@ -1,5 +1,5 @@
 import * as React from "react";
-import { screen, waitFor } from "@testing-library/react";
+import { screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { renderWithProviders } from "../../test-utils";
 import { Blog } from "./Blog";
@@ -127,10 +127,20 @@ describe("Blog", () => {
 
   it("disables previous on first page and next on last page", async () => {
     server.use(
-      http.get("*/posts", () => {
+      http.get("*/posts", ({ request }) => {
+        const url = new URL(request.url);
+        const page = url.searchParams.get("page");
+        if (page === "2") {
+          return HttpResponse.json({
+            posts: [createMockPost({ title: "Page 2 Post" })],
+            total: 11,
+            page: 2,
+            limit: 10,
+          });
+        }
         return HttpResponse.json({
-          posts: [createMockPost()],
-          total: 1,
+          posts: [createMockPost({ title: "Page 1 Post" })],
+          total: 11,
           page: 1,
           limit: 10,
         });
@@ -138,12 +148,20 @@ describe("Blog", () => {
     );
 
     renderWithProviders(<Blog />);
-    expect(await screen.findAllByText("Test Post")).toHaveLength(2);
+    expect(await screen.findAllByText("Page 1 Post")).toHaveLength(2);
 
     const prevBtn = screen.getByRole("button", { name: /previous/i });
     const nextBtn = screen.getByRole("button", { name: /next/i });
     expect(prevBtn).toBeDisabled();
-    expect(nextBtn).toBeDisabled();
+    expect(nextBtn).not.toBeDisabled();
+
+    await userEvent.click(nextBtn);
+    expect(await screen.findAllByText("Page 2 Post")).toHaveLength(2);
+
+    const prevBtn2 = screen.getByRole("button", { name: /previous/i });
+    const nextBtn2 = screen.getByRole("button", { name: /next/i });
+    expect(prevBtn2).not.toBeDisabled();
+    expect(nextBtn2).toBeDisabled();
   });
 
   it("opens lightbox and navigates photos", async () => {
