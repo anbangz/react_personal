@@ -14,5 +14,3 @@ infrastructure-terraform/terraform.tfstate.*.backup
 infrastructure-terraform/lambda-placeholder.zip
 .superpowers/
 .playwright-mcp/
-*.png
-*.jpeg

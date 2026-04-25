@@ -9,8 +9,10 @@ export const TitleBanner = () => {
     <div id="title-banner" className="section title-banner">
       <img className="title-banner__portrait" src={PortraitImg} alt="Portrait of Anbang" />
       <div className="title-banner__description">
-        <h1>Hi! I'm Anbang.</h1>
-        <h3>I'm a software engineer currently living in Seattle.</h3>
+        <h1 className="title-banner__heading">
+          <span>Hi! I&apos;m Anbang.</span>
+        </h1>
+        <h3>I&apos;m a software engineer currently living in Seattle.</h3>
       </div>
     </div>
   );

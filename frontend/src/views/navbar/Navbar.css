@@ -5,7 +5,8 @@
   100% { transform: rotate(360deg) scale(1); opacity: 1; }
 }
 
-.theme-toggle {
+.theme-toggle,
+.bear-game-trigger {
   background: none;
   border: none;
   cursor: pointer;
@@ -15,9 +16,28 @@
 
 /* Full-width only in mobile hamburger menu */
 @media screen and (max-width: 1023px) {
-  .theme-toggle {
+  .theme-toggle,
+  .bear-game-trigger {
     width: 100%;
   }
+}
+
+.bear-game-trigger {
+  opacity: 0.74;
+  transition: opacity 0.2s ease;
+}
+
+.bear-game-trigger:hover,
+.bear-game-trigger:focus-visible {
+  opacity: 1;
+}
+
+.bear-game-trigger__icon {
+  width: 1.5rem;
+  height: 1.5rem;
+  object-fit: contain;
+  image-rendering: pixelated;
+  filter: brightness(0.95);
 }
 
 .theme-toggle__icon {

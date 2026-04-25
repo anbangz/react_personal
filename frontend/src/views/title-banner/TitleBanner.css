@@ -14,9 +14,12 @@
   width: 300px;
 }
 
-.title-banner__description {
-}
-
 [data-theme="dark"] .title-banner {
   background-color: var(--bg-page);
+}
+
+.title-banner__heading {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
 }
