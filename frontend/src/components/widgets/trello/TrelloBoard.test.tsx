@@ -8,6 +8,8 @@ describe("TrelloBoard", () => {
     renderWithProviders(<TrelloBoard boardUrl="https://trello.com/b/123" />);
     const link = screen.getByRole("link", { name: /trello board/i });
     expect(link).toHaveAttribute("href", "https://trello.com/b/123");
+    expect(link).toHaveAttribute("target", "_blank");
+    expect(link).toHaveAttribute("rel", "noopener noreferrer");
   });
 
   it("injects trello embed script on mount", () => {

@@ -2,7 +2,6 @@ import * as React from "react";
 import { render, screen, waitFor } from "@testing-library/react";
 import { renderWithProviders } from "./test-utils";
 import { App, AppContent } from "./App";
-import { ThemeProvider } from "./context/ThemeContext";
 
 describe("App routing", () => {
   it("renders homepage on /", () => {
@@ -43,11 +42,7 @@ describe("App routing", () => {
   });
 
   it("renders the full App wrapper", () => {
-    render(
-      <ThemeProvider>
-        <App />
-      </ThemeProvider>
-    );
+    render(<App />);
     expect(screen.getByText("Hi! I'm Anbang.")).toBeInTheDocument();
   });
 });

@@ -55,6 +55,7 @@ describe("ThemeContext", () => {
   });
 
   it("respects prefers-color-scheme: dark when no localStorage value", () => {
+    const originalMatchMedia = window.matchMedia;
     Object.defineProperty(window, "matchMedia", {
       writable: true,
       value: jest.fn().mockImplementation((query: string) => ({
@@ -71,5 +72,10 @@ describe("ThemeContext", () => {
 
     renderWithProviders(<TestComponent />);
     expect(screen.getByTestId("theme")).toHaveTextContent("dark");
+
+    Object.defineProperty(window, "matchMedia", {
+      writable: true,
+      value: originalMatchMedia,
+    });
   });
 });
