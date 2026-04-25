@@ -21,7 +21,7 @@ export const TrelloBoard = (props: TrelloBoardProps) => {
 
   return (
     <blockquote className="trello-board-compact">
-      <a href={props.boardUrl} target="_blank">
+      <a href={props.boardUrl} target="_blank" rel="noopener noreferrer">
         Trello Board
       </a>
     </blockquote>

@@ -4,9 +4,14 @@ phases:
   install:
     runtime-versions:
       nodejs: 20
+    commands:
+      - (cd frontend && npm ci)
+  pre_build:
+    commands:
+      - (cd frontend && npm test -- --coverage --ci)
   build:
     commands:
-      - cd frontend && npm run clean-build
+      - (cd frontend && npm run build)
 artifacts:
   base-directory: ./frontend/dist
   files:

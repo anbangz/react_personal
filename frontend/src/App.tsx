@@ -16,7 +16,7 @@ import { ThemeProvider } from "./context/ThemeContext";
 // App-wide CSS import
 import "./App.css";
 
-const AppContent = (): React.ReactElement => {
+export const AppContent = (): React.ReactElement => {
   const { hash, pathname } = useLocation();
 
   React.useEffect(() => {
