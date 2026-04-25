@@ -119,6 +119,16 @@ export const SecretBearRunModal: React.FunctionComponent<SecretBearRunModalProps
     drawFrame();
   }, [drawFrame]);
 
+  const handleStagePointerDown = React.useCallback(
+    (event: React.PointerEvent<HTMLDivElement>) => {
+      if (currentScreenRef.current === "playing") {
+        event.preventDefault();
+        handleJump();
+      }
+    },
+    [handleJump]
+  );
+
   const startRun = React.useCallback(() => {
     stopAnimationLoop();
     bearRunStateRef.current = createInitialBearRunState();
@@ -316,7 +326,7 @@ export const SecretBearRunModal: React.FunctionComponent<SecretBearRunModalProps
         {screen === "intro" && (
           <div className="secret-bear-run__panel">
             <p id="secret-bear-run-intro-hint" className="secret-bear-run__hint">
-              Use Space or the Up Arrow (or tap on mobile) to jump over logs and pine trees.
+              Press Space or the Up Arrow (or tap anywhere on the game) to jump over logs and pine trees.
             </p>
             <button type="button" className="button is-link secret-bear-run__primary-action" onClick={startRun}>
               Start run
@@ -326,7 +336,7 @@ export const SecretBearRunModal: React.FunctionComponent<SecretBearRunModalProps
 
         {(screen === "playing" || screen === "game-over") && (
           <div className="secret-bear-run__play-area">
-            <div className="secret-bear-run__stage">
+            <div className="secret-bear-run__stage" onPointerDown={handleStagePointerDown}>
               <canvas
                 ref={canvasRef}
                 className="secret-bear-run__canvas"
@@ -349,13 +359,6 @@ export const SecretBearRunModal: React.FunctionComponent<SecretBearRunModalProps
                     Run again
                   </button>
                 </div>
-              )}
-            </div>
-            <div className={`secret-bear-run__actions ${screen === "game-over" ? "secret-bear-run__actions--hidden" : ""}`}>
-              {screen === "playing" && (
-                <button type="button" className="button is-link secret-bear-run__jump-button" onClick={handleJump}>
-                  Jump
-                </button>
               )}
             </div>
           </div>
