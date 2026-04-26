@@ -58,6 +58,22 @@ a {
   color: var(--link-color);
 }
 
+.app-layout {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.app-layout__navbar {
+  position: sticky;
+  top: 0;
+  z-index: 30;
+}
+
+.app-layout__body {
+  flex: 1;
+}
+
 /* Smooth theme transitions across all elements */
 *,
 *::before,

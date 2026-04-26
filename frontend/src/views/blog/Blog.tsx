@@ -2,7 +2,6 @@ import * as React from "react";
 import { Link } from "react-router-dom";
 import { BlogPost } from "../../blog/types";
 import { BlogFeedCard } from "../../components/blog-post/BlogPost";
-import { Footer } from "../footer/Footer";
 import { fetchPosts } from "../../api/client";
 import "./Blog.css";
 
@@ -105,8 +104,6 @@ export const Blog = () => {
           </div>
         </div>
       </section>
-
-      <Footer />
     </div>
   );
 };

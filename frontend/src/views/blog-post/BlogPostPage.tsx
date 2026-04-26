@@ -3,7 +3,6 @@ import { useParams, Link } from "react-router-dom";
 import ReactMarkdown from "react-markdown";
 import { BlogPost, Photo } from "../../blog/types";
 import { Lightbox } from "../../components/lightbox/Lightbox";
-import { Footer } from "../footer/Footer";
 import { fetchPost } from "../../api/client";
 import "./BlogPostPage.css";
 
@@ -74,7 +73,6 @@ export const BlogPostPage = () => {
             </div>
           </div>
         </section>
-        <Footer />
       </div>
     );
   }
@@ -94,7 +92,6 @@ export const BlogPostPage = () => {
             </div>
           </div>
         </section>
-        <Footer />
       </div>
     );
   }
@@ -160,8 +157,6 @@ export const BlogPostPage = () => {
           onNext={handleNext}
         />
       )}
-
-      <Footer />
     </div>
   );
 };

@@ -12,6 +12,7 @@ import { Blog } from "./views/blog/Blog";
 import { BlogPostPage } from "./views/blog-post/BlogPostPage";
 import { Status } from "./views/status/Status";
 import { Navbar } from "./views/navbar/Navbar";
+import { Footer } from "./views/footer/Footer";
 import { ThemeProvider } from "./context/ThemeContext";
 
 // App-wide CSS import
@@ -72,6 +73,7 @@ export const AppContent = (): React.ReactElement => {
           <Route path="/status" element={<Status />} />
         </Routes>
       </div>
+      <Footer />
     </div>
   );
 };
