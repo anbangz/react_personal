@@ -5,8 +5,9 @@ import {
   CANVAS_HEIGHT,
   CANVAS_WIDTH,
   createInitialBearRunState,
+  endBearJump,
   hasBearCollision,
-  jumpBear,
+  startBearJump,
   updateBearRunState,
   type BearRunState,
 } from "./bearRunEngine";
@@ -45,6 +46,9 @@ export const SecretBearRunModal: React.FunctionComponent<SecretBearRunModalProps
   const currentScreenRef = React.useRef<SecretBearRunScreen>("intro");
   const scoreRef = React.useRef(0);
   const bestScoreRef = React.useRef(0);
+  const activeJumpKeysRef = React.useRef<Set<string>>(new Set());
+  const suppressedGameOverJumpKeysRef = React.useRef<Set<string>>(new Set());
+  const activeJumpPointerIdRef = React.useRef<number | null>(null);
   const [screen, setScreen] = React.useState<SecretBearRunScreen>("intro");
   const [score, setScore] = React.useState(0);
   const [bestScore, setBestScore] = React.useState(0);
@@ -89,6 +93,9 @@ export const SecretBearRunModal: React.FunctionComponent<SecretBearRunModalProps
 
   const finishRun = React.useCallback(() => {
     stopAnimationLoop();
+    suppressedGameOverJumpKeysRef.current = new Set(activeJumpKeysRef.current);
+    activeJumpKeysRef.current.clear();
+    activeJumpPointerIdRef.current = null;
     currentScreenRef.current = "game-over";
     setScreen("game-over");
 
@@ -110,23 +117,82 @@ export const SecretBearRunModal: React.FunctionComponent<SecretBearRunModalProps
     }
   }, [stopAnimationLoop]);
 
-  const handleJump = React.useCallback(() => {
+  const handleJumpStart = React.useCallback(() => {
     if (currentScreenRef.current !== "playing") {
       return;
     }
 
-    bearRunStateRef.current = jumpBear(bearRunStateRef.current);
+    bearRunStateRef.current = startBearJump(bearRunStateRef.current);
     drawFrame();
   }, [drawFrame]);
 
+  const handleJumpEnd = React.useCallback(() => {
+    if (currentScreenRef.current !== "playing") {
+      return;
+    }
+
+    bearRunStateRef.current = endBearJump(bearRunStateRef.current);
+  }, []);
+
+  const clearActiveJumpInput = React.useCallback(() => {
+    activeJumpKeysRef.current.clear();
+    activeJumpPointerIdRef.current = null;
+
+    if (currentScreenRef.current === "playing") {
+      handleJumpEnd();
+    }
+  }, [handleJumpEnd]);
+
   const handleStagePointerDown = React.useCallback(
     (event: React.PointerEvent<HTMLDivElement>) => {
-      if (currentScreenRef.current === "playing") {
-        event.preventDefault();
-        handleJump();
+      if (currentScreenRef.current !== "playing") {
+        return;
+      }
+
+      event.preventDefault();
+
+      if (activeJumpPointerIdRef.current !== null) {
+        return;
+      }
+
+      activeJumpPointerIdRef.current = event.pointerId;
+
+      if (typeof event.currentTarget.setPointerCapture === "function") {
+        event.currentTarget.setPointerCapture(event.pointerId);
+      }
+
+      handleJumpStart();
+    },
+    [handleJumpStart]
+  );
+
+  const handleStagePointerEnd = React.useCallback(
+    (event: React.PointerEvent<HTMLDivElement>) => {
+      if (currentScreenRef.current !== "playing") {
+        return;
+      }
+
+      event.preventDefault();
+
+      if (activeJumpPointerIdRef.current !== event.pointerId) {
+        return;
+      }
+
+      activeJumpPointerIdRef.current = null;
+
+      if (
+        typeof event.currentTarget.hasPointerCapture === "function" &&
+        typeof event.currentTarget.releasePointerCapture === "function" &&
+        event.currentTarget.hasPointerCapture(event.pointerId)
+      ) {
+        event.currentTarget.releasePointerCapture(event.pointerId);
+      }
+
+      if (activeJumpKeysRef.current.size === 0) {
+        handleJumpEnd();
       }
     },
-    [handleJump]
+    [handleJumpEnd]
   );
 
   const startRun = React.useCallback(() => {
@@ -134,6 +200,9 @@ export const SecretBearRunModal: React.FunctionComponent<SecretBearRunModalProps
     bearRunStateRef.current = createInitialBearRunState();
     animationTickRef.current = 0;
     previousFrameTimeRef.current = null;
+    activeJumpKeysRef.current.clear();
+    suppressedGameOverJumpKeysRef.current.clear();
+    activeJumpPointerIdRef.current = null;
     currentScreenRef.current = "playing";
     scoreRef.current = 0;
     setScore(0);
@@ -142,6 +211,9 @@ export const SecretBearRunModal: React.FunctionComponent<SecretBearRunModalProps
 
   const handleClose = React.useCallback(() => {
     stopAnimationLoop();
+    activeJumpKeysRef.current.clear();
+    suppressedGameOverJumpKeysRef.current.clear();
+    activeJumpPointerIdRef.current = null;
     onClose();
   }, [onClose, stopAnimationLoop]);
 
@@ -162,6 +234,9 @@ export const SecretBearRunModal: React.FunctionComponent<SecretBearRunModalProps
     bearRunStateRef.current = createInitialBearRunState();
     animationTickRef.current = 0;
     previousFrameTimeRef.current = null;
+    activeJumpKeysRef.current.clear();
+    suppressedGameOverJumpKeysRef.current.clear();
+    activeJumpPointerIdRef.current = null;
     currentScreenRef.current = "intro";
     setScreen("intro");
     scoreRef.current = 0;
@@ -182,6 +257,18 @@ export const SecretBearRunModal: React.FunctionComponent<SecretBearRunModalProps
     document.body.style.overflow = "hidden";
     window.requestAnimationFrame(() => closeButtonRef.current?.focus());
 
+    const getJumpKey = (key: string): "Space" | "ArrowUp" | null => {
+      if (key === " " || key === "Space" || key === "Spacebar") {
+        return "Space";
+      }
+
+      if (key === "ArrowUp") {
+        return "ArrowUp";
+      }
+
+      return null;
+    };
+
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
         event.preventDefault();
@@ -190,12 +277,26 @@ export const SecretBearRunModal: React.FunctionComponent<SecretBearRunModalProps
       }
 
       const eventTarget = event.target instanceof Element ? event.target : null;
-      const isJumpKey = event.key === " " || event.key === "Spacebar" || event.key === "ArrowUp";
+      const jumpKey = getJumpKey(event.key);
       const isInteractiveTarget = eventTarget?.closest(INTERACTIVE_JUMP_BLOCK_SELECTOR) !== null;
 
-      if (currentScreenRef.current === "playing" && isJumpKey && !isInteractiveTarget) {
+      if (
+        currentScreenRef.current === "game-over" &&
+        jumpKey !== null &&
+        suppressedGameOverJumpKeysRef.current.has(jumpKey)
+      ) {
         event.preventDefault();
-        handleJump();
+        return;
+      }
+
+      if (currentScreenRef.current === "playing" && jumpKey !== null && !isInteractiveTarget) {
+        event.preventDefault();
+
+        if (!event.repeat && !activeJumpKeysRef.current.has(jumpKey)) {
+          activeJumpKeysRef.current.add(jumpKey);
+          handleJumpStart();
+        }
+
         return;
       }
 
@@ -235,15 +336,57 @@ export const SecretBearRunModal: React.FunctionComponent<SecretBearRunModalProps
       }
     };
 
+    const handleKeyUp = (event: KeyboardEvent) => {
+      const jumpKey = getJumpKey(event.key);
+
+      if (jumpKey === null) {
+        return;
+      }
+
+      if (suppressedGameOverJumpKeysRef.current.has(jumpKey)) {
+        event.preventDefault();
+        suppressedGameOverJumpKeysRef.current.delete(jumpKey);
+        activeJumpKeysRef.current.delete(jumpKey);
+        return;
+      }
+
+      activeJumpKeysRef.current.delete(jumpKey);
+
+      if (
+        currentScreenRef.current === "playing" &&
+        activeJumpPointerIdRef.current === null &&
+        activeJumpKeysRef.current.size === 0
+      ) {
+        event.preventDefault();
+        handleJumpEnd();
+      }
+    };
+
+    const handleWindowBlur = () => {
+      clearActiveJumpInput();
+    };
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === "hidden") {
+        clearActiveJumpInput();
+      }
+    };
+
     document.addEventListener("keydown", handleKeyDown);
+    document.addEventListener("keyup", handleKeyUp);
+    window.addEventListener("blur", handleWindowBlur);
+    document.addEventListener("visibilitychange", handleVisibilityChange);
 
     return () => {
       stopAnimationLoop();
       document.body.style.overflow = previousOverflow;
       document.removeEventListener("keydown", handleKeyDown);
+      document.removeEventListener("keyup", handleKeyUp);
+      window.removeEventListener("blur", handleWindowBlur);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
       triggerButtonRef.current?.focus();
     };
-  }, [handleClose, handleJump, isOpen, stopAnimationLoop, triggerButtonRef]);
+  }, [clearActiveJumpInput, handleClose, handleJumpEnd, handleJumpStart, isOpen, stopAnimationLoop, triggerButtonRef]);
 
   React.useEffect(() => {
     if (!isOpen || screen !== "playing") {
@@ -326,7 +469,7 @@ export const SecretBearRunModal: React.FunctionComponent<SecretBearRunModalProps
         {screen === "intro" && (
           <div className="secret-bear-run__panel">
             <p id="secret-bear-run-intro-hint" className="secret-bear-run__hint">
-              Press Space or the Up Arrow (or tap anywhere on the game) to jump over logs and pine trees.
+              Press Space or the Up Arrow, or tap the game, to jump. Hold longer for a higher jump over logs and pine trees.
             </p>
             <button type="button" className="button is-link secret-bear-run__primary-action" onClick={startRun}>
               Start run
@@ -336,7 +479,13 @@ export const SecretBearRunModal: React.FunctionComponent<SecretBearRunModalProps
 
         {(screen === "playing" || screen === "game-over") && (
           <div className="secret-bear-run__play-area">
-            <div className="secret-bear-run__stage" onPointerDown={handleStagePointerDown}>
+            <div
+              className="secret-bear-run__stage"
+              onPointerDown={handleStagePointerDown}
+              onPointerUp={handleStagePointerEnd}
+              onPointerCancel={handleStagePointerEnd}
+              onPointerLeave={handleStagePointerEnd}
+            >
               <canvas
                 ref={canvasRef}
                 className="secret-bear-run__canvas"
