@@ -107,5 +107,5 @@ Run from the respective `frontend/` or `backend/` directory.
 |--------|----------|---------|
 | Dev server | `npm start` | `make run` |
 | Production build | `npm run build` | `make build` |
-| Tests | — | `make test` |
+| Tests | `npm test` | `make test` |
 | Clean | `npm run clean` | `make clean` |

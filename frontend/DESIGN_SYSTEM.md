@@ -62,7 +62,7 @@ These do NOT change between themes:
 
 | Token | Hex | Usage |
 |-------|-----|-------|
-| `--color-berkeley-navy` | `#003262` | Title banner background, AboutMe background |
+| `--color-berkeley-navy` | `#003262` | Title banner background |
 | `--color-berkeley-metallic-gold` | `#c4820e` | `<hr>` dividers |
 | `--color-berkeley-california-gold` | `#fdb515` | (defined but rarely used) |
 | `--color-berkeley-founders-blue` | `#3b7ea1` | (defined but rarely used) |
@@ -155,7 +155,7 @@ App
 
 ### Custom Layout Patterns
 
-- **Centered flex row with wrap**: `display: flex; flex-direction: row; flex-wrap: wrap; align-items: center; justify-content: center;` — used in TitleBanner, ResumeItem, AboutMe
+- **Centered flex row with wrap**: `display: flex; flex-direction: row; flex-wrap: wrap; align-items: center; justify-content: center;` — used in TitleBanner and ResumeItem
 - **Max-width content**: Blog and BlogPostPage use `max-width: 720px; margin: 0 auto;` for readable line lengths
 - **Reverse layout**: ResumeItem uses `.experience-item--reverse` with `flex-direction: row-reverse` for alternating left/right image placement
 
@@ -206,21 +206,19 @@ export const Component: React.FunctionComponent<ComponentProps> = (props) => {
 };
 ```
 
-### Reusable Widgets
+### Reusable Components
 
-Widgets live in `frontend/src/components/widgets/`:
-- `TrelloBoard.tsx` — external embed component
-
-Shared components live in `frontend/src/components/`:
+Reusable components live in `frontend/src/components/`:
 - `blog-post/BlogPost.tsx` — Blog post card (used in feed)
 - `lightbox/Lightbox.tsx` — Photo lightbox modal
 - `resume-item/ResumeItem.tsx` — Resume entry with image + text
+- `secret-bear-run/SecretBearRunModal.tsx` — Navbar-triggered hidden minigame modal
 
 ### Image Handling
 
 - Static images: `frontend/src/static/images/`
 - Import with webpack: `import PortraitImg from "../../static/images/portrait.jpg";`
-- Common images: `portrait.jpg` (used by TitleBanner and AboutMe), `amazon-scout.jpg`, `amazon-logo.jpg`, `riptide-logo.jpg`, `berkeley-seal.jpg`
+- Common images: `portrait.jpg` (used by TitleBanner), `amazon-scout.jpg`, `amazon-logo.jpg`, `riptide-logo.jpg`, `berkeley-seal.jpg`, `bear.png`
 - **Always provide `alt` text** on images (see [Accessibility](#accessibility-standards))
 
 ---
@@ -310,13 +308,12 @@ frontend/src/
 │   ├── blog-post/         # BlogPost card component
 │   ├── lightbox/          # Photo lightbox modal
 │   ├── resume-item/       # Resume entry layout
-│   └── widgets/           # Reusable micro-components (TrelloBoard, etc.)
+│   └── secret-bear-run/   # Hidden navbar minigame modal + engine
 ├── views/                 # Page sections / routes
 │   ├── home/
 │   │   └── Homepage.tsx   # Aggregates all homepage sections
 │   ├── navbar/
 │   ├── title-banner/
-│   ├── about-me/          # (older section, not in current Homepage)
 │   ├── this-site/
 │   ├── resume/
 │   ├── contact-me/
@@ -390,4 +387,4 @@ Then:
 
 ---
 
-*Last updated: 2025-01-XX*
+*Last updated: 2026-04-25*
