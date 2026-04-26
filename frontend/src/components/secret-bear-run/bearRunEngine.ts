@@ -12,6 +12,8 @@ export interface BearRunState {
   bearY: number;
   bearVelocityY: number;
   isGrounded: boolean;
+  isJumpHeld: boolean;
+  jumpHoldSeconds: number;
   speed: number;
   score: number;
   distanceUntilNextObstacle: number;
@@ -24,9 +26,11 @@ export const GROUND_Y = 184;
 export const BEAR_X = 92;
 export const BEAR_WIDTH = 28;
 export const BEAR_HEIGHT = 20;
+export const MAX_JUMP_HOLD_SECONDS = 0.18;
 
 const GRAVITY = 1400;
-const JUMP_VELOCITY = -520;
+const INITIAL_JUMP_VELOCITY = -380;
+const JUMP_HOLD_ACCELERATION = 1100;
 const START_SPEED = 220;
 const MAX_SPEED = 420;
 const SPEED_ACCELERATION = 8;
@@ -75,13 +79,15 @@ export const createInitialBearRunState = (): BearRunState => ({
   bearY: getBearGroundTop(),
   bearVelocityY: 0,
   isGrounded: true,
+  isJumpHeld: false,
+  jumpHoldSeconds: 0,
   speed: START_SPEED,
   score: 0,
   distanceUntilNextObstacle: MIN_OBSTACLE_GAP,
   obstacles: [],
 });
 
-export const jumpBear = (state: BearRunState): BearRunState => {
+export const startBearJump = (state: BearRunState): BearRunState => {
   if (!state.isGrounded) {
     return state;
   }
@@ -89,9 +95,16 @@ export const jumpBear = (state: BearRunState): BearRunState => {
   return {
     ...state,
     isGrounded: false,
-    bearVelocityY: JUMP_VELOCITY,
+    isJumpHeld: true,
+    jumpHoldSeconds: 0,
+    bearVelocityY: INITIAL_JUMP_VELOCITY,
   };
 };
+
+export const endBearJump = (state: BearRunState): BearRunState => ({
+  ...state,
+  isJumpHeld: false,
+});
 
 export const updateBearRunState = (
   state: BearRunState,
@@ -105,7 +118,14 @@ export const updateBearRunState = (
   const boundedRandomValue = Math.max(0, Math.min(1, randomValue));
   const nextSpeed = Math.min(MAX_SPEED, state.speed + SPEED_ACCELERATION * deltaSeconds);
   const nextScore = state.score + SCORE_RATE * deltaSeconds;
-  let nextBearVelocityY = state.bearVelocityY + GRAVITY * deltaSeconds;
+  const remainingJumpHoldSeconds = state.isJumpHeld
+    ? Math.max(0, MAX_JUMP_HOLD_SECONDS - state.jumpHoldSeconds)
+    : 0;
+  const appliedJumpHoldSeconds = state.isGrounded ? 0 : Math.min(deltaSeconds, remainingJumpHoldSeconds);
+  const jumpHoldLift = JUMP_HOLD_ACCELERATION * appliedJumpHoldSeconds;
+  let nextJumpHoldSeconds = state.jumpHoldSeconds + appliedJumpHoldSeconds;
+  let nextIsJumpHeld = state.isJumpHeld && nextJumpHoldSeconds < MAX_JUMP_HOLD_SECONDS;
+  let nextBearVelocityY = state.bearVelocityY + GRAVITY * deltaSeconds - jumpHoldLift;
   let nextBearY = state.bearY + nextBearVelocityY * deltaSeconds;
   let nextIsGrounded = false;
   const bearGroundTop = getBearGroundTop();
@@ -114,6 +134,8 @@ export const updateBearRunState = (
     nextBearY = bearGroundTop;
     nextBearVelocityY = 0;
     nextIsGrounded = true;
+    nextIsJumpHeld = false;
+    nextJumpHoldSeconds = 0;
   }
 
   let nextDistanceUntilNextObstacle = state.distanceUntilNextObstacle - nextSpeed * deltaSeconds;
@@ -133,6 +155,8 @@ export const updateBearRunState = (
     bearY: nextBearY,
     bearVelocityY: nextBearVelocityY,
     isGrounded: nextIsGrounded,
+    isJumpHeld: nextIsJumpHeld,
+    jumpHoldSeconds: nextJumpHoldSeconds,
     speed: nextSpeed,
     score: nextScore,
     distanceUntilNextObstacle: nextDistanceUntilNextObstacle,
