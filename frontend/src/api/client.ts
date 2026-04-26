@@ -1,4 +1,5 @@
 import { BlogPost, PaginatedPostsResponse } from "../blog/types";
+import { StatusSnapshot } from "../status/types";
 
 function getApiBaseUrl(): string {
   const hostname = window.location.hostname;
@@ -34,4 +35,8 @@ export async function fetchPosts(
 
 export async function fetchPost(slug: string): Promise<BlogPost> {
   return fetchJSON<BlogPost>(`/posts/${slug}`);
+}
+
+export async function fetchStatus(): Promise<StatusSnapshot> {
+  return fetchJSON<StatusSnapshot>("/status");
 }

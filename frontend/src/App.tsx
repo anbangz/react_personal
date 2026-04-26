@@ -10,6 +10,7 @@ import {
 import { Homepage } from "./views/home/Homepage";
 import { Blog } from "./views/blog/Blog";
 import { BlogPostPage } from "./views/blog-post/BlogPostPage";
+import { Status } from "./views/status/Status";
 import { Navbar } from "./views/navbar/Navbar";
 import { ThemeProvider } from "./context/ThemeContext";
 
@@ -68,6 +69,7 @@ export const AppContent = (): React.ReactElement => {
           <Route path="/" element={<Homepage />} />
           <Route path="/blog" element={<Blog />} />
           <Route path="/blog/:slug" element={<BlogPostPage />} />
+          <Route path="/status" element={<Status />} />
         </Routes>
       </div>
     </div>

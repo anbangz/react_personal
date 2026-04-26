@@ -16,6 +16,7 @@ import (
 	"github.com/anbangz/react_personal/backend/internal/service"
 	"github.com/aws/aws-lambda-go/lambda"
 	awsconfig "github.com/aws/aws-sdk-go-v2/config"
+	"github.com/aws/aws-sdk-go-v2/service/codepipeline"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/aws/aws-sdk-go-v2/service/secretsmanager"
 	"github.com/awslabs/aws-lambda-go-api-proxy/httpadapter"
@@ -78,11 +79,20 @@ func main() {
 	s3Client := s3.NewFromConfig(awsCfg)
 	photoSvc := service.NewPhotoService(s3Client, s3Bucket, cdnURL)
 
+	// Status service
+	pipelineClient := codepipeline.NewFromConfig(awsCfg)
+	statusSvc := service.NewStatusService(
+		service.NewCodePipelineStatusFetcher(pipelineClient),
+		15*time.Minute,
+		time.Now,
+	)
+
 	// Build router
 	router := handler.NewRouter(handler.RouterConfig{
 		MongoClient:   mongoClient,
 		PostHandler:   handler.NewPostHandler(postSvc),
 		PhotoHandler:  handler.NewPhotoHandler(photoSvc),
+		StatusHandler: handler.NewStatusHandler(statusSvc),
 		APIKey:        apiKey,
 		AllowedOrigin: allowedOrigin,
 	})

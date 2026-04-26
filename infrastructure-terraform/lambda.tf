@@ -37,6 +37,17 @@ resource "aws_iam_role_policy" "DevBackendAPILambdaPolicy" {
         Effect   = "Allow"
         Action   = ["secretsmanager:GetSecretValue"]
         Resource = [aws_secretsmanager_secret.DevBackendMongoDBURI.arn, aws_secretsmanager_secret.DevBackendAPIKey.arn]
+      },
+      {
+        Sid      = "CodePipelineReadAccess"
+        Effect   = "Allow"
+        Action   = [
+          "codepipeline:GetPipeline",
+          "codepipeline:GetPipelineState",
+          "codepipeline:GetPipelineExecution",
+          "codepipeline:ListPipelineExecutions"
+        ]
+        Resource = "arn:aws:codepipeline:*:${data.aws_caller_identity.current.account_id}:*"
       }
     ]
   })
@@ -77,6 +88,17 @@ resource "aws_iam_role_policy" "BackendAPILambdaPolicy" {
         Effect   = "Allow"
         Action   = ["secretsmanager:GetSecretValue"]
         Resource = [aws_secretsmanager_secret.ProdBackendMongoDBURI.arn, aws_secretsmanager_secret.ProdBackendAPIKey.arn]
+      },
+      {
+        Sid      = "CodePipelineReadAccess"
+        Effect   = "Allow"
+        Action   = [
+          "codepipeline:GetPipeline",
+          "codepipeline:GetPipelineState",
+          "codepipeline:GetPipelineExecution",
+          "codepipeline:ListPipelineExecutions"
+        ]
+        Resource = "arn:aws:codepipeline:*:${data.aws_caller_identity.current.account_id}:*"
       }
     ]
   })
