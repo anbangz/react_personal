@@ -73,4 +73,60 @@ describe("Status", () => {
     expect(screen.getByText("March 2026")).toBeInTheDocument();
     expect(requestSpy).toHaveBeenCalledTimes(1);
   });
+
+  it("truncates a long SHA to 7 characters", async () => {
+    const snapshot = createMockStatusSnapshot();
+    server.use(
+      http.get("*/status", () =>
+        HttpResponse.json(
+          createMockStatusSnapshot({
+            pipelines: [
+              {
+                ...snapshot.pipelines[0],
+                lastDeployedCommit: {
+                  sha: "ae776c9e138fd97003d404de730ae776",
+                  message: "fix: update deps",
+                },
+              },
+              ...snapshot.pipelines.slice(1),
+            ],
+          })
+        )
+      )
+    );
+    renderWithProviders(<Status />);
+    await screen.findByText("Personal Website");
+    expect(screen.getByText("ae776c9")).toBeInTheDocument();
+    expect(screen.queryByText("ae776c9e138fd97003d404de730ae776")).not.toBeInTheDocument();
+  });
+
+  it("parses a JSON RevisionSummary and displays only the CommitMessage", async () => {
+    const snapshot = createMockStatusSnapshot();
+    server.use(
+      http.get("*/status", () =>
+        HttpResponse.json(
+          createMockStatusSnapshot({
+            pipelines: [
+              {
+                ...snapshot.pipelines[0],
+                lastDeployedCommit: {
+                  sha: "ae776c9",
+                  message: JSON.stringify({
+                    ProviderType: "GitHub",
+                    CommitMessage: "fix: update deps",
+                    CommitId: "ae776c9",
+                  }),
+                },
+              },
+              ...snapshot.pipelines.slice(1),
+            ],
+          })
+        )
+      )
+    );
+    renderWithProviders(<Status />);
+    await screen.findByText("Personal Website");
+    expect(screen.getByText("fix: update deps")).toBeInTheDocument();
+    expect(screen.queryByText(/ProviderType/)).not.toBeInTheDocument();
+  });
 });

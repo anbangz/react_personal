@@ -13,6 +13,27 @@ function formatRelativeTimestamp(value: string): string {
   return `${Math.round(hours / 24)}d ago`;
 }
 
+function truncateSHA(sha: string): string {
+  return sha.length > 7 ? sha.slice(0, 7) : sha;
+}
+
+function parseCommitMessage(raw: string): string {
+  try {
+    const parsed: unknown = JSON.parse(raw);
+    if (
+      typeof parsed === "object" &&
+      parsed !== null &&
+      "CommitMessage" in parsed &&
+      typeof (parsed as Record<string, unknown>).CommitMessage === "string"
+    ) {
+      return (parsed as Record<string, string>).CommitMessage;
+    }
+  } catch {
+    // not JSON — use as-is
+  }
+  return raw;
+}
+
 function PipelineRail({ pipeline }: { pipeline: PipelineSnapshot }) {
   const activeIndex = pipeline.stages.findIndex((stage) => stage.state === "active" || stage.state === "failed");
   const progressSteps = activeIndex === -1 ? Math.max(pipeline.stages.length - 1, 0) : activeIndex;
@@ -43,8 +64,12 @@ function PipelineRail({ pipeline }: { pipeline: PipelineSnapshot }) {
         </div>
       </div>
       <div className="status-page__pipeline-meta">
-        {pipeline.lastDeployedCommit ? <code>{pipeline.lastDeployedCommit.sha}</code> : null}
-        <div>{pipeline.lastDeployedCommit?.message ?? "No deployed revision yet"}</div>
+        {pipeline.lastDeployedCommit ? <code>{truncateSHA(pipeline.lastDeployedCommit.sha)}</code> : null}
+        <div>
+          {pipeline.lastDeployedCommit
+            ? parseCommitMessage(pipeline.lastDeployedCommit.message)
+            : "No deployed revision yet"}
+        </div>
       </div>
     </div>
   );
