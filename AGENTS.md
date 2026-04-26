@@ -9,7 +9,7 @@ Guidelines for AI agents (Claude, Copilot, etc.) working on this codebase.
 Personal website for Anbang Zhang with a Go backend API for blog content management. The frontend is a static React SPA deployed to AWS S3 + CloudFront. The backend is a Go Lambda behind API Gateway, using MongoDB Atlas for data and S3 for photo storage.
 
 - **URL:** https://anbangz.me (frontend), https://api.anbangz.me (backend API)
-- **Frontend stack:** React 18, TypeScript, Webpack 5, Bulma CSS, FontAwesome, react-markdown
+- **Frontend stack:** React 18, TypeScript, Webpack 5, custom CSS (`base.css` + component styles), FontAwesome, react-markdown
 - **Backend stack:** Go 1.24, chi router, MongoDB Go driver, AWS Lambda, API Gateway HTTP API
 - **Infrastructure:** Terraform-managed AWS (S3, CloudFront, Route53, ACM, CodePipeline, CodeBuild, Lambda, API Gateway, Secrets Manager)
 - **Deployment branch:** `master` (CodePipeline triggers via CodeStar Connections GitHub App)
@@ -25,7 +25,7 @@ Personal website for Anbang Zhang with a Go backend API for blog content managem
 │   ├── package-lock.json
 │   ├── tsconfig.json
 │   ├── webpack.config.js           # Webpack 5 config, output → ./dist/bundle.js
-│   ├── index.html                  # HTML template (loads Bulma & FontAwesome from CDN)
+│   ├── index.html                  # HTML template (loads FontAwesome CDN script)
 │   └── src/
 │       ├── index.tsx               # React entry point
 │       ├── App.tsx                 # Router (React Router v6)
@@ -36,11 +36,10 @@ Personal website for Anbang Zhang with a Go backend API for blog content managem
 │       ├── context/
 │       │   └── ThemeContext.tsx    # React theme context provider
 │       ├── components/
-│       │   ├── widgets/            # Reusable components
-│       │   │   └── trello/
 │       │   ├── blog-post/          # BlogPost card component
 │       │   ├── lightbox/           # Photo lightbox component
-│       │   └── resume-item/        # Resume item component
+│       │   ├── resume-item/        # Resume item component
+│       │   └── secret-bear-run/    # Hidden navbar minigame modal + engine
 │       └── views/                  # Page sections (each has its own folder)
 │           ├── navbar/
 │           ├── home/               # Homepage.tsx aggregates all sections
@@ -105,7 +104,7 @@ cd frontend && npm start          # Dev server on http://localhost:8080 (hot rel
 cd frontend && npm run build      # Production webpack build → ./dist/
 cd frontend && npm run clean      # Remove node_modules and dist
 cd frontend && npm run clean-build  # Full clean install + production build
-npm test           # Not implemented — no test suite exists
+cd frontend && npm test           # Run frontend Jest tests
 ```
 
 ### Backend
@@ -133,20 +132,20 @@ cd backend && make test     # Run Go tests
 - `noImplicitAny: true` — all types must be explicit.
 - React 18 patterns are in use. Hooks are supported; class components should be avoided for new code.
 - **React Router v6** — use `<Routes>` and `<Route>`, not the v5 `<Switch>` pattern.
-- **Bulma CSS** is loaded via CDN in `index.html` (`bulma@0.8.0`). Note: `bulma@1.0.2` is also installed via npm, but the CDN version takes precedence at runtime. Keep both in sync if updating.
+- The frontend uses custom CSS primitives in `frontend/src/base.css` (`.section`, `.container`, `.button`) plus co-located component styles. There is no Bulma runtime dependency.
 - FontAwesome icons are available via `@fortawesome/react-fontawesome`.
 - See `frontend/DESIGN_SYSTEM.md` for the full frontend design system, color tokens, component patterns, and theming conventions.
 - Indentation: 2 spaces (set in `.vscode/settings.json`).
 
 ### Component Structure
 - Views (page sections) live in `frontend/src/views/<section-name>/`.
-- Reusable widgets live in `frontend/src/components/widgets/`.
+- Reusable UI components live in `frontend/src/components/`.
 - `Homepage.tsx` imports and renders all sections — add new sections there.
 - Each section that needs its own styles gets a co-located `.css` file.
-- **Static images** in `frontend/src/static/images/` are imported by multiple components (TitleBanner, AboutMe, Resume). Do not delete images without checking all import references first (`portrait.jpg` is used by TitleBanner and AboutMe; `amazon-scout.jpg` is used by Resume). Other images present: `amazon-logo.jpg`, `berkeley-seal.jpg`, `riptide-logo.jpg`.
+- **Static images** in `frontend/src/static/images/` are imported by multiple components (TitleBanner, Resume, Navbar, SecretBearRun). Do not delete images without checking all import references first (`portrait.jpg` is used by TitleBanner; `amazon-scout.jpg` is used by Resume; `bear.png` is used by Navbar and SecretBearRun). Other images present: `amazon-logo.jpg`, `berkeley-seal.jpg`, `riptide-logo.jpg`.
 
 ### Styling
-- Prefer Bulma classes over custom CSS.
+- Prefer existing shared primitives in `frontend/src/base.css` and scoped component CSS.
 - Do not introduce CSS-in-JS or additional CSS frameworks.
 - Custom CSS files are co-located with their component.
 
@@ -184,7 +183,7 @@ cd backend && make test     # Run Go tests
 
 ## What Doesn't Exist Yet (Do Not Assume)
 
-- No frontend test suite. Do not reference or run `npm test`. Backend has Go unit tests (`make test`).
+- No frontend browser automation/E2E suite in CI yet. Frontend unit/component tests exist and can be run locally with `cd frontend && npm test`.
 - No form submission handler (the contact section links to email only).
 - No admin UI for blog management (API-only via `X-API-Key` auth header).
 - No Storybook or component documentation.
@@ -237,7 +236,7 @@ cd backend && make test     # Run Go tests
 - Do not modify Terraform remote state directly (S3 bucket or DynamoDB lock table).
 - Do not change the deployment branch from `master` without confirming with the user.
 - Do not add dependencies that require a backend server (e.g., Express, databases) to the frontend.
-- Do not introduce breaking changes to the Bulma CDN version without updating `index.html`.
+- Do not introduce additional CSS frameworks (Bulma, Tailwind, etc.) unless explicitly requested.
 - Do not attempt to run `terraform` commands unless the user explicitly asks.
 
 ---

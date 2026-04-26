@@ -16,9 +16,9 @@
 - [ ] `npm run build` passes locally
 - [ ] Tested in browser via `npm start`
 - [ ] No TypeScript errors (`noImplicitAny` satisfied)
-- [ ] New components follow the `src/views/<name>/` or `src/components/widgets/` structure
+- [ ] New components follow the `src/views/<name>/` or `src/components/<name>/` structure
 - [ ] New sections are added to `Homepage.tsx`
-- [ ] Custom CSS uses Bulma classes where possible
+- [ ] Custom CSS uses existing `base.css` primitives and design tokens where possible
 
 ## UI Changes
 
