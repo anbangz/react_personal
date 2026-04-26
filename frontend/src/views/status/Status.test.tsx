@@ -22,7 +22,7 @@ describe("Status", () => {
       })
     );
     renderWithProviders(<Status />);
-    expect(await screen.findByText(/failed to load deployment status/i)).toBeInTheDocument();
+    expect(await screen.findByText(/unable to load status/i)).toBeInTheDocument();
     expect(screen.getByText(/api down/i)).toBeInTheDocument();
   });
 
@@ -72,5 +72,152 @@ describe("Status", () => {
 
     expect(screen.getByText("March 2026")).toBeInTheDocument();
     expect(requestSpy).toHaveBeenCalledTimes(1);
+  });
+
+  it("truncates a long SHA to 7 characters", async () => {
+    const snapshot = createMockStatusSnapshot();
+    server.use(
+      http.get("*/status", () =>
+        HttpResponse.json(
+          createMockStatusSnapshot({
+            pipelines: [
+              {
+                ...snapshot.pipelines[0],
+                lastDeployedCommit: {
+                  sha: "ae776c9e138fd97003d404de730ae776",
+                  message: "fix: update deps",
+                },
+              },
+              ...snapshot.pipelines.slice(1),
+            ],
+          })
+        )
+      )
+    );
+    renderWithProviders(<Status />);
+    await screen.findByText("Personal Website");
+    expect(screen.getByText("ae776c9")).toBeInTheDocument();
+    expect(screen.queryByText("ae776c9e138fd97003d404de730ae776")).not.toBeInTheDocument();
+  });
+
+  it("parses a JSON RevisionSummary and displays only the CommitMessage", async () => {
+    const snapshot = createMockStatusSnapshot();
+    server.use(
+      http.get("*/status", () =>
+        HttpResponse.json(
+          createMockStatusSnapshot({
+            pipelines: [
+              {
+                ...snapshot.pipelines[0],
+                lastDeployedCommit: {
+                  sha: "ae776c9",
+                  message: JSON.stringify({
+                    ProviderType: "GitHub",
+                    CommitMessage: "fix: update deps",
+                    CommitId: "ae776c9",
+                  }),
+                },
+              },
+              ...snapshot.pipelines.slice(1),
+            ],
+          })
+        )
+      )
+    );
+    renderWithProviders(<Status />);
+    await screen.findByText("Personal Website");
+    expect(screen.getByText("fix: update deps")).toBeInTheDocument();
+    expect(screen.queryByText(/ProviderType/)).not.toBeInTheDocument();
+  });
+
+  it("parses a plain JSON string commit message", async () => {
+    const snapshot = createMockStatusSnapshot();
+    server.use(
+      http.get("*/status", () =>
+        HttpResponse.json(
+          createMockStatusSnapshot({
+            pipelines: [
+              {
+                ...snapshot.pipelines[0],
+                lastDeployedCommit: {
+                  sha: "ae776c9",
+                  message: JSON.stringify("fix: update deps"),
+                },
+              },
+              ...snapshot.pipelines.slice(1),
+            ],
+          })
+        )
+      )
+    );
+    renderWithProviders(<Status />);
+    await screen.findByText("Personal Website");
+    expect(screen.getByText("fix: update deps")).toBeInTheDocument();
+    expect(screen.queryByText('"fix: update deps"')).not.toBeInTheDocument();
+  });
+
+  it("wraps timestamps in <time dateTime> elements", async () => {
+    server.use(http.get("*/status", () => HttpResponse.json(createMockStatusSnapshot())));
+    renderWithProviders(<Status />);
+    await screen.findByText("Personal Website");
+    // Hero "Last Updated" timestamp
+    expect(document.querySelector('time[dateTime="2026-04-25T18:10:00Z"]')).toBeInTheDocument();
+    // Recent Activity timestamp
+    expect(document.querySelector('time[dateTime="2026-04-25T18:05:00Z"]')).toBeInTheDocument();
+  });
+
+  it("calendar nav buttons use the shared button style class", async () => {
+    server.use(http.get("*/status", () => HttpResponse.json(createMockStatusSnapshot())));
+    renderWithProviders(<Status />);
+    await screen.findByText("April 2026");
+    expect(screen.getByRole("button", { name: /previous month/i })).toHaveClass("button", "is-small");
+    expect(screen.getByRole("button", { name: /next month/i })).toHaveClass("button", "is-small");
+  });
+
+  it("renders day-of-week column headers above the calendar grid", async () => {
+    server.use(http.get("*/status", () => HttpResponse.json(createMockStatusSnapshot())));
+    renderWithProviders(<Status />);
+    await screen.findByText("April 2026");
+    const headers = document.querySelectorAll(".status-page__calendar-day-header");
+    expect(headers).toHaveLength(7);
+    const labels = Array.from(headers).map((el) => el.textContent);
+    expect(labels).toEqual(["S", "M", "T", "W", "T", "F", "S"]);
+  });
+
+  it("renders a calendar legend", async () => {
+    server.use(http.get("*/status", () => HttpResponse.json(createMockStatusSnapshot())));
+    renderWithProviders(<Status />);
+    await screen.findByText("April 2026");
+    expect(document.querySelector(".status-page__calendar-legend")).toBeInTheDocument();
+    const swatches = document.querySelectorAll(".status-page__calendar-legend-swatch");
+    expect(swatches).toHaveLength(5);
+  });
+
+  it("shows empty state when there is no recent activity", async () => {
+    server.use(
+      http.get("*/status", () =>
+        HttpResponse.json(createMockStatusSnapshot({ recentActivity: [] }))
+      )
+    );
+    renderWithProviders(<Status />);
+    await screen.findByText("Personal Website");
+    expect(screen.getByText(/no recent deployments/i)).toBeInTheDocument();
+  });
+
+  it("maps pipeline status to friendly labels", async () => {
+    const snapshot = createMockStatusSnapshot();
+    server.use(
+      http.get("*/status", () =>
+        HttpResponse.json(
+          createMockStatusSnapshot({
+            pipelines: snapshot.pipelines.map((p) => ({ ...p, status: "unknown" as const })),
+          })
+        )
+      )
+    );
+    renderWithProviders(<Status />);
+    await screen.findByText("Personal Website");
+    expect(screen.getAllByText("Unknown").length).toBe(3);
+    expect(screen.queryByText("unknown")).not.toBeInTheDocument();
   });
 });
