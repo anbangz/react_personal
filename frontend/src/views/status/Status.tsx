@@ -89,6 +89,44 @@ function linkifyActivityMessage(message: string): React.ReactNode {
   );
 }
 
+interface ActivityGroup {
+  dateLabel: string;
+  items: Array<{ timestamp: string; message: string }>;
+}
+
+function groupActivityByDate(
+  items: Array<{ timestamp: string; message: string }>
+): ActivityGroup[] {
+  const map = new Map<string, Array<{ timestamp: string; message: string }>>();
+  for (const item of items) {
+    if (Number.isNaN(Date.parse(item.timestamp))) continue;
+    const date = new Date(item.timestamp);
+    const label = date.toLocaleDateString("en-US", {
+      month: "long",
+      day: "numeric",
+      year: "numeric",
+      timeZone: "UTC",
+    });
+    const existing = map.get(label);
+    if (existing) {
+      existing.push(item);
+    } else {
+      map.set(label, [item]);
+    }
+  }
+  const groups: ActivityGroup[] = [];
+  for (const [dateLabel, groupItems] of map) {
+    groupItems.sort((a, b) => Date.parse(b.timestamp) - Date.parse(a.timestamp));
+    groups.push({ dateLabel, items: groupItems });
+  }
+  groups.sort((a, b) => {
+    const aTime = Date.parse(a.items[0].timestamp);
+    const bTime = Date.parse(b.items[0].timestamp);
+    return bTime - aTime;
+  });
+  return groups;
+}
+
 function StepConnector({ isCompleted }: { isCompleted: boolean }) {
   return (
     <div
@@ -405,6 +443,7 @@ export function Status(): React.ReactElement {
   }
 
   const month = snapshot.calendar.months[monthIndex];
+  const activityGroups = groupActivityByDate(snapshot.recentActivity);
 
   return (
     <section className="status-page container">
@@ -485,16 +524,24 @@ export function Status(): React.ReactElement {
 
         <div className="status-page__panel">
           <h2>Recent Activity</h2>
-          {snapshot.recentActivity.length > 0 ? (
-            <ul>
-              {snapshot.recentActivity.map((item, index) => (
-                <li key={`${item.timestamp}-${item.message}-${index}`}>
-                  <time dateTime={item.timestamp}>{formatRelativeTimestamp(item.timestamp)}</time>
-                  <span className="status-page__activity-separator" aria-hidden="true">·</span>
-                  <span>{linkifyActivityMessage(item.message)}</span>
-                </li>
+          {activityGroups.length > 0 ? (
+            <div className="status-page__activity-groups">
+              {activityGroups.map((group, groupIndex) => (
+                <div key={group.dateLabel} className="status-page__activity-group">
+                  <h3 className="status-page__activity-date-header">{group.dateLabel}</h3>
+                  <ul>
+                    {group.items.map((item, itemIndex) => (
+                      <li key={`${item.timestamp}-${item.message}-${groupIndex}-${itemIndex}`}>
+                        <span className="status-page__activity-dot" aria-hidden="true" />
+                        <time dateTime={item.timestamp}>{formatRelativeTimestamp(item.timestamp)}</time>
+                        <span className="status-page__activity-separator" aria-hidden="true">·</span>
+                        <span>{linkifyActivityMessage(item.message)}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
               ))}
-            </ul>
+            </div>
           ) : (
             <p className="status-page__empty">No recent deployments.</p>
           )}

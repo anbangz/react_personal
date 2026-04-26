@@ -1,5 +1,5 @@
 import * as React from "react";
-import { screen, fireEvent, waitFor } from "@testing-library/react";
+import { screen, fireEvent, waitFor, within } from "@testing-library/react";
 import { http, HttpResponse } from "msw";
 import { Status } from "./Status";
 import { server } from "../../mocks/server";
@@ -151,6 +151,47 @@ describe("Status", () => {
     );
     renderWithProviders(<Status />);
     expect(await screen.findByText(/no recent deployments/i)).toBeInTheDocument();
+  });
+
+  it("groups recent activity by date", async () => {
+    server.use(
+      http.get("*/status", () =>
+        HttpResponse.json(
+          createMockStatusSnapshot({
+            recentActivity: [
+              { timestamp: "2026-04-25T18:05:00Z", message: "Backend API shipped 271588a to production" },
+              { timestamp: "2026-04-25T14:00:00Z", message: "Personal Website shipped 4a7b9a0 to production" },
+              { timestamp: "2026-04-24T10:00:00Z", message: "Terraform Infrastructure shipped 01b7a3c to production" },
+            ],
+          })
+        )
+      )
+    );
+    renderWithProviders(<Status />);
+    await waitFor(() => {
+      expect(screen.getByText("April 25, 2026")).toBeInTheDocument();
+      expect(screen.getByText("April 24, 2026")).toBeInTheDocument();
+    });
+
+    const groups = screen.getAllByRole("list");
+    expect(groups.length).toBe(2);
+
+    const april25Group = screen.getByText("April 25, 2026").closest(".status-page__activity-group") as HTMLElement;
+    const april25Items = within(april25Group).getAllByRole("listitem");
+    expect(april25Items.length).toBe(2);
+    expect(april25Items[0]).toHaveTextContent(/Backend API shipped 271588a/);
+    expect(april25Items[1]).toHaveTextContent(/Personal Website shipped 4a7b9a0/);
+
+    const april24Group = screen.getByText("April 24, 2026").closest(".status-page__activity-group") as HTMLElement;
+    const april24Items = within(april24Group).getAllByRole("listitem");
+    expect(april24Items.length).toBe(1);
+    expect(april24Items[0]).toHaveTextContent(/Terraform Infrastructure shipped 01b7a3c/);
+
+    const allItems = screen.getAllByRole("listitem");
+    expect(allItems.length).toBe(3);
+    expect(allItems[0]).toHaveTextContent(/Backend API shipped 271588a/);
+    expect(allItems[1]).toHaveTextContent(/Personal Website shipped 4a7b9a0/);
+    expect(allItems[2]).toHaveTextContent(/Terraform Infrastructure shipped 01b7a3c/);
   });
 
   it("maps pipeline status to friendly labels", async () => {

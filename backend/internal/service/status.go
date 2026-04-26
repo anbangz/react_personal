@@ -353,11 +353,6 @@ func (f *codePipelineStatusFetcher) buildPipelineSnapshot(ctx context.Context, k
 				Timestamp: finishedAt,
 				Message:   fmt.Sprintf("%s shipped %s to production", label, shortSHA(sha)),
 			})
-		} else {
-			activity = append(activity, model.ActivityItem{
-				Timestamp: finishedAt,
-				Message:   fmt.Sprintf("%s failed during %s for %s", label, statusMessageForStage(activeStageName, defs), shortSHA(sha)),
-			})
 		}
 	}
 
@@ -405,15 +400,6 @@ func statusMessageForPipeline(status model.PipelineStatus, stages []model.Status
 		return "Current step: " + stages[len(stages)-1].Label
 	}
 	return "Pipeline status unavailable"
-}
-
-func statusMessageForStage(activeAWSStage string, defs []stageDefinition) string {
-	for _, def := range defs {
-		if def.AWSName == activeAWSStage {
-			return def.Label
-		}
-	}
-	return activeAWSStage
 }
 
 func shortSHA(value string) string {
