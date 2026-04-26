@@ -155,9 +155,9 @@ export function Status(): React.ReactElement {
           <div className="status-page__calendar-header">
             <h2>Deployed Commits</h2>
             <div>
-              <button type="button" onClick={() => setMonthIndex((value) => value - 1)} disabled={monthIndex === 0} aria-label="Previous month">Previous</button>
+              <button type="button" className="button is-small" onClick={() => setMonthIndex((value) => value - 1)} disabled={monthIndex === 0} aria-label="Previous month">Previous</button>
               <span>{month.label}</span>
-              <button type="button" onClick={() => setMonthIndex((value) => value + 1)} disabled={monthIndex === snapshot.calendar.months.length - 1} aria-label="Next month">Next</button>
+              <button type="button" className="button is-small" onClick={() => setMonthIndex((value) => value + 1)} disabled={monthIndex === snapshot.calendar.months.length - 1} aria-label="Next month">Next</button>
             </div>
           </div>
           <CalendarMonthView month={month} />

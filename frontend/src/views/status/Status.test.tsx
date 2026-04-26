@@ -139,4 +139,12 @@ describe("Status", () => {
     // Recent Activity timestamp
     expect(document.querySelector('time[dateTime="2026-04-25T18:05:00Z"]')).toBeInTheDocument();
   });
+
+  it("calendar nav buttons use the shared button style class", async () => {
+    server.use(http.get("*/status", () => HttpResponse.json(createMockStatusSnapshot())));
+    renderWithProviders(<Status />);
+    await screen.findByText("April 2026");
+    expect(screen.getByRole("button", { name: /previous month/i })).toHaveClass("button", "is-small");
+    expect(screen.getByRole("button", { name: /next month/i })).toHaveClass("button", "is-small");
+  });
 });
