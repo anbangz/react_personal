@@ -63,7 +63,7 @@ describe("bearRunEngine variable jump", () => {
     const cappedHoldApex = simulateJumpApex(MAX_JUMP_HOLD_SECONDS);
     const overHeldApex = simulateJumpApex(MAX_JUMP_HOLD_SECONDS + 1);
 
-    expect(overHeldApex).toBeGreaterThanOrEqual(cappedHoldApex - 1);
+    expect(Math.abs(overHeldApex - cappedHoldApex)).toBeLessThanOrEqual(1);
   });
 
   it("stops adding lift when input is released early", () => {
