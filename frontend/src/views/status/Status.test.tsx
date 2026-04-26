@@ -65,7 +65,7 @@ describe("Status", () => {
     expect(link).toHaveAttribute("rel", "noopener noreferrer");
   });
 
-  it("opens commit detail modal when expand button is clicked", async () => {
+  it("expands commit message inline when expand button is clicked", async () => {
     const snapshot = createMockStatusSnapshot();
     server.use(http.get("*/status", () => HttpResponse.json(snapshot)));
     renderWithProviders(<Status />);
@@ -74,42 +74,8 @@ describe("Status", () => {
     const expandButton = screen.getAllByRole("button", { name: /show full commit message/i })[0];
     fireEvent.click(expandButton);
 
-    expect(await screen.findByRole("dialog")).toBeInTheDocument();
-    expect(screen.getByText("Commit Details")).toBeInTheDocument();
-  });
-
-  it("closes commit detail modal when close button is clicked", async () => {
-    const snapshot = createMockStatusSnapshot();
-    server.use(http.get("*/status", () => HttpResponse.json(snapshot)));
-    renderWithProviders(<Status />);
-    await screen.findByText("Personal Website");
-
-    const expandButton = screen.getAllByRole("button", { name: /show full commit message/i })[0];
-    fireEvent.click(expandButton);
-    await screen.findByRole("dialog");
-
-    const closeButton = screen.getByRole("button", { name: /close commit details/i });
-    fireEvent.click(closeButton);
-
-    await waitFor(() => {
-      expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
-    });
-  });
-
-  it("closes commit detail modal on Escape key", async () => {
-    const snapshot = createMockStatusSnapshot();
-    server.use(http.get("*/status", () => HttpResponse.json(snapshot)));
-    renderWithProviders(<Status />);
-    await screen.findByText("Personal Website");
-
-    fireEvent.click(screen.getAllByRole("button", { name: /show full commit message/i })[0]);
-    await screen.findByRole("dialog");
-
-    fireEvent.keyDown(document, { key: "Escape" });
-
-    await waitFor(() => {
-      expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
-    });
+    const pre = await screen.findByText("Frontend shipped", { selector: "pre" });
+    expect(pre).toBeInTheDocument();
   });
 
   it("shows calendar tooltip on mouse enter", async () => {
