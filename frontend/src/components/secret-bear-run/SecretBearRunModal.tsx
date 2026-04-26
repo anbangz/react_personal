@@ -47,6 +47,7 @@ export const SecretBearRunModal: React.FunctionComponent<SecretBearRunModalProps
   const scoreRef = React.useRef(0);
   const bestScoreRef = React.useRef(0);
   const activeJumpKeysRef = React.useRef<Set<string>>(new Set());
+  const suppressedGameOverJumpKeysRef = React.useRef<Set<string>>(new Set());
   const activeJumpPointerIdRef = React.useRef<number | null>(null);
   const [screen, setScreen] = React.useState<SecretBearRunScreen>("intro");
   const [score, setScore] = React.useState(0);
@@ -92,6 +93,9 @@ export const SecretBearRunModal: React.FunctionComponent<SecretBearRunModalProps
 
   const finishRun = React.useCallback(() => {
     stopAnimationLoop();
+    suppressedGameOverJumpKeysRef.current = new Set(activeJumpKeysRef.current);
+    activeJumpKeysRef.current.clear();
+    activeJumpPointerIdRef.current = null;
     currentScreenRef.current = "game-over";
     setScreen("game-over");
 
@@ -197,6 +201,7 @@ export const SecretBearRunModal: React.FunctionComponent<SecretBearRunModalProps
     animationTickRef.current = 0;
     previousFrameTimeRef.current = null;
     activeJumpKeysRef.current.clear();
+    suppressedGameOverJumpKeysRef.current.clear();
     activeJumpPointerIdRef.current = null;
     currentScreenRef.current = "playing";
     scoreRef.current = 0;
@@ -207,6 +212,7 @@ export const SecretBearRunModal: React.FunctionComponent<SecretBearRunModalProps
   const handleClose = React.useCallback(() => {
     stopAnimationLoop();
     activeJumpKeysRef.current.clear();
+    suppressedGameOverJumpKeysRef.current.clear();
     activeJumpPointerIdRef.current = null;
     onClose();
   }, [onClose, stopAnimationLoop]);
@@ -229,6 +235,7 @@ export const SecretBearRunModal: React.FunctionComponent<SecretBearRunModalProps
     animationTickRef.current = 0;
     previousFrameTimeRef.current = null;
     activeJumpKeysRef.current.clear();
+    suppressedGameOverJumpKeysRef.current.clear();
     activeJumpPointerIdRef.current = null;
     currentScreenRef.current = "intro";
     setScreen("intro");
@@ -272,6 +279,15 @@ export const SecretBearRunModal: React.FunctionComponent<SecretBearRunModalProps
       const eventTarget = event.target instanceof Element ? event.target : null;
       const jumpKey = getJumpKey(event.key);
       const isInteractiveTarget = eventTarget?.closest(INTERACTIVE_JUMP_BLOCK_SELECTOR) !== null;
+
+      if (
+        currentScreenRef.current === "game-over" &&
+        jumpKey !== null &&
+        suppressedGameOverJumpKeysRef.current.has(jumpKey)
+      ) {
+        event.preventDefault();
+        return;
+      }
 
       if (currentScreenRef.current === "playing" && jumpKey !== null && !isInteractiveTarget) {
         event.preventDefault();
@@ -324,6 +340,13 @@ export const SecretBearRunModal: React.FunctionComponent<SecretBearRunModalProps
       const jumpKey = getJumpKey(event.key);
 
       if (jumpKey === null) {
+        return;
+      }
+
+      if (suppressedGameOverJumpKeysRef.current.has(jumpKey)) {
+        event.preventDefault();
+        suppressedGameOverJumpKeysRef.current.delete(jumpKey);
+        activeJumpKeysRef.current.delete(jumpKey);
         return;
       }
 

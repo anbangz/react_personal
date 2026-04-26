@@ -1,9 +1,9 @@
 import * as React from "react";
-import { fireEvent, screen } from "@testing-library/react";
+import { act, fireEvent, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { renderWithProviders } from "../../test-utils";
 import { SecretBearRunModal } from "./SecretBearRunModal";
-import { endBearJump, startBearJump } from "./bearRunEngine";
+import { endBearJump, hasBearCollision, startBearJump } from "./bearRunEngine";
 
 jest.mock("./bearRunSprites", () => ({
   drawBearSprite: jest.fn(),
@@ -26,6 +26,7 @@ jest.mock("./bearRunEngine", () => {
 
 const mockedStartBearJump = jest.mocked(startBearJump);
 const mockedEndBearJump = jest.mocked(endBearJump);
+const mockedHasBearCollision = jest.mocked(hasBearCollision);
 
 const renderOpenModal = () => {
   const triggerButtonRef = React.createRef<HTMLButtonElement>();
@@ -71,6 +72,7 @@ describe("SecretBearRunModal jump input", () => {
       ...state,
       isJumpHeld: false,
     }));
+    mockedHasBearCollision.mockReturnValue(false);
   });
 
   afterEach(() => {
@@ -108,5 +110,42 @@ describe("SecretBearRunModal jump input", () => {
 
     dispatchPointerEvent(stage, "pointerup", 7);
     expect(mockedEndBearJump).toHaveBeenCalledTimes(1);
+  });
+
+  it("does not restart from a held Space key after game over focuses Run again", async () => {
+    const animationFrameCallbacks: FrameRequestCallback[] = [];
+    requestAnimationFrameSpy.mockImplementation((callback) => {
+      animationFrameCallbacks.push(callback);
+      return animationFrameCallbacks.length;
+    });
+    mockedHasBearCollision.mockReturnValue(true);
+
+    renderOpenModal();
+    await userEvent.click(screen.getByRole("button", { name: /start run/i }));
+    await screen.findByLabelText("Secret Bear Run playfield");
+
+    fireEvent.keyDown(document.body, { key: " " });
+
+    act(() => {
+      animationFrameCallbacks.pop()?.(1000);
+    });
+
+    const runAgainButton = await screen.findByRole("button", { name: /run again/i });
+
+    act(() => {
+      animationFrameCallbacks.pop()?.(1016);
+    });
+
+    await waitFor(() => expect(runAgainButton).toHaveFocus());
+
+    await userEvent.keyboard("[Space]");
+
+    expect(screen.getByRole("button", { name: /run again/i })).toBeInTheDocument();
+    expect(screen.queryByLabelText("Secret Bear Run playfield")).toHaveAttribute("aria-hidden", "true");
+
+    await userEvent.click(screen.getByRole("button", { name: /run again/i }));
+
+    expect(screen.queryByRole("button", { name: /run again/i })).not.toBeInTheDocument();
+    expect(screen.getByLabelText("Secret Bear Run playfield")).not.toHaveAttribute("aria-hidden");
   });
 });
