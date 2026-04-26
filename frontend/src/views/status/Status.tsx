@@ -105,6 +105,7 @@ function CommitDetailModal({
 }) {
   const dialogRef = React.useRef<HTMLDivElement | null>(null);
   const wasOpenRef = React.useRef(false);
+  const headingId = React.useId();
 
   React.useEffect(() => {
     if (!isOpen) {
@@ -116,6 +117,7 @@ function CommitDetailModal({
     }
 
     wasOpenRef.current = true;
+    const previousOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
 
     const dialog = dialogRef.current;
@@ -161,7 +163,7 @@ function CommitDetailModal({
     document.addEventListener("keydown", handleKeyDown);
     return () => {
       document.removeEventListener("keydown", handleKeyDown);
-      document.body.style.overflow = "";
+      document.body.style.overflow = previousOverflow;
     };
   }, [isOpen, onClose, triggerRef]);
 
@@ -176,12 +178,12 @@ function CommitDetailModal({
         className="status-page__modal"
         role="dialog"
         aria-modal="true"
-        aria-labelledby="commit-detail-title"
+        aria-labelledby={headingId}
         ref={dialogRef}
         onClick={(e) => e.stopPropagation()}
       >
         <div className="status-page__modal-header">
-          <h3 id="commit-detail-title">Commit Details</h3>
+          <h3 id={headingId}>Commit Details</h3>
           <button
             type="button"
             className="status-page__modal-close"
@@ -350,6 +352,20 @@ function CalendarDayCell({ day }: { day: CalendarDay }) {
     setShowTooltip(false);
   };
 
+  const handleFocus = () => {
+    timeoutRef.current = setTimeout(() => {
+      setShowTooltip(true);
+    }, 200);
+  };
+
+  const handleBlur = () => {
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+      timeoutRef.current = null;
+    }
+    setShowTooltip(false);
+  };
+
   const tooltipId = `tooltip-${day.date}`;
 
   const monthName = new Date(day.date + "T00:00:00Z").toLocaleDateString("en-US", {
@@ -368,6 +384,10 @@ function CalendarDayCell({ day }: { day: CalendarDay }) {
       aria-label={`${day.date}: ${day.deployedCommitCount} deployed revisions`}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
+      onFocus={handleFocus}
+      onBlur={handleBlur}
+      tabIndex={0}
+      role="button"
       aria-describedby={showTooltip ? tooltipId : undefined}
     >
       {showTooltip && (
