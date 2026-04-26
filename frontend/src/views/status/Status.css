@@ -189,6 +189,12 @@
   color: var(--text-muted);
 }
 
+.status-page__stale-notice {
+  color: var(--status-warning);
+  font-size: 0.85rem;
+  margin-top: 0.25rem;
+}
+
 @media (max-width: 1024px) {
   .status-page__pipeline-row,
   .status-page__content-grid {

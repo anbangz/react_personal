@@ -144,7 +144,7 @@ export function Status(): React.ReactElement {
         <div>
           <h1>Deployment Status</h1>
           <p>A public view into how the site ships.</p>
-          {snapshot.isStale ? <p>Status may be outdated.</p> : null}
+          {snapshot.isStale ? <p className="status-page__stale-notice">⚠ Status may be outdated.</p> : null}
         </div>
         <div>
           <span>Last Updated</span>
