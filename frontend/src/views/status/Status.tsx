@@ -99,6 +99,7 @@ function groupActivityByDate(
 ): ActivityGroup[] {
   const map = new Map<string, Array<{ timestamp: string; message: string }>>();
   for (const item of items) {
+    if (Number.isNaN(Date.parse(item.timestamp))) continue;
     const date = new Date(item.timestamp);
     const label = date.toLocaleDateString("en-US", {
       month: "long",
@@ -112,9 +113,9 @@ function groupActivityByDate(
       map.set(label, [item]);
     }
   }
-  // Sort groups by the first item's timestamp descending
   const groups: ActivityGroup[] = [];
   for (const [dateLabel, groupItems] of map) {
+    groupItems.sort((a, b) => Date.parse(b.timestamp) - Date.parse(a.timestamp));
     groups.push({ dateLabel, items: groupItems });
   }
   groups.sort((a, b) => {
