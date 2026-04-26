@@ -48,7 +48,9 @@ function PipelineRail({ pipeline }: { pipeline: PipelineSnapshot }) {
       <div>
         <div className="status-page__rail-meta">
           <span>{pipeline.statusMessage}</span>
-          <span>{pipeline.lastExecutionFinishedAt ? formatRelativeTimestamp(pipeline.lastExecutionFinishedAt) : "Awaiting execution"}</span>
+          {pipeline.lastExecutionFinishedAt
+            ? <time dateTime={pipeline.lastExecutionFinishedAt}>{formatRelativeTimestamp(pipeline.lastExecutionFinishedAt)}</time>
+            : <span>Awaiting execution</span>}
         </div>
         <div className="status-page__rail" style={{ ["--stage-count" as string]: pipeline.stages.length, ["--progress-steps" as string]: progressSteps }}>
           <div className="status-page__rail-track" />
@@ -137,7 +139,9 @@ export function Status(): React.ReactElement {
         </div>
         <div>
           <span>Last Updated</span>
-          <strong>{formatRelativeTimestamp(snapshot.generatedAt)}</strong>
+          <strong>
+            <time dateTime={snapshot.generatedAt}>{formatRelativeTimestamp(snapshot.generatedAt)}</time>
+          </strong>
         </div>
       </header>
 
@@ -164,7 +168,7 @@ export function Status(): React.ReactElement {
           <ul>
             {snapshot.recentActivity.map((item) => (
               <li key={`${item.timestamp}-${item.message}`}>
-                <span>{formatRelativeTimestamp(item.timestamp)}</span>
+                <time dateTime={item.timestamp}>{formatRelativeTimestamp(item.timestamp)}</time>
                 <span>{item.message}</span>
               </li>
             ))}

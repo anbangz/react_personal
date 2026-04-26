@@ -129,4 +129,14 @@ describe("Status", () => {
     expect(screen.getByText("fix: update deps")).toBeInTheDocument();
     expect(screen.queryByText(/ProviderType/)).not.toBeInTheDocument();
   });
+
+  it("wraps timestamps in <time dateTime> elements", async () => {
+    server.use(http.get("*/status", () => HttpResponse.json(createMockStatusSnapshot())));
+    renderWithProviders(<Status />);
+    await screen.findByText("Personal Website");
+    // Hero "Last Updated" timestamp
+    expect(document.querySelector('time[dateTime="2026-04-25T18:10:00Z"]')).toBeInTheDocument();
+    // Recent Activity timestamp
+    expect(document.querySelector('time[dateTime="2026-04-25T18:05:00Z"]')).toBeInTheDocument();
+  });
 });
