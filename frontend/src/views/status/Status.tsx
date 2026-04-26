@@ -523,15 +523,23 @@ export function Status(): React.ReactElement {
         <div className="status-page__panel">
           <h2>Recent Activity</h2>
           {snapshot.recentActivity.length > 0 ? (
-            <ul>
-              {snapshot.recentActivity.map((item, index) => (
-                <li key={`${item.timestamp}-${item.message}-${index}`}>
-                  <time dateTime={item.timestamp}>{formatRelativeTimestamp(item.timestamp)}</time>
-                  <span className="status-page__activity-separator" aria-hidden="true">·</span>
-                  <span>{linkifyActivityMessage(item.message)}</span>
-                </li>
+            <div className="status-page__activity-groups">
+              {groupActivityByDate(snapshot.recentActivity).map((group, groupIndex) => (
+                <div key={group.dateLabel} className="status-page__activity-group">
+                  <div className="status-page__activity-date-header">{group.dateLabel}</div>
+                  <ul>
+                    {group.items.map((item, itemIndex) => (
+                      <li key={`${item.timestamp}-${item.message}-${groupIndex}-${itemIndex}`}>
+                        <span className="status-page__activity-dot" aria-hidden="true" />
+                        <time dateTime={item.timestamp}>{formatRelativeTimestamp(item.timestamp)}</time>
+                        <span className="status-page__activity-separator" aria-hidden="true">·</span>
+                        <span>{linkifyActivityMessage(item.message)}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
               ))}
-            </ul>
+            </div>
           ) : (
             <p className="status-page__empty">No recent deployments.</p>
           )}
