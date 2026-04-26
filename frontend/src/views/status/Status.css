@@ -545,7 +545,6 @@
 .status-page__activity-groups {
   display: flex;
   flex-direction: column;
-  gap: 0;
 }
 
 .status-page__activity-group {

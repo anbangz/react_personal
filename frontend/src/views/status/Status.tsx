@@ -105,6 +105,7 @@ function groupActivityByDate(
       month: "long",
       day: "numeric",
       year: "numeric",
+      timeZone: "UTC",
     });
     const existing = map.get(label);
     if (existing) {
@@ -442,6 +443,7 @@ export function Status(): React.ReactElement {
   }
 
   const month = snapshot.calendar.months[monthIndex];
+  const activityGroups = groupActivityByDate(snapshot.recentActivity);
 
   return (
     <section className="status-page container">
@@ -522,11 +524,11 @@ export function Status(): React.ReactElement {
 
         <div className="status-page__panel">
           <h2>Recent Activity</h2>
-          {snapshot.recentActivity.length > 0 ? (
+          {activityGroups.length > 0 ? (
             <div className="status-page__activity-groups">
-              {groupActivityByDate(snapshot.recentActivity).map((group, groupIndex) => (
+              {activityGroups.map((group, groupIndex) => (
                 <div key={group.dateLabel} className="status-page__activity-group">
-                  <div className="status-page__activity-date-header">{group.dateLabel}</div>
+                  <h3 className="status-page__activity-date-header">{group.dateLabel}</h3>
                   <ul>
                     {group.items.map((item, itemIndex) => (
                       <li key={`${item.timestamp}-${item.message}-${groupIndex}-${itemIndex}`}>
