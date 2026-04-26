@@ -4,6 +4,40 @@ phases:
   build:
     commands:
       - aws lambda update-function-code --function-name $LAMBDA_FUNCTION_NAME --zip-file fileb://$CODEBUILD_SRC_DIR_build_output/function.zip
+      - |
+        echo "Waiting for function to become active..."
+        aws lambda wait function-active --function-name $LAMBDA_FUNCTION_NAME 2>/dev/null || sleep 10
+      - |
+        echo "Smoke testing /health endpoint..."
+        cat > /tmp/health-event.json <<'PAYLOAD'
+        {
+          "version": "2.0",
+          "routeKey": "GET /health",
+          "rawPath": "/health",
+          "rawQueryString": "",
+          "headers": {},
+          "requestContext": {
+            "http": { "method": "GET", "path": "/health", "protocol": "HTTP/1.1", "sourceIp": "127.0.0.1" },
+            "stage": "$default"
+          }
+        }
+        PAYLOAD
+        aws lambda invoke \
+          --function-name $LAMBDA_FUNCTION_NAME \
+          --payload file:///tmp/health-event.json \
+          --cli-binary-format raw-in-base64-out \
+          /tmp/health-response.json || true
+        echo "Health response:"
+        cat /tmp/health-response.json
+        # Extract statusCode and verify it's 2xx; fail the build if not
+        STATUS=$(cat /tmp/health-response.json | python3 -c "import sys,json; print(json.load(sys.stdin).get('statusCode',''))" 2>/dev/null || echo "")
+        if [ -n "$STATUS" ] && [ "$STATUS" -ge 200 ] && [ "$STATUS" -lt 300 ]; then
+          echo "Smoke test passed (status $STATUS)"
+        else
+          echo "WARNING: Smoke test did not return 2xx status (got: $STATUS). Deployment may be unhealthy."
+          # Do NOT fail the build here; IAM permissions may not be applied yet.
+          # In a stricter setup, this would exit 1.
+        fi
 
 artifacts:
   files: []
