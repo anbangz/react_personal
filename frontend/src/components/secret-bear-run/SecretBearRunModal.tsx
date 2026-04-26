@@ -227,7 +227,7 @@ export const SecretBearRunModal: React.FunctionComponent<SecretBearRunModalProps
     window.requestAnimationFrame(() => closeButtonRef.current?.focus());
 
     const getJumpKey = (key: string): "Space" | "ArrowUp" | null => {
-      if (key === " " || key === "Spacebar") {
+      if (key === " " || key === "Space" || key === "Spacebar") {
         return "Space";
       }
 
