@@ -1,0 +1,233 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+WATCH=false
+VERBOSE=false
+INTERVAL=15
+PIPELINE=""
+
+usage() {
+  cat <<'EOF'
+Usage: pipeline-status [website|backend|terraform] [--watch] [--interval SECONDS] [--verbose]
+       pipeline-status --pipeline website|backend|terraform [--watch] [--interval SECONDS] [--verbose]
+
+Options:
+  --pipeline NAME   Limit output to one pipeline
+  --watch           Refresh until no selected pipeline is in progress
+  --interval N      Watch refresh interval in seconds (default: 15)
+  --verbose         Print stage-by-stage detail
+  -h, --help        Show this help
+EOF
+}
+
+resolve_pipeline_name() {
+  case "$1" in
+    website) printf '%s\n' 'PersonalWebsitePipeline' ;;
+    backend) printf '%s\n' 'BackendAPIPipeline' ;;
+    terraform) printf '%s\n' 'TerraformInfrastructurePipeline' ;;
+    *) return 1 ;;
+  esac
+}
+
+sanitize_text() {
+  printf '%s' "$1" | tr '\r\n\t' '   ' | tr -s ' '
+}
+
+parse_args() {
+  while [[ $# -gt 0 ]]; do
+    case "$1" in
+      website|backend|terraform)
+        if [[ -n "$PIPELINE" ]]; then
+          printf 'Only one pipeline may be selected.\n' >&2
+          exit 2
+        fi
+        PIPELINE="$1"
+        ;;
+      --pipeline)
+        shift
+        if [[ $# -eq 0 ]]; then
+          printf '--pipeline requires a value.\n' >&2
+          exit 2
+        fi
+        PIPELINE="$1"
+        ;;
+      --watch)
+        WATCH=true
+        ;;
+      --interval)
+        shift
+        if [[ $# -eq 0 ]]; then
+          printf '--interval requires a value.\n' >&2
+          exit 2
+        fi
+        INTERVAL="$1"
+        ;;
+      --verbose)
+        VERBOSE=true
+        ;;
+      -h|--help)
+        usage
+        exit 0
+        ;;
+      *)
+        printf 'Unknown argument: %s\n\n' "$1" >&2
+        usage >&2
+        exit 2
+        ;;
+    esac
+    shift
+  done
+
+  if ! [[ "$INTERVAL" =~ ^[0-9]+$ ]] || [[ "$INTERVAL" -le 0 ]]; then
+    printf 'Interval must be a positive integer number of seconds.\n' >&2
+    exit 2
+  fi
+
+  if [[ -n "$PIPELINE" ]] && ! resolve_pipeline_name "$PIPELINE" >/dev/null 2>&1; then
+    printf 'Unknown pipeline %q; expected one of: website, backend, terraform\n' "$PIPELINE" >&2
+    exit 2
+  fi
+}
+
+selected_pipelines() {
+  if [[ -n "$PIPELINE" ]]; then
+    printf '%s\n' "$PIPELINE"
+    return
+  fi
+
+  printf '%s\n' website backend terraform
+}
+
+stage_summary_from_state() {
+  jq -r '
+    [
+      .stageStates[]? | {
+        name: (.stageName // "-"),
+        status: (.latestExecution.status // "Idle"),
+        updated: (([.actionStates[]?.latestExecution.lastStatusChange] | map(select(. != null and . != "")) | last) // ""),
+        detail: ((([.actionStates[]?.latestExecution.errorDetails.message, .actionStates[]?.latestExecution.summary] | map(select(. != null and . != "")) | first) // "") | gsub("[\r\n\t]+"; " "))
+      }
+    ] as $stages
+    | (
+        ($stages | map(select(.status == "InProgress")) | .[0]) //
+        ($stages | map(select(.status == "Failed")) | .[-1]) //
+        ($stages[-1] // {name:"-", status:"Idle", updated:"", detail:""})
+      ) as $picked
+    | [
+        ($picked.name // "-"),
+        (
+          if ($stages | any(.status == "InProgress")) then "InProgress"
+          elif ($stages | any(.status == "Failed")) then "Failed"
+          elif ($stages | length) == 0 then "Idle"
+          else ($stages[-1].status // "Idle")
+          end
+        ),
+        ($picked.updated // ""),
+        ($picked.detail // "")
+      ]
+    | @tsv
+  '
+}
+
+print_verbose_stages() {
+  local state_json="$1"
+  jq -r '
+    .stageStates[]? | [
+      (.stageName // "-"),
+      (.latestExecution.status // "Idle"),
+      (([.actionStates[]?.latestExecution.lastStatusChange] | map(select(. != null and . != "")) | last) // "-"),
+      ((([.actionStates[]?.latestExecution.errorDetails.message, .actionStates[]?.latestExecution.summary] | map(select(. != null and . != "")) | first) // "-") | gsub("[\r\n\t]+"; " "))
+    ] | @tsv
+  ' <<<"$state_json" | while IFS=$'\t' read -r stage_name stage_status stage_updated stage_detail; do
+    printf '  %-18s %-12s %-25s %s\n' "$stage_name" "$stage_status" "$stage_updated" "$stage_detail"
+  done
+}
+
+print_snapshot() {
+  local rows=()
+  local verbose_sections=()
+  local active=false
+
+  while IFS= read -r logical_name; do
+    local aws_name
+    aws_name=$(resolve_pipeline_name "$logical_name")
+
+    local state_json
+    if ! state_json=$(aws codepipeline get-pipeline-state --name "$aws_name" 2>&1); then
+      rows+=("$logical_name"$'\t'"ERROR"$'\t'"-"$'\t'"-"$'\t'"$(sanitize_text "get-pipeline-state failed: $state_json")")
+      continue
+    fi
+
+    local stage state_status state_updated state_detail
+    IFS=$'\t' read -r stage state_status state_updated state_detail < <(stage_summary_from_state <<<"$state_json")
+
+    local status="$state_status"
+    local updated="$state_updated"
+    local detail="$state_detail"
+
+    local exec_json
+    if exec_json=$(aws codepipeline list-pipeline-executions --pipeline-name "$aws_name" --max-results 1 2>/dev/null); then
+      local exec_status exec_updated exec_detail
+      exec_status=$(jq -r '.pipelineExecutionSummaries[0].status // empty' <<<"$exec_json")
+      exec_updated=$(jq -r '.pipelineExecutionSummaries[0].lastUpdateTime // empty' <<<"$exec_json")
+      exec_detail=$(jq -r '((.pipelineExecutionSummaries[0].statusSummary // "") | gsub("[\r\n\t]+"; " "))' <<<"$exec_json")
+
+      [[ -n "$exec_status" ]] && status="$exec_status"
+      [[ -n "$exec_updated" ]] && updated="$exec_updated"
+      [[ -n "$exec_detail" ]] && detail="$exec_detail"
+    fi
+
+    [[ -z "$updated" ]] && updated="-"
+    [[ -z "$detail" ]] && detail="-"
+
+    rows+=("$logical_name"$'\t'"$status"$'\t'"$stage"$'\t'"$updated"$'\t'"$detail")
+
+    if [[ "$status" == "InProgress" ]]; then
+      active=true
+    fi
+
+    if [[ "$VERBOSE" == true ]]; then
+      verbose_sections+=("$logical_name ($aws_name)")
+      verbose_sections+=("$(print_verbose_stages "$state_json")")
+      verbose_sections+=("")
+    fi
+  done < <(selected_pipelines)
+
+  {
+    printf 'PIPELINE\tSTATUS\tSTAGE\tUPDATED\tDETAILS\n'
+    if [[ ${#rows[@]} -gt 0 ]]; then
+      printf '%s\n' "${rows[@]}"
+    fi
+  } | column -t -s $'\t'
+
+  if [[ "$VERBOSE" == true && ${#verbose_sections[@]} -gt 0 ]]; then
+    printf '\n'
+    printf '%s\n' "${verbose_sections[@]}"
+  fi
+
+  [[ "$active" == true ]]
+}
+
+main() {
+  parse_args "$@"
+
+  while true; do
+    if [[ "$WATCH" == true && -t 1 ]]; then
+      clear
+      printf '%s\n\n' "$(date '+%Y-%m-%d %H:%M:%S')"
+    fi
+
+    if ! print_snapshot; then
+      break
+    fi
+
+    if [[ "$WATCH" != true ]]; then
+      break
+    fi
+
+    sleep "$INTERVAL"
+  done
+}
+
+main "$@"
