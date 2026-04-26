@@ -89,6 +89,42 @@ function linkifyActivityMessage(message: string): React.ReactNode {
   );
 }
 
+interface ActivityGroup {
+  dateLabel: string;
+  items: Array<{ timestamp: string; message: string }>;
+}
+
+function groupActivityByDate(
+  items: Array<{ timestamp: string; message: string }>
+): ActivityGroup[] {
+  const map = new Map<string, Array<{ timestamp: string; message: string }>>();
+  for (const item of items) {
+    const date = new Date(item.timestamp);
+    const label = date.toLocaleDateString("en-US", {
+      month: "long",
+      day: "numeric",
+      year: "numeric",
+    });
+    const existing = map.get(label);
+    if (existing) {
+      existing.push(item);
+    } else {
+      map.set(label, [item]);
+    }
+  }
+  // Sort groups by the first item's timestamp descending
+  const groups: ActivityGroup[] = [];
+  for (const [dateLabel, groupItems] of map) {
+    groups.push({ dateLabel, items: groupItems });
+  }
+  groups.sort((a, b) => {
+    const aTime = Date.parse(a.items[0].timestamp);
+    const bTime = Date.parse(b.items[0].timestamp);
+    return bTime - aTime;
+  });
+  return groups;
+}
+
 function StepConnector({ isCompleted }: { isCompleted: boolean }) {
   return (
     <div
