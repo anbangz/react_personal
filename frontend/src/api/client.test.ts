@@ -1,7 +1,7 @@
 import { server } from "../mocks/server";
 import { http, HttpResponse } from "msw";
-import { fetchPosts, fetchPost } from "./client";
-import { createMockPost } from "../mocks/factories";
+import { fetchPosts, fetchPost, fetchStatus } from "./client";
+import { createMockPost, createMockStatusSnapshot } from "../mocks/factories";
 
 describe("fetchPosts", () => {
   it("returns parsed posts on success", async () => {
@@ -90,5 +90,29 @@ describe("fetchPost", () => {
     );
 
     await expect(fetchPost("missing")).rejects.toThrow("Not found");
+  });
+});
+
+describe("fetchStatus", () => {
+  it("returns the status snapshot on success", async () => {
+    server.use(
+      http.get("*/status", () => {
+        return HttpResponse.json(createMockStatusSnapshot());
+      })
+    );
+
+    const result = await fetchStatus();
+    expect(result.pipelines).toHaveLength(3);
+    expect(result.calendar.months.at(-1)?.label).toBe("April 2026");
+  });
+
+  it("throws the api error message on failure", async () => {
+    server.use(
+      http.get("*/status", () => {
+        return new HttpResponse(JSON.stringify({ error: "status unavailable" }), { status: 503 });
+      })
+    );
+
+    await expect(fetchStatus()).rejects.toThrow("status unavailable");
   });
 });

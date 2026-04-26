@@ -82,6 +82,12 @@ export const Navbar = () => {
             >
               Blog
             </NavLink>
+            <NavLink
+              className={({ isActive }) => `site-nav__item${isActive ? " active" : ""}`}
+              to="/status"
+            >
+              Status
+            </NavLink>
           </div>
           <div className="site-nav__end">
             <button

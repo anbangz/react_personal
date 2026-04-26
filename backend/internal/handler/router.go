@@ -11,6 +11,7 @@ type RouterConfig struct {
 	MongoClient   *mongo.Client
 	PostHandler   *PostHandler
 	PhotoHandler  *PhotoHandler
+	StatusHandler *StatusHandler
 	APIKey        string
 	AllowedOrigin string
 }
@@ -31,6 +32,9 @@ func NewRouter(cfg RouterConfig) *chi.Mux {
 	// Public post endpoints
 	r.Get("/posts", cfg.PostHandler.ListPublished)
 	r.Get("/posts/{slug}", cfg.PostHandler.GetBySlug)
+
+	// Public status endpoint
+	r.Get("/status", cfg.StatusHandler.ServeHTTP)
 
 	// Admin endpoints (API key required)
 	r.Route("/admin", func(r chi.Router) {

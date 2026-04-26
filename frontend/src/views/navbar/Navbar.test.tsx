@@ -45,4 +45,15 @@ describe("Navbar", () => {
       ).toBeInTheDocument();
     });
   });
+
+  it("shows a status navigation link", () => {
+    renderWithProviders(<Navbar />);
+    expect(screen.getByRole("link", { name: /status/i })).toHaveAttribute("href", "/status");
+  });
+
+  it("marks status link as active when on /status", () => {
+    renderWithProviders(<Navbar />, { routerProps: { initialEntries: ["/status"] } });
+    const link = screen.getByRole("link", { name: /status/i });
+    expect(link).toHaveClass("active");
+  });
 });
