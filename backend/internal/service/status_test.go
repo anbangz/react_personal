@@ -25,8 +25,8 @@ func (f *fakePipelineClient) FetchStatusSnapshot(ctx context.Context, now time.T
 
 func TestStatusService_UsesFreshCache(t *testing.T) {
 	now := time.Date(2026, 4, 25, 18, 10, 0, 0, time.UTC)
-	client := &fakePipelineClient{snapshot: model.StatusSnapshot{GeneratedAt: now, StaleAfter: now.Add(15 * time.Minute)}}
-	svc := NewStatusService(client, 15*time.Minute, func() time.Time { return now })
+	client := &fakePipelineClient{snapshot: model.StatusSnapshot{GeneratedAt: now, StaleAfter: now.Add(time.Minute)}}
+	svc := NewStatusService(client, time.Minute, func() time.Time { return now })
 
 	_, err := svc.GetSnapshot(context.Background())
 	if err != nil {
@@ -43,7 +43,7 @@ func TestStatusService_UsesFreshCache(t *testing.T) {
 
 func TestStatusService_ReturnsStaleSnapshotWhenRefreshFails(t *testing.T) {
 	now := time.Date(2026, 4, 25, 18, 10, 0, 0, time.UTC)
-	client := &fakePipelineClient{snapshot: model.StatusSnapshot{GeneratedAt: now, StaleAfter: now.Add(15 * time.Minute)}}
+	client := &fakePipelineClient{snapshot: model.StatusSnapshot{GeneratedAt: now, StaleAfter: now.Add(time.Minute)}}
 
 	call := 0
 	clock := func() time.Time {
@@ -51,10 +51,10 @@ func TestStatusService_ReturnsStaleSnapshotWhenRefreshFails(t *testing.T) {
 		if call == 1 {
 			return now
 		}
-		return now.Add(20 * time.Minute) // past TTL, cache is stale
+		return now.Add(2 * time.Minute) // past TTL, cache is stale
 	}
 
-	svc := NewStatusService(client, 15*time.Minute, clock)
+	svc := NewStatusService(client, time.Minute, clock)
 
 	_, err := svc.GetSnapshot(context.Background())
 	if err != nil {
@@ -74,7 +74,7 @@ func TestStatusService_ReturnsStaleSnapshotWhenRefreshFails(t *testing.T) {
 func TestStatusService_ReturnsErrorWhenNoCacheAndRefreshFails(t *testing.T) {
 	now := time.Date(2026, 4, 25, 18, 10, 0, 0, time.UTC)
 	client := &fakePipelineClient{err: errors.New("aws unavailable")}
-	svc := NewStatusService(client, 15*time.Minute, func() time.Time { return now })
+	svc := NewStatusService(client, time.Minute, func() time.Time { return now })
 
 	_, err := svc.GetSnapshot(context.Background())
 	if err == nil {

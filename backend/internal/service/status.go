@@ -191,23 +191,54 @@ func (f *codePipelineStatusFetcher) FetchStatusSnapshot(ctx context.Context, now
 	}
 
 	counts := make(map[string]int)
-	activity := make([]model.ActivityItem, 0, 8)
-	result := make([]model.PipelineSnapshot, 0, len(pipelines))
+	results := make([]model.PipelineSnapshot, len(pipelines))
+	activities := make([][]model.ActivityItem, len(pipelines))
 
-	for _, pipeline := range pipelines {
-		snapshot, items, dayCounts, err := f.buildPipelineSnapshot(ctx, pipeline.key, pipeline.name, pipeline.label, pipeline.description, pipeline.defs)
+	var wg sync.WaitGroup
+	var mu sync.Mutex
+	errCh := make(chan error, len(pipelines))
+
+	for i, pipeline := range pipelines {
+		wg.Add(1)
+		go func(idx int, p struct {
+			key         string
+			name        string
+			label       string
+			description string
+			defs        []stageDefinition
+		}) {
+			defer wg.Done()
+			snapshot, items, dayCounts, err := f.buildPipelineSnapshot(ctx, p.key, p.name, p.label, p.description, p.defs)
+			if err != nil {
+				errCh <- err
+				return
+			}
+			results[idx] = snapshot
+			activities[idx] = items
+			mu.Lock()
+			for day, count := range dayCounts {
+				counts[day] += count
+			}
+			mu.Unlock()
+		}(i, pipeline)
+	}
+
+	wg.Wait()
+	close(errCh)
+
+	for err := range errCh {
 		if err != nil {
 			return model.StatusSnapshot{}, err
 		}
-		result = append(result, snapshot)
+	}
+
+	var activity []model.ActivityItem
+	for _, items := range activities {
 		activity = append(activity, items...)
-		for day, count := range dayCounts {
-			counts[day] += count
-		}
 	}
 
 	return model.StatusSnapshot{
-		Pipelines:      result,
+		Pipelines:      results,
 		Calendar:       buildRollingCalendar(now, counts),
 		RecentActivity: sortActivity(activity),
 	}, nil

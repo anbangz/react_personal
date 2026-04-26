@@ -83,7 +83,7 @@ func main() {
 	pipelineClient := codepipeline.NewFromConfig(awsCfg)
 	statusSvc := service.NewStatusService(
 		service.NewCodePipelineStatusFetcher(pipelineClient),
-		15*time.Minute,
+		time.Minute,
 		time.Now,
 	)
 
