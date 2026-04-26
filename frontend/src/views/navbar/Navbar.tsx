@@ -1,5 +1,5 @@
 import * as React from "react";
-import { Link, NavLink } from "react-router-dom";
+import { Link, NavLink, useLocation } from "react-router-dom";
 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
@@ -23,6 +23,7 @@ export const Navbar = () => {
   const [isAnimating, setIsAnimating] = React.useState(false);
   const { theme, toggleTheme } = useTheme();
   const swapTimer = React.useRef<ReturnType<typeof setTimeout> | null>(null);
+  const location = useLocation();
 
   const [isSecretBearRunOpen, setIsSecretBearRunOpen] = React.useState(false);
   const secretTriggerButtonRef = React.useRef<HTMLButtonElement | null>(null);
@@ -33,6 +34,10 @@ export const Navbar = () => {
   React.useEffect(() => {
     return () => { if (swapTimer.current) clearTimeout(swapTimer.current); };
   }, []);
+
+  React.useEffect(() => {
+    setIsMenuActive(false);
+  }, [location.pathname, location.hash]);
 
   const handleToggle = React.useCallback(() => {
     if (isAnimating) return;
@@ -67,15 +72,6 @@ export const Navbar = () => {
         </div>
         <div id="site-nav-menu" className={`site-nav__menu ${isMenuActive ? "is-open" : ""}`}>
           <div className="site-nav__start">
-            <Link className="site-nav__item" to="/#this-site">
-              This Site
-            </Link>
-            <Link className="site-nav__item" to="/#resume">
-              R&#233;sum&#233;
-            </Link>
-            <Link className="site-nav__item" to="/#contact-me">
-              Contact Me
-            </Link>
             <NavLink
               className={({ isActive }) => `site-nav__item${isActive ? " active" : ""}`}
               to="/blog"
