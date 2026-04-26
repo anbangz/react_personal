@@ -147,4 +147,14 @@ describe("Status", () => {
     expect(screen.getByRole("button", { name: /previous month/i })).toHaveClass("button", "is-small");
     expect(screen.getByRole("button", { name: /next month/i })).toHaveClass("button", "is-small");
   });
+
+  it("renders day-of-week column headers above the calendar grid", async () => {
+    server.use(http.get("*/status", () => HttpResponse.json(createMockStatusSnapshot())));
+    renderWithProviders(<Status />);
+    await screen.findByText("April 2026");
+    const headers = document.querySelectorAll(".status-page__calendar-day-header");
+    expect(headers).toHaveLength(7);
+    const labels = Array.from(headers).map((el) => el.textContent);
+    expect(labels).toEqual(["S", "M", "T", "W", "T", "F", "S"]);
+  });
 });

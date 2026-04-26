@@ -77,22 +77,31 @@ function PipelineRail({ pipeline }: { pipeline: PipelineSnapshot }) {
   );
 }
 
+const DAY_LABELS = ["S", "M", "T", "W", "T", "F", "S"] as const;
+
 function CalendarMonthView({ month }: { month: CalendarMonth }) {
   return (
-    <div className="status-page__calendar-grid">
-      {Array.from({ length: month.leadingBlankDays }).map((_, index) => (
-        <span key={`leading-${index}`} className="status-page__calendar-day status-page__calendar-day--blank" />
-      ))}
-      {month.days.map((day) => (
-        <div
-          key={day.date}
-          className={`status-page__calendar-day status-page__calendar-day--level-${Math.min(day.deployedCommitCount, 4)}`}
-          aria-label={`${day.date}: ${day.deployedCommitCount} deployed revisions`}
-        />
-      ))}
-      {Array.from({ length: month.trailingBlankDays }).map((_, index) => (
-        <span key={`trailing-${index}`} className="status-page__calendar-day status-page__calendar-day--blank" />
-      ))}
+    <div>
+      <div className="status-page__calendar-day-headers">
+        {DAY_LABELS.map((label, i) => (
+          <span key={i} className="status-page__calendar-day-header">{label}</span>
+        ))}
+      </div>
+      <div className="status-page__calendar-grid">
+        {Array.from({ length: month.leadingBlankDays }).map((_, index) => (
+          <span key={`leading-${index}`} className="status-page__calendar-day status-page__calendar-day--blank" />
+        ))}
+        {month.days.map((day) => (
+          <div
+            key={day.date}
+            className={`status-page__calendar-day status-page__calendar-day--level-${Math.min(day.deployedCommitCount, 4)}`}
+            aria-label={`${day.date}: ${day.deployedCommitCount} deployed revisions`}
+          />
+        ))}
+        {Array.from({ length: month.trailingBlankDays }).map((_, index) => (
+          <span key={`trailing-${index}`} className="status-page__calendar-day status-page__calendar-day--blank" />
+        ))}
+      </div>
     </div>
   );
 }

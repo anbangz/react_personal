@@ -174,6 +174,21 @@
 .status-page__calendar-day--level-4 { background: var(--status-cal-4); }
 .status-page__calendar-day--blank { visibility: hidden; }
 
+.status-page__calendar-day-headers {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 0.3rem;
+  margin-bottom: 0.25rem;
+}
+
+.status-page__calendar-day-header {
+  text-align: center;
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--text-muted);
+}
+
 @media (max-width: 1024px) {
   .status-page__pipeline-row,
   .status-page__content-grid {
