@@ -47,7 +47,7 @@ export const SecretBearRunModal: React.FunctionComponent<SecretBearRunModalProps
   const scoreRef = React.useRef(0);
   const bestScoreRef = React.useRef(0);
   const activeJumpKeysRef = React.useRef<Set<string>>(new Set());
-  const isPointerJumpHeldRef = React.useRef(false);
+  const activeJumpPointerIdRef = React.useRef<number | null>(null);
   const [screen, setScreen] = React.useState<SecretBearRunScreen>("intro");
   const [score, setScore] = React.useState(0);
   const [bestScore, setBestScore] = React.useState(0);
@@ -130,6 +130,15 @@ export const SecretBearRunModal: React.FunctionComponent<SecretBearRunModalProps
     bearRunStateRef.current = endBearJump(bearRunStateRef.current);
   }, []);
 
+  const clearActiveJumpInput = React.useCallback(() => {
+    activeJumpKeysRef.current.clear();
+    activeJumpPointerIdRef.current = null;
+
+    if (currentScreenRef.current === "playing") {
+      handleJumpEnd();
+    }
+  }, [handleJumpEnd]);
+
   const handleStagePointerDown = React.useCallback(
     (event: React.PointerEvent<HTMLDivElement>) => {
       if (currentScreenRef.current !== "playing") {
@@ -138,10 +147,16 @@ export const SecretBearRunModal: React.FunctionComponent<SecretBearRunModalProps
 
       event.preventDefault();
 
-      if (isPointerJumpHeldRef.current) {
+      if (activeJumpPointerIdRef.current !== null) {
         return;
       }
-      isPointerJumpHeldRef.current = true;
+
+      activeJumpPointerIdRef.current = event.pointerId;
+
+      if (typeof event.currentTarget.setPointerCapture === "function") {
+        event.currentTarget.setPointerCapture(event.pointerId);
+      }
+
       handleJumpStart();
     },
     [handleJumpStart]
@@ -155,10 +170,19 @@ export const SecretBearRunModal: React.FunctionComponent<SecretBearRunModalProps
 
       event.preventDefault();
 
-      if (!isPointerJumpHeldRef.current) {
+      if (activeJumpPointerIdRef.current !== event.pointerId) {
         return;
       }
-      isPointerJumpHeldRef.current = false;
+
+      activeJumpPointerIdRef.current = null;
+
+      if (
+        typeof event.currentTarget.hasPointerCapture === "function" &&
+        typeof event.currentTarget.releasePointerCapture === "function" &&
+        event.currentTarget.hasPointerCapture(event.pointerId)
+      ) {
+        event.currentTarget.releasePointerCapture(event.pointerId);
+      }
 
       if (activeJumpKeysRef.current.size === 0) {
         handleJumpEnd();
@@ -173,7 +197,7 @@ export const SecretBearRunModal: React.FunctionComponent<SecretBearRunModalProps
     animationTickRef.current = 0;
     previousFrameTimeRef.current = null;
     activeJumpKeysRef.current.clear();
-    isPointerJumpHeldRef.current = false;
+    activeJumpPointerIdRef.current = null;
     currentScreenRef.current = "playing";
     scoreRef.current = 0;
     setScore(0);
@@ -183,7 +207,7 @@ export const SecretBearRunModal: React.FunctionComponent<SecretBearRunModalProps
   const handleClose = React.useCallback(() => {
     stopAnimationLoop();
     activeJumpKeysRef.current.clear();
-    isPointerJumpHeldRef.current = false;
+    activeJumpPointerIdRef.current = null;
     onClose();
   }, [onClose, stopAnimationLoop]);
 
@@ -205,7 +229,7 @@ export const SecretBearRunModal: React.FunctionComponent<SecretBearRunModalProps
     animationTickRef.current = 0;
     previousFrameTimeRef.current = null;
     activeJumpKeysRef.current.clear();
-    isPointerJumpHeldRef.current = false;
+    activeJumpPointerIdRef.current = null;
     currentScreenRef.current = "intro";
     setScreen("intro");
     scoreRef.current = 0;
@@ -305,23 +329,41 @@ export const SecretBearRunModal: React.FunctionComponent<SecretBearRunModalProps
 
       activeJumpKeysRef.current.delete(jumpKey);
 
-      if (currentScreenRef.current === "playing" && !isPointerJumpHeldRef.current && activeJumpKeysRef.current.size === 0) {
+      if (
+        currentScreenRef.current === "playing" &&
+        activeJumpPointerIdRef.current === null &&
+        activeJumpKeysRef.current.size === 0
+      ) {
         event.preventDefault();
         handleJumpEnd();
       }
     };
 
+    const handleWindowBlur = () => {
+      clearActiveJumpInput();
+    };
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === "hidden") {
+        clearActiveJumpInput();
+      }
+    };
+
     document.addEventListener("keydown", handleKeyDown);
     document.addEventListener("keyup", handleKeyUp);
+    window.addEventListener("blur", handleWindowBlur);
+    document.addEventListener("visibilitychange", handleVisibilityChange);
 
     return () => {
       stopAnimationLoop();
       document.body.style.overflow = previousOverflow;
       document.removeEventListener("keydown", handleKeyDown);
       document.removeEventListener("keyup", handleKeyUp);
+      window.removeEventListener("blur", handleWindowBlur);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
       triggerButtonRef.current?.focus();
     };
-  }, [handleClose, handleJumpEnd, handleJumpStart, isOpen, stopAnimationLoop, triggerButtonRef]);
+  }, [clearActiveJumpInput, handleClose, handleJumpEnd, handleJumpStart, isOpen, stopAnimationLoop, triggerButtonRef]);
 
   React.useEffect(() => {
     if (!isOpen || screen !== "playing") {

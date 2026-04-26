@@ -68,9 +68,24 @@ describe("bearRunEngine variable jump", () => {
 
   it("stops adding lift when input is released early", () => {
     const earlyReleaseApex = simulateJumpApex(FRAME_SECONDS * 2);
-    const heldApex = simulateJumpApex(1);
+    const cappedHoldApex = simulateJumpApex(MAX_JUMP_HOLD_SECONDS);
 
-    expect(earlyReleaseApex).toBeGreaterThan(heldApex + 12);
+    expect(earlyReleaseApex).toBeGreaterThan(cappedHoldApex + 12);
+  });
+
+  it("marks jump input as released when a started jump ends", () => {
+    const jumpingState = startBearJump(createInitialBearRunState());
+    const releasedState = endBearJump(jumpingState);
+
+    expect(jumpingState.isJumpHeld).toBe(true);
+    expect(releasedState.isJumpHeld).toBe(false);
+  });
+
+  it("keeps early release lower than a jump held through the cap", () => {
+    const earlyReleaseApex = simulateJumpApex(MAX_JUMP_HOLD_SECONDS / 3);
+    const cappedHoldApex = simulateJumpApex(MAX_JUMP_HOLD_SECONDS);
+
+    expect(earlyReleaseApex).toBeGreaterThan(cappedHoldApex + 8);
   });
 
   it("does not start a second jump while airborne", () => {
