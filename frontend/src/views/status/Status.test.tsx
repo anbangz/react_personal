@@ -22,7 +22,7 @@ describe("Status", () => {
       })
     );
     renderWithProviders(<Status />);
-    expect(await screen.findByText(/failed to load deployment status/i)).toBeInTheDocument();
+    expect(await screen.findByText(/unable to load status/i)).toBeInTheDocument();
     expect(screen.getByText(/api down/i)).toBeInTheDocument();
   });
 
@@ -130,6 +130,32 @@ describe("Status", () => {
     expect(screen.queryByText(/ProviderType/)).not.toBeInTheDocument();
   });
 
+  it("parses a plain JSON string commit message", async () => {
+    const snapshot = createMockStatusSnapshot();
+    server.use(
+      http.get("*/status", () =>
+        HttpResponse.json(
+          createMockStatusSnapshot({
+            pipelines: [
+              {
+                ...snapshot.pipelines[0],
+                lastDeployedCommit: {
+                  sha: "ae776c9",
+                  message: JSON.stringify("fix: update deps"),
+                },
+              },
+              ...snapshot.pipelines.slice(1),
+            ],
+          })
+        )
+      )
+    );
+    renderWithProviders(<Status />);
+    await screen.findByText("Personal Website");
+    expect(screen.getByText("fix: update deps")).toBeInTheDocument();
+    expect(screen.queryByText('"fix: update deps"')).not.toBeInTheDocument();
+  });
+
   it("wraps timestamps in <time dateTime> elements", async () => {
     server.use(http.get("*/status", () => HttpResponse.json(createMockStatusSnapshot())));
     renderWithProviders(<Status />);
@@ -156,5 +182,42 @@ describe("Status", () => {
     expect(headers).toHaveLength(7);
     const labels = Array.from(headers).map((el) => el.textContent);
     expect(labels).toEqual(["S", "M", "T", "W", "T", "F", "S"]);
+  });
+
+  it("renders a calendar legend", async () => {
+    server.use(http.get("*/status", () => HttpResponse.json(createMockStatusSnapshot())));
+    renderWithProviders(<Status />);
+    await screen.findByText("April 2026");
+    expect(document.querySelector(".status-page__calendar-legend")).toBeInTheDocument();
+    const swatches = document.querySelectorAll(".status-page__calendar-legend-swatch");
+    expect(swatches).toHaveLength(5);
+  });
+
+  it("shows empty state when there is no recent activity", async () => {
+    server.use(
+      http.get("*/status", () =>
+        HttpResponse.json(createMockStatusSnapshot({ recentActivity: [] }))
+      )
+    );
+    renderWithProviders(<Status />);
+    await screen.findByText("Personal Website");
+    expect(screen.getByText(/no recent deployments/i)).toBeInTheDocument();
+  });
+
+  it("maps pipeline status to friendly labels", async () => {
+    const snapshot = createMockStatusSnapshot();
+    server.use(
+      http.get("*/status", () =>
+        HttpResponse.json(
+          createMockStatusSnapshot({
+            pipelines: snapshot.pipelines.map((p) => ({ ...p, status: "unknown" as const })),
+          })
+        )
+      )
+    );
+    renderWithProviders(<Status />);
+    await screen.findByText("Personal Website");
+    expect(screen.getAllByText("Unknown").length).toBe(3);
+    expect(screen.queryByText("unknown")).not.toBeInTheDocument();
   });
 });

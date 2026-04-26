@@ -15,6 +15,9 @@
   --status-cal-2: #a8d1b6;
   --status-cal-3: #67ab80;
   --status-cal-4: #1b7a43;
+  --status-pulse-color: rgba(229, 174, 35, 0.35);
+  --status-pulse-color-fade: rgba(229, 174, 35, 0.08);
+  --status-pulse-color-fade-end: rgba(229, 174, 35, 0.02);
 }
 
 [data-theme="dark"] {
@@ -34,6 +37,9 @@
   --status-cal-2: #1a5030;
   --status-cal-3: #266540;
   --status-cal-4: #2ecc71;
+  --status-pulse-color: rgba(240, 190, 65, 0.35);
+  --status-pulse-color-fade: rgba(240, 190, 65, 0.08);
+  --status-pulse-color-fade-end: rgba(240, 190, 65, 0.02);
 }
 
 .status-page {
@@ -65,6 +71,14 @@
   margin-top: 1.5rem;
 }
 
+.status-page__panel--error {
+  border-color: var(--status-danger);
+}
+
+.status-page__panel--error h2 {
+  color: var(--status-danger);
+}
+
 .status-page__pipeline-row {
   display: grid;
   grid-template-columns: 220px 1fr 220px;
@@ -74,9 +88,24 @@
   border-top: 1px solid var(--border-default);
 }
 
-.status-page__badge--succeeded { color: var(--status-success); }
-.status-page__badge--running   { color: var(--status-warning); }
-.status-page__badge--failed    { color: var(--status-danger); }
+.status-page__badge {
+  display: inline-block;
+  padding: 0.15em 0.5em;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: capitalize;
+}
+
+.status-page__badge--succeeded { background: rgba(27, 122, 67, 0.1); color: var(--status-success); }
+.status-page__badge--running   { background: rgba(144, 106, 0, 0.1); color: var(--status-warning); }
+.status-page__badge--failed    { background: rgba(182, 45, 58, 0.1); color: var(--status-danger); }
+.status-page__badge--unknown   { background: rgba(150, 150, 150, 0.1); color: var(--text-muted); }
+
+[data-theme="dark"] .status-page__badge--succeeded { background: rgba(46, 204, 113, 0.15); }
+[data-theme="dark"] .status-page__badge--running   { background: rgba(240, 190, 65, 0.15); }
+[data-theme="dark"] .status-page__badge--failed    { background: rgba(231, 76, 60, 0.15); }
+[data-theme="dark"] .status-page__badge--unknown   { background: rgba(200, 200, 200, 0.15); }
 
 .status-page__rail {
   --stage-count: 5;
@@ -102,7 +131,7 @@
 }
 
 .status-page__rail-fill {
-  width: calc(var(--track-length) * (var(--progress-steps) / (var(--stage-count) - 1)));
+  width: calc(var(--track-length) * var(--progress-steps) / max(1, var(--stage-count) - 1));
   background: var(--status-fill-gradient);
 }
 
@@ -144,9 +173,9 @@
 }
 
 @keyframes status-page-pulse {
-  0% { box-shadow: 0 0 0 0 rgba(229, 174, 35, 0.35); transform: scale(1); }
-  60% { box-shadow: 0 0 0 10px rgba(229, 174, 35, 0.08); transform: scale(1.08); }
-  100% { box-shadow: 0 0 0 0 rgba(229, 174, 35, 0.02); transform: scale(1); }
+  0% { box-shadow: 0 0 0 0 var(--status-pulse-color); transform: scale(1); }
+  60% { box-shadow: 0 0 0 10px var(--status-pulse-color-fade); transform: scale(1.08); }
+  100% { box-shadow: 0 0 0 0 var(--status-pulse-color-fade-end); transform: scale(1); }
 }
 
 .status-page__content-grid {
@@ -187,12 +216,41 @@
   text-transform: uppercase;
   letter-spacing: 0.03em;
   color: var(--text-muted);
+  text-decoration: none;
 }
+
+.status-page__calendar-legend {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.35rem;
+  margin-top: 0.75rem;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.status-page__calendar-legend-swatch {
+  width: 0.625rem;
+  height: 0.625rem;
+  border-radius: 0.15rem;
+}
+
+.status-page__calendar-legend-swatch--0 { background: var(--status-cal-0); }
+.status-page__calendar-legend-swatch--1 { background: var(--status-cal-1); }
+.status-page__calendar-legend-swatch--2 { background: var(--status-cal-2); }
+.status-page__calendar-legend-swatch--3 { background: var(--status-cal-3); }
+.status-page__calendar-legend-swatch--4 { background: var(--status-cal-4); }
 
 .status-page__stale-notice {
   color: var(--status-warning);
   font-size: 0.85rem;
   margin-top: 0.25rem;
+}
+
+.status-page__empty {
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  margin-top: 0.5rem;
 }
 
 @media (max-width: 1024px) {

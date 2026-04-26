@@ -1,6 +1,6 @@
 import * as React from "react";
 import { fetchStatus } from "../../api/client";
-import { CalendarMonth, PipelineSnapshot, StatusSnapshot } from "../../status/types";
+import { CalendarMonth, PipelineSnapshot, PipelineStatus, StatusSnapshot } from "../../status/types";
 import "./Status.css";
 
 function formatRelativeTimestamp(value: string): string {
@@ -20,6 +20,7 @@ function truncateSHA(sha: string): string {
 function parseCommitMessage(raw: string): string {
   try {
     const parsed: unknown = JSON.parse(raw);
+    if (typeof parsed === "string") return parsed;
     if (
       typeof parsed === "object" &&
       parsed !== null &&
@@ -34,6 +35,13 @@ function parseCommitMessage(raw: string): string {
   return raw;
 }
 
+const STATUS_LABELS: Record<PipelineStatus, string> = {
+  succeeded: "Succeeded",
+  running: "In Progress",
+  failed: "Failed",
+  unknown: "Unknown",
+};
+
 function PipelineRail({ pipeline }: { pipeline: PipelineSnapshot }) {
   const activeIndex = pipeline.stages.findIndex((stage) => stage.state === "active" || stage.state === "failed");
   const progressSteps = activeIndex === -1 ? Math.max(pipeline.stages.length - 1, 0) : activeIndex;
@@ -43,7 +51,7 @@ function PipelineRail({ pipeline }: { pipeline: PipelineSnapshot }) {
       <div>
         <h2>{pipeline.label}</h2>
         <p>{pipeline.description}</p>
-        <span className={`status-page__badge status-page__badge--${pipeline.status}`}>{pipeline.status}</span>
+        <span className={`status-page__badge status-page__badge--${pipeline.status}`}>{STATUS_LABELS[pipeline.status]}</span>
       </div>
       <div>
         <div className="status-page__rail-meta">
@@ -77,14 +85,24 @@ function PipelineRail({ pipeline }: { pipeline: PipelineSnapshot }) {
   );
 }
 
-const DAY_LABELS = ["S", "M", "T", "W", "T", "F", "S"] as const;
+const DAY_LABELS = [
+  { label: "S", title: "Sunday" },
+  { label: "M", title: "Monday" },
+  { label: "T", title: "Tuesday" },
+  { label: "W", title: "Wednesday" },
+  { label: "T", title: "Thursday" },
+  { label: "F", title: "Friday" },
+  { label: "S", title: "Saturday" },
+] as const;
 
 function CalendarMonthView({ month }: { month: CalendarMonth }) {
+  const totalCommits = React.useMemo(() => month.days.reduce((sum, day) => sum + day.deployedCommitCount, 0), [month]);
+
   return (
     <div>
       <div className="status-page__calendar-day-headers">
-        {DAY_LABELS.map((label, i) => (
-          <span key={i} className="status-page__calendar-day-header">{label}</span>
+        {DAY_LABELS.map((day, i) => (
+          <abbr key={i} className="status-page__calendar-day-header" title={day.title}>{day.label}</abbr>
         ))}
       </div>
       <div className="status-page__calendar-grid">
@@ -96,12 +114,21 @@ function CalendarMonthView({ month }: { month: CalendarMonth }) {
             key={day.date}
             className={`status-page__calendar-day status-page__calendar-day--level-${Math.min(day.deployedCommitCount, 4)}`}
             aria-label={`${day.date}: ${day.deployedCommitCount} deployed revisions`}
+            title={`${day.date}: ${day.deployedCommitCount} deployed revision${day.deployedCommitCount === 1 ? "" : "s"}`}
           />
         ))}
         {Array.from({ length: month.trailingBlankDays }).map((_, index) => (
           <span key={`trailing-${index}`} className="status-page__calendar-day status-page__calendar-day--blank" />
         ))}
       </div>
+      <div className="status-page__calendar-legend">
+        <span>Less</span>
+        {[0, 1, 2, 3, 4].map((level) => (
+          <span key={level} className={`status-page__calendar-legend-swatch status-page__calendar-legend-swatch--${level}`} />
+        ))}
+        <span>More</span>
+      </div>
+      {totalCommits === 0 && <p className="status-page__empty">No deployments this month.</p>}
     </div>
   );
 }
@@ -109,7 +136,7 @@ function CalendarMonthView({ month }: { month: CalendarMonth }) {
 export function Status(): React.ReactElement {
   const [snapshot, setSnapshot] = React.useState<StatusSnapshot | null>(null);
   const [error, setError] = React.useState<string | null>(null);
-  const [monthIndex, setMonthIndex] = React.useState(0);
+  const [monthIndex, setMonthIndex] = React.useState<number | null>(null);
 
   React.useEffect(() => {
     let active = true;
@@ -129,10 +156,17 @@ export function Status(): React.ReactElement {
   }, []);
 
   if (error !== null) {
-    return <section className="status-page container"><p>Failed to load deployment status. {error}</p></section>;
+    return (
+      <section className="status-page container">
+        <div className="status-page__panel status-page__panel--error">
+          <h2>Unable to load status</h2>
+          <p>We couldn't fetch the latest deployment data. {error}</p>
+        </div>
+      </section>
+    );
   }
 
-  if (snapshot === null) {
+  if (snapshot === null || monthIndex === null) {
     return <section className="status-page container"><p>Loading deployment status...</p></section>;
   }
 
@@ -144,7 +178,11 @@ export function Status(): React.ReactElement {
         <div>
           <h1>Deployment Status</h1>
           <p>A public view into how the site ships.</p>
-          {snapshot.isStale ? <p className="status-page__stale-notice">⚠ Status may be outdated.</p> : null}
+          {snapshot.isStale ? (
+            <p className="status-page__stale-notice">
+              <span role="img" aria-label="Warning">⚠</span> Status may be outdated.
+            </p>
+          ) : null}
         </div>
         <div>
           <span>Last Updated</span>
@@ -164,9 +202,9 @@ export function Status(): React.ReactElement {
           <div className="status-page__calendar-header">
             <h2>Deployed Commits</h2>
             <div>
-              <button type="button" className="button is-small" onClick={() => setMonthIndex((value) => value - 1)} disabled={monthIndex === 0} aria-label="Previous month">Previous</button>
+              <button type="button" className="button is-small" onClick={() => setMonthIndex((value) => (value ?? 0) - 1)} disabled={monthIndex === 0} aria-label="Previous month">Previous</button>
               <span>{month.label}</span>
-              <button type="button" className="button is-small" onClick={() => setMonthIndex((value) => value + 1)} disabled={monthIndex === snapshot.calendar.months.length - 1} aria-label="Next month">Next</button>
+              <button type="button" className="button is-small" onClick={() => setMonthIndex((value) => (value ?? 0) + 1)} disabled={monthIndex === snapshot.calendar.months.length - 1} aria-label="Next month">Next</button>
             </div>
           </div>
           <CalendarMonthView month={month} />
@@ -174,14 +212,18 @@ export function Status(): React.ReactElement {
 
         <div className="status-page__panel">
           <h2>Recent Activity</h2>
-          <ul>
-            {snapshot.recentActivity.map((item) => (
-              <li key={`${item.timestamp}-${item.message}`}>
-                <time dateTime={item.timestamp}>{formatRelativeTimestamp(item.timestamp)}</time>
-                <span>{item.message}</span>
-              </li>
-            ))}
-          </ul>
+          {snapshot.recentActivity.length > 0 ? (
+            <ul>
+              {snapshot.recentActivity.map((item, index) => (
+                <li key={`${item.timestamp}-${item.message}-${index}`}>
+                  <time dateTime={item.timestamp}>{formatRelativeTimestamp(item.timestamp)}</time>
+                  <span>{item.message}</span>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="status-page__empty">No recent deployments.</p>
+          )}
         </div>
       </div>
     </section>
