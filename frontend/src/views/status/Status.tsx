@@ -60,6 +60,35 @@ const STATUS_LABELS: Record<PipelineStatus, string> = {
   unknown: "Unknown",
 };
 
+const STATUS_ICONS: Record<PipelineStatus, string> = {
+  succeeded: "✓",
+  running: "⟳",
+  failed: "✕",
+  unknown: "?",
+};
+
+function linkifyActivityMessage(message: string): React.ReactNode {
+  const shaMatch = message.match(/\b([a-f0-9]{7,40})\b/i);
+  if (!shaMatch) return <span>{message}</span>;
+  const sha = shaMatch[1];
+  const before = message.slice(0, shaMatch.index);
+  const after = message.slice(shaMatch.index! + sha.length);
+  return (
+    <>
+      <span>{before}</span>
+      <a
+        href={buildGitHubCommitUrl(sha)}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="status-page__activity-sha"
+      >
+        <code>{sha}</code>
+      </a>
+      <span>{after}</span>
+    </>
+  );
+}
+
 function StepConnector({ isCompleted }: { isCompleted: boolean }) {
   return (
     <div
@@ -70,6 +99,7 @@ function StepConnector({ isCompleted }: { isCompleted: boolean }) {
   );
 }
 
+/* Each state uses a distinct glyph or animation so color is never the sole indicator. */
 function StepNode({ stage, index }: { stage: StatusStage; index: number }) {
   const nodeContent =
     stage.state === "completed" ? (
@@ -90,136 +120,17 @@ function StepNode({ stage, index }: { stage: StatusStage; index: number }) {
   );
 }
 
-function CommitDetailModal({
-  sha,
-  message,
-  isOpen,
-  onClose,
-  triggerRef,
-}: {
-  sha: string;
-  message: string;
-  isOpen: boolean;
-  onClose: () => void;
-  triggerRef: React.RefObject<HTMLButtonElement | null>;
-}) {
-  const dialogRef = React.useRef<HTMLDivElement | null>(null);
-  const wasOpenRef = React.useRef(false);
-  const headingId = React.useId();
-
-  React.useEffect(() => {
-    if (!isOpen) {
-      if (wasOpenRef.current) {
-        triggerRef.current?.focus();
-      }
-      wasOpenRef.current = false;
-      return;
-    }
-
-    wasOpenRef.current = true;
-    const previousOverflow = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-
-    const dialog = dialogRef.current;
-    if (dialog) {
-      const closeButton = dialog.querySelector<HTMLElement>(".status-page__modal-close");
-      closeButton?.focus();
-    }
-
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape") {
-        onClose();
-        return;
-      }
-      if (e.key !== "Tab") return;
-
-      const container = dialogRef.current;
-      if (!container) return;
-
-      const focusable = Array.from(
-        container.querySelectorAll<HTMLElement>(
-          'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
-        )
-      ).filter((el) => el.getClientRects().length > 0);
-
-      if (focusable.length === 0) {
-        e.preventDefault();
-        return;
-      }
-
-      const first = focusable[0];
-      const last = focusable[focusable.length - 1];
-      const active = document.activeElement;
-
-      if (e.shiftKey && active === first) {
-        e.preventDefault();
-        last.focus();
-      } else if (!e.shiftKey && active === last) {
-        e.preventDefault();
-        first.focus();
-      }
-    };
-
-    document.addEventListener("keydown", handleKeyDown);
-    return () => {
-      document.removeEventListener("keydown", handleKeyDown);
-      document.body.style.overflow = previousOverflow;
-    };
-  }, [isOpen, onClose, triggerRef]);
-
-  if (!isOpen) return null;
-
-  const title = extractCommitTitle(message);
-  const body = extractCommitBody(message);
-
-  return (
-    <div className="status-page__modal-backdrop" onClick={onClose} role="presentation">
-      <div
-        className="status-page__modal"
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby={headingId}
-        ref={dialogRef}
-        onClick={(e) => e.stopPropagation()}
-      >
-        <div className="status-page__modal-header">
-          <h3 id={headingId}>Commit Details</h3>
-          <button
-            type="button"
-            className="status-page__modal-close"
-            onClick={onClose}
-            aria-label="Close commit details"
-          >
-            ×
-          </button>
-        </div>
-        <div className="status-page__modal-body">
-          <a
-            href={buildGitHubCommitUrl(sha)}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="status-page__modal-sha"
-          >
-            {sha}
-            <span className="status-page__modal-sha-icon" aria-hidden="true">↗</span>
-          </a>
-          <p className="status-page__modal-commit-title">{title}</p>
-          {body && (
-            <pre className="status-page__modal-commit-body">{body}</pre>
-          )}
-        </div>
-      </div>
-    </div>
-  );
-}
-
 function PipelineRail({ pipeline }: { pipeline: PipelineSnapshot }) {
-  const [isModalOpen, setIsModalOpen] = React.useState(false);
-  const expandButtonRef = React.useRef<HTMLButtonElement | null>(null);
+  const [isExpanded, setIsExpanded] = React.useState(false);
 
-  const handleCloseModal = React.useCallback(() => {
-    setIsModalOpen(false);
-  }, []);
+  const durationMs =
+    pipeline.lastExecutionStartedAt && pipeline.lastExecutionFinishedAt
+      ? Date.parse(pipeline.lastExecutionFinishedAt) - Date.parse(pipeline.lastExecutionStartedAt)
+      : null;
+  const durationText =
+    durationMs !== null && !Number.isNaN(durationMs)
+      ? `${Math.round(durationMs / 1000)}s`
+      : null;
 
   return (
     <div className="status-page__pipeline-row">
@@ -227,20 +138,28 @@ function PipelineRail({ pipeline }: { pipeline: PipelineSnapshot }) {
         <h2>{pipeline.label}</h2>
         <p>{pipeline.description}</p>
         <span className={`status-page__badge status-page__badge--${pipeline.status}`}>
+          <span className="status-page__badge-icon" aria-hidden="true">{STATUS_ICONS[pipeline.status]}</span>
           {STATUS_LABELS[pipeline.status]}
         </span>
       </div>
 
       <div>
         <div className="status-page__rail-meta">
-          <span>{pipeline.statusMessage}</span>
-          {pipeline.lastExecutionFinishedAt ? (
-            <time dateTime={pipeline.lastExecutionFinishedAt}>
-              {formatRelativeTimestamp(pipeline.lastExecutionFinishedAt)}
-            </time>
+          {pipeline.status !== "succeeded" ? (
+            <span>{pipeline.statusMessage}</span>
           ) : (
-            <span>Awaiting execution</span>
+            <span aria-hidden="true">&nbsp;</span>
           )}
+          <span className="status-page__rail-meta-right">
+            {durationText && <span className="status-page__duration" title="Total pipeline duration">{durationText}</span>}
+            {pipeline.lastExecutionFinishedAt ? (
+              <time dateTime={pipeline.lastExecutionFinishedAt}>
+                {formatRelativeTimestamp(pipeline.lastExecutionFinishedAt)}
+              </time>
+            ) : (
+              <span>Awaiting execution</span>
+            )}
+          </span>
         </div>
 
         <div className="status-page__stepper">
@@ -281,9 +200,8 @@ function PipelineRail({ pipeline }: { pipeline: PipelineSnapshot }) {
               <button
                 type="button"
                 className="status-page__commit-expand"
-                onClick={() => setIsModalOpen(true)}
-                aria-label="Show full commit message"
-                ref={expandButtonRef}
+                onClick={() => setIsExpanded((v) => !v)}
+                aria-label={isExpanded ? "Hide full commit message" : "Show full commit message"}
               >
                 <svg
                   width="14"
@@ -295,18 +213,17 @@ function PipelineRail({ pipeline }: { pipeline: PipelineSnapshot }) {
                   strokeLinecap="round"
                   strokeLinejoin="round"
                   aria-hidden="true"
+                  className={isExpanded ? "status-page__commit-expand-icon--rotated" : ""}
                 >
                   <polyline points="6 9 12 15 18 9" />
                 </svg>
               </button>
             </div>
-            <CommitDetailModal
-              sha={pipeline.lastDeployedCommit.sha}
-              message={parseCommitMessage(pipeline.lastDeployedCommit.message)}
-              isOpen={isModalOpen}
-              onClose={handleCloseModal}
-              triggerRef={expandButtonRef}
-            />
+            {isExpanded && (
+              <div className="status-page__commit-details">
+                <pre className="status-page__commit-body">{parseCommitMessage(pipeline.lastDeployedCommit.message)}</pre>
+              </div>
+            )}
           </>
         ) : (
           <span className="status-page__empty">No deployed revision yet</span>
@@ -317,16 +234,16 @@ function PipelineRail({ pipeline }: { pipeline: PipelineSnapshot }) {
 }
 
 const DAY_LABELS = [
-  { label: "S", title: "Sunday" },
-  { label: "M", title: "Monday" },
-  { label: "T", title: "Tuesday" },
-  { label: "W", title: "Wednesday" },
-  { label: "T", title: "Thursday" },
-  { label: "F", title: "Friday" },
-  { label: "S", title: "Saturday" },
+  { label: "Su", title: "Sunday" },
+  { label: "Mo", title: "Monday" },
+  { label: "Tu", title: "Tuesday" },
+  { label: "We", title: "Wednesday" },
+  { label: "Th", title: "Thursday" },
+  { label: "Fr", title: "Friday" },
+  { label: "Sa", title: "Saturday" },
 ] as const;
 
-function CalendarDayCell({ day }: { day: CalendarDay }) {
+function CalendarDayCell({ day, index, leadingBlankDays }: { day: CalendarDay; index: number; leadingBlankDays: number }) {
   const [showTooltip, setShowTooltip] = React.useState(false);
   const timeoutRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -366,6 +283,8 @@ function CalendarDayCell({ day }: { day: CalendarDay }) {
     setShowTooltip(false);
   };
 
+  const row = Math.floor((index + leadingBlankDays) / 7);
+  const isFirstRow = row === 0;
   const tooltipId = `tooltip-${day.date}`;
 
   const monthName = new Date(day.date + "T00:00:00Z").toLocaleDateString("en-US", {
@@ -387,11 +306,10 @@ function CalendarDayCell({ day }: { day: CalendarDay }) {
       onFocus={handleFocus}
       onBlur={handleBlur}
       tabIndex={0}
-      role="button"
       aria-describedby={showTooltip ? tooltipId : undefined}
     >
       {showTooltip && (
-        <span id={tooltipId} className="status-page__calendar-tooltip" role="tooltip">
+        <span id={tooltipId} className={`status-page__calendar-tooltip ${isFirstRow ? "status-page__calendar-tooltip--below" : ""}`} role="tooltip">
           {tooltipText}
         </span>
       )}
@@ -413,8 +331,8 @@ function CalendarMonthView({ month }: { month: CalendarMonth }) {
         {Array.from({ length: month.leadingBlankDays }).map((_, index) => (
           <span key={`leading-${index}`} className="status-page__calendar-day status-page__calendar-day--blank" />
         ))}
-        {month.days.map((day) => (
-          <CalendarDayCell key={day.date} day={day} />
+        {month.days.map((day, index) => (
+          <CalendarDayCell key={day.date} day={day} index={index} leadingBlankDays={month.leadingBlankDays} />
         ))}
         {Array.from({ length: month.trailingBlankDays }).map((_, index) => (
           <span key={`trailing-${index}`} className="status-page__calendar-day status-page__calendar-day--blank" />
@@ -427,32 +345,41 @@ function CalendarMonthView({ month }: { month: CalendarMonth }) {
         ))}
         <span>More</span>
       </div>
-      {totalCommits === 0 && <p className="status-page__empty">No deployments this month.</p>}
     </div>
   );
 }
+
+const ChevronLeft = () => (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <polyline points="15 18 9 12 15 6" />
+  </svg>
+);
+
+const ChevronRight = () => (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <polyline points="9 18 15 12 9 6" />
+  </svg>
+);
 
 export function Status(): React.ReactElement {
   const [snapshot, setSnapshot] = React.useState<StatusSnapshot | null>(null);
   const [error, setError] = React.useState<string | null>(null);
   const [monthIndex, setMonthIndex] = React.useState<number | null>(null);
 
-  React.useEffect(() => {
-    let active = true;
-    fetchStatus()
-      .then((result) => {
-        if (!active) return;
-        setSnapshot(result);
-        setMonthIndex(Math.max(result.calendar.months.length - 1, 0));
-      })
-      .catch((err: Error) => {
-        if (!active) return;
-        setError(err.message);
-      });
-    return () => {
-      active = false;
-    };
+  const loadStatus = React.useCallback(async () => {
+    setError(null);
+    try {
+      const result = await fetchStatus();
+      setSnapshot(result);
+      setMonthIndex(Math.max(result.calendar.months.length - 1, 0));
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "Unknown error");
+    }
   }, []);
+
+  React.useEffect(() => {
+    loadStatus();
+  }, [loadStatus]);
 
   if (error !== null) {
     return (
@@ -482,12 +409,33 @@ export function Status(): React.ReactElement {
               <span role="img" aria-label="Warning">⚠</span> Status may be outdated.
             </p>
           ) : null}
+          <div className="status-page__last-updated">
+            <span>Last Updated</span>
+            <span className="status-page__last-updated-separator" aria-hidden="true">·</span>
+            <strong>
+              <time
+                dateTime={snapshot.generatedAt}
+                title={snapshot.generatedAt}
+                aria-label={`Last updated on ${snapshot.generatedAt}`}
+              >
+                {formatRelativeTimestamp(snapshot.generatedAt)}
+              </time>
+            </strong>
+          </div>
         </div>
         <div>
-          <span>Last Updated</span>
-          <strong>
-            <time dateTime={snapshot.generatedAt}>{formatRelativeTimestamp(snapshot.generatedAt)}</time>
-          </strong>
+          <button
+            type="button"
+            className="button is-small status-page__refresh"
+            onClick={loadStatus}
+            aria-label="Refresh status"
+            title="Refresh status"
+          >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <polyline points="23 4 23 10 17 10" />
+              <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10" />
+            </svg>
+          </button>
         </div>
       </header>
 
@@ -500,10 +448,28 @@ export function Status(): React.ReactElement {
         <div className="status-page__panel">
           <div className="status-page__calendar-header">
             <h2>Deployed Commits</h2>
-            <div>
-              <button type="button" className="button is-small" onClick={() => setMonthIndex((value) => (value ?? 0) - 1)} disabled={monthIndex === 0} aria-label="Previous month">Previous</button>
-              <span>{month.label}</span>
-              <button type="button" className="button is-small" onClick={() => setMonthIndex((value) => (value ?? 0) + 1)} disabled={monthIndex === snapshot.calendar.months.length - 1} aria-label="Next month">Next</button>
+            <div className="status-page__calendar-controls">
+              <button
+                type="button"
+                className="button is-icon"
+                onClick={() => setMonthIndex((value) => (value ?? 0) - 1)}
+                disabled={monthIndex === 0}
+                aria-label="Previous month"
+                title="Previous month"
+              >
+                <ChevronLeft />
+              </button>
+              <span className="status-page__calendar-month-label">{month.label}</span>
+              <button
+                type="button"
+                className="button is-icon"
+                onClick={() => setMonthIndex((value) => (value ?? 0) + 1)}
+                disabled={monthIndex === snapshot.calendar.months.length - 1}
+                aria-label="Next month"
+                title={monthIndex === snapshot.calendar.months.length - 1 ? "No future months yet" : "Next month"}
+              >
+                <ChevronRight />
+              </button>
             </div>
           </div>
           <CalendarMonthView month={month} />
@@ -516,7 +482,8 @@ export function Status(): React.ReactElement {
               {snapshot.recentActivity.map((item, index) => (
                 <li key={`${item.timestamp}-${item.message}-${index}`}>
                   <time dateTime={item.timestamp}>{formatRelativeTimestamp(item.timestamp)}</time>
-                  <span>{item.message}</span>
+                  <span className="status-page__activity-separator" aria-hidden="true">·</span>
+                  <span>{linkifyActivityMessage(item.message)}</span>
                 </li>
               ))}
             </ul>
