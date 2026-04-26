@@ -1,6 +1,5 @@
 :root {
   --status-track-bg: #dbe5ef;
-  --status-fill-gradient: linear-gradient(90deg, #94cfaa 0%, #1b7a43 100%);
   --status-node-bg: #eef3f8;
   --status-node-border: #c7d4e2;
   --status-node-bg-failed: #fff1f3;
@@ -20,13 +19,10 @@
   --status-pulse-color-fade-end: rgba(229, 174, 35, 0.02);
   --status-tooltip-bg: #1a1a2e;
   --status-tooltip-color: #ffffff;
-  --status-modal-backdrop: rgba(0, 0, 0, 0.35);
-  --status-modal-bg: var(--bg-page);
 }
 
 [data-theme="dark"] {
   --status-track-bg: #1a3050;
-  --status-fill-gradient: linear-gradient(90deg, #1a6640 0%, #2ecc71 100%);
   --status-node-bg: #0e1e35;
   --status-node-border: #2a4060;
   --status-node-bg-failed: #2a1520;
@@ -395,6 +391,16 @@
   to { opacity: 1; transform: translateX(-50%) translateY(0); }
 }
 
+.status-page__calendar-tooltip::after {
+  content: "";
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 5px solid transparent;
+  border-top-color: var(--status-tooltip-bg);
+}
+
 .status-page__calendar-tooltip--below {
   top: calc(100% + 8px);
   bottom: auto;
@@ -405,16 +411,6 @@
   bottom: 100%;
   border-top-color: transparent;
   border-bottom-color: var(--status-tooltip-bg);
-}
-
-.status-page__calendar-tooltip::after {
-  content: "";
-  position: absolute;
-  top: 100%;
-  left: 50%;
-  transform: translateX(-50%);
-  border: 5px solid transparent;
-  border-top-color: var(--status-tooltip-bg);
 }
 
 /* Calendar controls */

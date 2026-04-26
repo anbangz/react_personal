@@ -74,12 +74,8 @@ describe("Status", () => {
     const expandButton = screen.getAllByRole("button", { name: /show full commit message/i })[0];
     fireEvent.click(expandButton);
 
-    const details = await waitFor(() => {
-      const el = document.querySelector(".status-page__commit-details");
-      expect(el).toBeInTheDocument();
-      return el;
-    });
-    expect(details).toHaveTextContent("Frontend shipped");
+    const pre = await screen.findByText("Frontend shipped", { selector: "pre" });
+    expect(pre).toBeInTheDocument();
   });
 
   it("shows calendar tooltip on mouse enter", async () => {

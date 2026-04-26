@@ -305,7 +305,6 @@ function CalendarDayCell({ day, index, leadingBlankDays }: { day: CalendarDay; i
       onMouseLeave={handleMouseLeave}
       onFocus={handleFocus}
       onBlur={handleBlur}
-      tabIndex={0}
       aria-describedby={showTooltip ? tooltipId : undefined}
     >
       {showTooltip && (
@@ -365,8 +364,15 @@ export function Status(): React.ReactElement {
   const [snapshot, setSnapshot] = React.useState<StatusSnapshot | null>(null);
   const [error, setError] = React.useState<string | null>(null);
   const [monthIndex, setMonthIndex] = React.useState<number | null>(null);
+  const isLoadingRef = React.useRef(false);
+
+  React.useEffect(() => {
+    document.title = "Deployment Status \u00b7 Anbang Zhang";
+  }, []);
 
   const loadStatus = React.useCallback(async () => {
+    if (isLoadingRef.current) return;
+    isLoadingRef.current = true;
     setError(null);
     try {
       const result = await fetchStatus();
@@ -374,6 +380,8 @@ export function Status(): React.ReactElement {
       setMonthIndex(Math.max(result.calendar.months.length - 1, 0));
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Unknown error");
+    } finally {
+      isLoadingRef.current = false;
     }
   }, []);
 

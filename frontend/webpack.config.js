@@ -55,7 +55,7 @@ module.exports = {
 
   plugins: [
     new HtmlWebpackPlugin({
-      title: "Deployment Status · Anbang Zhang",
+      title: "My Website",
       template: __dirname + "/index.html",
       inject: "body"
     })
