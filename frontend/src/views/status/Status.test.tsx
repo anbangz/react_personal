@@ -153,6 +153,29 @@ describe("Status", () => {
     expect(await screen.findByText(/no recent deployments/i)).toBeInTheDocument();
   });
 
+  it("groups recent activity by date", async () => {
+    server.use(
+      http.get("*/status", () =>
+        HttpResponse.json(
+          createMockStatusSnapshot({
+            recentActivity: [
+              { timestamp: "2026-04-25T18:05:00Z", message: "Backend API shipped 271588a to production" },
+              { timestamp: "2026-04-25T14:00:00Z", message: "Personal Website shipped 4a7b9a0 to production" },
+              { timestamp: "2026-04-24T10:00:00Z", message: "Terraform Infrastructure shipped 01b7a3c to production" },
+            ],
+          })
+        )
+      )
+    );
+    renderWithProviders(<Status />);
+    await waitFor(() => {
+      expect(screen.getByText("April 25, 2026")).toBeInTheDocument();
+      expect(screen.getByText("April 24, 2026")).toBeInTheDocument();
+    });
+    const listItems = screen.getAllByRole("listitem");
+    expect(listItems.length).toBe(3);
+  });
+
   it("maps pipeline status to friendly labels", async () => {
     server.use(
       http.get("*/status", () =>
