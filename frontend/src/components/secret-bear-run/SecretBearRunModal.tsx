@@ -24,6 +24,10 @@ const INTERACTIVE_JUMP_BLOCK_SELECTOR = 'button, input, select, textarea, a[href
 
 type SecretBearRunScreen = "intro" | "playing" | "game-over";
 
+const isInteractiveJumpTarget = (target: EventTarget | null): boolean => (
+  target instanceof Element && target.closest(INTERACTIVE_JUMP_BLOCK_SELECTOR) !== null
+);
+
 export interface SecretBearRunModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -149,6 +153,10 @@ export const SecretBearRunModal: React.FunctionComponent<SecretBearRunModalProps
         return;
       }
 
+      if (isInteractiveJumpTarget(event.target)) {
+        return;
+      }
+
       event.preventDefault();
 
       if (activeJumpPointerIdRef.current !== null) {
@@ -169,6 +177,10 @@ export const SecretBearRunModal: React.FunctionComponent<SecretBearRunModalProps
   const handleStagePointerEnd = React.useCallback(
     (event: React.PointerEvent<HTMLDivElement>) => {
       if (currentScreenRef.current !== "playing") {
+        return;
+      }
+
+      if (activeJumpPointerIdRef.current === null && isInteractiveJumpTarget(event.target)) {
         return;
       }
 
@@ -437,17 +449,25 @@ export const SecretBearRunModal: React.FunctionComponent<SecretBearRunModalProps
       : screen === "game-over"
         ? "secret-bear-run-game-over-hint"
         : undefined;
+  const dialogClassName = [
+    "secret-bear-run__dialog",
+    screen === "playing" ? "secret-bear-run__dialog--game-active" : "",
+  ].filter(Boolean).join(" ");
 
   return (
     <div className="secret-bear-run" role="presentation" onClick={handleClose}>
       <div
         ref={dialogRef}
-        className="secret-bear-run__dialog"
+        className={dialogClassName}
         role="dialog"
         aria-modal="true"
         aria-labelledby="secret-bear-run-title"
         aria-describedby={descriptionId}
         onClick={(event) => event.stopPropagation()}
+        onPointerDown={handleStagePointerDown}
+        onPointerUp={handleStagePointerEnd}
+        onPointerCancel={handleStagePointerEnd}
+        onPointerLeave={handleStagePointerEnd}
       >
         <button
           ref={closeButtonRef}
@@ -479,13 +499,7 @@ export const SecretBearRunModal: React.FunctionComponent<SecretBearRunModalProps
 
         {(screen === "playing" || screen === "game-over") && (
           <div className="secret-bear-run__play-area">
-            <div
-              className="secret-bear-run__stage"
-              onPointerDown={handleStagePointerDown}
-              onPointerUp={handleStagePointerEnd}
-              onPointerCancel={handleStagePointerEnd}
-              onPointerLeave={handleStagePointerEnd}
-            >
+            <div className="secret-bear-run__stage">
               <canvas
                 ref={canvasRef}
                 className="secret-bear-run__canvas"
