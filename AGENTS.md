@@ -101,6 +101,7 @@ Personal website for Anbang Zhang with a Go backend API for blog content managem
 
 ```bash
 cd frontend && npm start          # Dev server on http://localhost:8080 (hot reload)
+cd frontend && npm run start:agent # Agent/worktree dev server on an automatically selected free port; use the printed Loopback URL
 cd frontend && npm run build      # Production webpack build → ./dist/
 cd frontend && npm run clean      # Remove node_modules and dist
 cd frontend && npm run clean-build  # Full clean install + production build
@@ -197,7 +198,7 @@ cd backend && make test     # Run Go tests
 2. Add the component to `frontend/src/views/home/Homepage.tsx`.
 3. Add a route in `frontend/src/App.tsx` if it needs its own URL path.
 4. Update `Navbar.tsx` if it should appear in navigation.
-5. Run `cd frontend && npm start` to verify locally before pushing.
+5. Run `cd frontend && npm run start:agent` when working as an agent in a worktree, or `cd frontend && npm start` otherwise, to verify locally before pushing.
 
 ---
 
@@ -246,7 +247,7 @@ cd backend && make test     # Run Go tests
 After generating or modifying code, agents must verify correctness before committing:
 
 1. **Build** — run `cd frontend && npm run build` (or start the dev server) and confirm zero errors.
-2. **Visual check** — start the dev server (`cd frontend && npm start`) and verify the affected UI renders as expected in a browser.
+2. **Visual check** — start the dev server (`cd frontend && npm run start:agent` when working as an agent in a worktree; otherwise `cd frontend && npm start`) and verify the affected UI renders as expected in a browser.
 3. **Self-review** — read every file that was created or changed and audit for:
    - Correctness (logic errors, off-by-one, missing guards)
    - React patterns (stable references for `useEffect` deps via `useCallback`/`useMemo`, correct hook dependency arrays)
