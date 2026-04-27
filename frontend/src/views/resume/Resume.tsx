@@ -16,6 +16,21 @@ export const Resume = () => {
         <h1>Experience</h1>
         <hr />
         <ResumeItem
+          title="MongoDB — Atlas IAM"
+          subtitle="Engineering Manager (July 2023 – Present); promoted to Senior Engineering Manager (February 2026)"
+          image="https://assets.mongodb.com/_com_assets/cms/mongodb-logo.png"
+        >
+          {/* PLACEHOLDER: Add description here */}
+        </ResumeItem>
+        <ResumeItem
+          title="MongoDB — Atlas IAM"
+          subtitle="Senior Software Engineer (September 2021 – July 2023)"
+          image="https://assets.mongodb.com/_com_assets/cms/mongodb-logo.png"
+          reverse={true}
+        >
+          {/* PLACEHOLDER: Add description here */}
+        </ResumeItem>
+        <ResumeItem
           title="Amazon Scout"
           subtitle="Software Development Engineer"
           image={ScoutImg}
