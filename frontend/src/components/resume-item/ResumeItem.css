@@ -18,6 +18,10 @@
   width: 300px;
 }
 
+.experience-item__image--white-bg {
+  background-color: white;
+}
+
 .experience-item__text {
   display: flex;
   justify-content: center;

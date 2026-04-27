@@ -12,7 +12,7 @@ export const TitleBanner = () => {
         <h1 className="title-banner__heading">
           <span>Hi! I&apos;m Anbang.</span>
         </h1>
-        <h3>I&apos;m a software engineer currently living in Seattle.</h3>
+        <h3>I&apos;m a Senior Software Engineering Manager based out of NYC.</h3>
       </div>
     </div>
   );
