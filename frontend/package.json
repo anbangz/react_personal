@@ -8,6 +8,7 @@
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
     "start": "webpack serve --config webpack.config.js --mode development",
+    "start:agent": "AGENT_DYNAMIC_PORT=1 webpack serve --config webpack.config.js --mode development",
     "clean": "rm -rf node_modules && rm -rf dist",
     "build": "webpack --mode production",
     "clean-build": "npm run clean && npm i && webpack --mode production",

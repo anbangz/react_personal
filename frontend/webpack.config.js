@@ -4,6 +4,12 @@ const HtmlWebpackPlugin = require("html-webpack-plugin");
 
 const outputPath = path.join(__dirname, "dist");
 
+function getDevServerPort() {
+  // Port 0 asks the OS for an ephemeral port so concurrent worktree agents do not collide.
+  if (process.env.AGENT_DYNAMIC_PORT === "1") return 0;
+  return process.env.PORT ? parseInt(process.env.PORT, 10) : 8080;
+}
+
 module.exports = {
   entry: {
     app: ["./src/index.tsx"]
@@ -20,7 +26,7 @@ module.exports = {
   devServer: {
     static: { directory: outputPath },
     compress: true,
-    port: process.env.PORT ? parseInt(process.env.PORT, 10) : 8080,
+    port: getDevServerPort(),
     historyApiFallback: true
   },
 
