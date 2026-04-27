@@ -48,8 +48,7 @@
 }
 
 .status-page {
-  padding-top: 2rem;
-  padding-bottom: 3rem;
+  padding: 2rem 1.5rem 3rem;
 }
 
 .status-page__hero,
