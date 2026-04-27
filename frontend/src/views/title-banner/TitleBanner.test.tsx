@@ -7,7 +7,11 @@ describe("TitleBanner", () => {
   it("renders heading and portrait", () => {
     renderWithProviders(<TitleBanner />);
     expect(screen.getByText("Hi! I'm Anbang.")).toBeInTheDocument();
-    expect(screen.getByText("I'm a software engineer currently living in Seattle.")).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        "I'm a Senior Software Engineering Manager based out of NYC."
+      )
+    ).toBeInTheDocument();
     expect(screen.getByAltText("Portrait of Anbang")).toBeInTheDocument();
   });
 });

@@ -6,7 +6,7 @@ import { ThisSite } from "./ThisSite";
 describe("ThisSite", () => {
   it("renders section heading", () => {
     renderWithProviders(<ThisSite />);
-    expect(screen.getByText("About this site...")).toBeInTheDocument();
+    expect(screen.getByText("About this site")).toBeInTheDocument();
   });
 
   it("renders GitHub repo link with rel attribute", () => {
