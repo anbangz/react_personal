@@ -1,4 +1,6 @@
 import * as React from "react";
+import { readFileSync } from "fs";
+import { join } from "path";
 import { screen, fireEvent, waitFor, within } from "@testing-library/react";
 import { http, HttpResponse } from "msw";
 import { Status } from "./Status";
@@ -8,10 +10,11 @@ import { renderWithProviders } from "../../test-utils";
 
 describe("Status", () => {
 
-  it("shows loading state initially", () => {
+  it("shows loading state initially", async () => {
     server.use(http.get("*/status", () => HttpResponse.json(createMockStatusSnapshot())));
     renderWithProviders(<Status />);
     expect(screen.getByText(/loading deployment status/i)).toBeInTheDocument();
+    expect(await screen.findByText(/pipeline status/i)).toBeInTheDocument();
   });
 
   it("shows error state on fetch failure", async () => {
@@ -76,6 +79,14 @@ describe("Status", () => {
 
     const pre = await screen.findByText("Frontend shipped", { selector: "pre" });
     expect(pre).toBeInTheDocument();
+  });
+
+  it("uses themed colors for expanded commit details", () => {
+    const css = readFileSync(join(__dirname, "Status.css"), "utf8");
+    const detailsRule = css.match(/\.status-page__commit-details\s*\{[^}]+\}/)?.[0];
+
+    expect(detailsRule).toContain("background: var(--bg-surface);");
+    expect(detailsRule).toContain("color: var(--text-primary);");
   });
 
   it("shows calendar tooltip on mouse enter", async () => {

@@ -317,7 +317,8 @@
 .status-page__commit-details {
   margin-top: 0.5rem;
   padding: 0.75rem;
-  background: var(--bg-subtle, #f8f9fa);
+  background: var(--bg-surface);
+  color: var(--text-primary);
   border-radius: 8px;
   border: 1px solid var(--border-default);
   font-size: 0.85rem;
