@@ -35,6 +35,8 @@ const renderOpenModal = () => {
   renderWithProviders(
     <SecretBearRunModal isOpen={true} onClose={onClose} triggerButtonRef={triggerButtonRef} />
   );
+
+  return { onClose };
 };
 
 const getStage = (): HTMLElement => {
@@ -110,6 +112,62 @@ describe("SecretBearRunModal jump input", () => {
 
     dispatchPointerEvent(stage, "pointerup", 7);
     expect(mockedEndBearJump).toHaveBeenCalledTimes(1);
+  });
+
+  it("uses the full dialog as a jump target while playing", async () => {
+    renderOpenModal();
+    await userEvent.click(screen.getByRole("button", { name: /start run/i }));
+    await screen.findByLabelText("Secret Bear Run playfield");
+    const dialog = screen.getByRole("dialog", { name: /easter egg/i });
+
+    dispatchPointerEvent(dialog, "pointerdown", 7);
+    expect(mockedStartBearJump).toHaveBeenCalledTimes(1);
+
+    dispatchPointerEvent(dialog, "pointerup", 7);
+    expect(mockedEndBearJump).toHaveBeenCalledTimes(1);
+  });
+
+  it("does not start a jump from pointer events on dialog controls", async () => {
+    renderOpenModal();
+    await userEvent.click(screen.getByRole("button", { name: /start run/i }));
+    await screen.findByLabelText("Secret Bear Run playfield");
+    const closeButton = screen.getByRole("button", { name: /close secret bear run/i });
+
+    dispatchPointerEvent(closeButton, "pointerdown", 7);
+
+    expect(mockedStartBearJump).not.toHaveBeenCalled();
+  });
+
+  it("keeps dialog controls clickable while playing", async () => {
+    const { onClose } = renderOpenModal();
+    await userEvent.click(screen.getByRole("button", { name: /start run/i }));
+    await screen.findByLabelText("Secret Bear Run playfield");
+
+    await userEvent.click(screen.getByRole("button", { name: /close secret bear run/i }));
+
+    expect(onClose).toHaveBeenCalledTimes(1);
+    expect(mockedStartBearJump).not.toHaveBeenCalled();
+  });
+
+  it("removes the full-dialog touch lock after game over", async () => {
+    const animationFrameCallbacks: FrameRequestCallback[] = [];
+    requestAnimationFrameSpy.mockImplementation((callback) => {
+      animationFrameCallbacks.push(callback);
+      return animationFrameCallbacks.length;
+    });
+    mockedHasBearCollision.mockReturnValue(true);
+
+    renderOpenModal();
+    await userEvent.click(screen.getByRole("button", { name: /start run/i }));
+    const dialog = screen.getByRole("dialog", { name: /easter egg/i });
+    expect(dialog).toHaveClass("secret-bear-run__dialog--game-active");
+
+    act(() => {
+      animationFrameCallbacks.pop()?.(1000);
+    });
+
+    await screen.findByRole("button", { name: /run again/i });
+    expect(dialog).not.toHaveClass("secret-bear-run__dialog--game-active");
   });
 
   it("does not restart from a held Space key after game over focuses Run again", async () => {
