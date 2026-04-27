@@ -31,7 +31,7 @@ export const ThisSite = () => {
             this project's GitHub repo.
           </a>{" "}
           If you don't care about any of that, welcome, feel free to take
-          a look around, and hit the little bear in the navbar for an easter egg :)
+          a look around, and click the little bear in the navbar for an easter egg :)
         </p>
       </div>
     </div>

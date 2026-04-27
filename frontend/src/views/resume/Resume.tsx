@@ -38,7 +38,23 @@ export const Resume = () => {
           <p>
             We have accomplished a lot in that time, and I'll highlight a
             few things here. We launched enterprise integrations between
-            Atlas and partners like Microsoft Azure and Vercel, driving
+            Atlas and partners like{" "}
+            <a
+              href="https://www.mongodb.com/company/blog/mongodb-atlas-now-available-as-azure-native-integration"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Microsoft Azure
+            </a>{" "}
+            and{" "}
+            <a
+              href="https://vercel.com/blog/mongodb-atlas-is-now-available-on-the-vercel-marketplace"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Vercel
+            </a>,
+            driving
             $100M+ in projected ARR. I led an initiative that discovered
             and mitigated widespread SMS Toll Fraud against Atlas,
             reducing SMS MFA traffic by 90% and saving MongoDB $1.7
